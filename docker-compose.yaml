@@ -1,0 +1,36 @@
+services:
+  mailpit:
+    image: axllent/mailpit
+    container_name: mailpit
+    environment:
+      - TZ=Europe/Bratislava
+    networks:
+      internship_network:
+        ipv4_address: 172.31.0.104
+    volumes:
+      - mailpit-data:/data
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+
+  mariadb:
+    image: mariadb:10.11
+    container_name: mariadb
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    networks:
+      internship_network:
+        ipv4_address: 172.31.0.103
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+volumes:
+  mailpit-data:
+  mariadb_data:
+
+networks:
+  internship_network:
+    external: true
