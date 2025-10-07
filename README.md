@@ -45,19 +45,24 @@ The related frontend application: [internship-manager-web](https://github.com/Ye
    composer install
    ```
 3. Create a database in MariaDB and update `.env` accordingly.
-4. Run migrations and seeders:
+4. **Generate application key (required!):**
+   ```sh
+   php artisan key:generate
+   ```
+   This will set the APP_KEY value in your .env file. The application will not work without this key.
+5. Run migrations and seeders:
    ```sh
    php artisan migrate --seed
    ```
-5. Clear and cache configuration:
+6. Clear and cache configuration:
    ```sh
    php artisan config:clear
    php artisan cache:clear
    php artisan config:cache
    ```
-6. Start the development server:
+7. Start the development server:
    ```sh
-   php artisan serve
+   php artisan serve --port=80
    ```
 
 ---
