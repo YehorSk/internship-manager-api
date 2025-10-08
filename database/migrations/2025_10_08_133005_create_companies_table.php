@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('contact_name');
             $table->string('contact_email');
             $table->string('contact_phone');
-            $table->string('status');
+            $table->boolean('status')->default(false);
             $table->timestamps();
         });
     }
