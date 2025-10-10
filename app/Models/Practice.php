@@ -1,0 +1,55 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Practice extends Model
+{
+    /** @use HasFactory<\Database\Factories\PracticeFactory> */
+    use HasFactory;
+
+    protected $table = 'practices';
+
+    protected $primaryKey = 'id';
+
+    protected $fillable = [
+        'student_id',
+        'company_id',
+        'semester',
+        'academic_year',
+        'start_date',
+        'end_date',
+        'status',
+        'study_program_id',
+    ];
+
+    protected $hidden = [
+        'created_at',
+        'updated_at',
+    ];
+
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    public function student()
+    {
+        return $this->belongsTo(Student::class, 'student_id', 'id');
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class, 'company_id', 'id');
+    }
+
+    public function studyProgram()
+    {
+        return $this->belongsTo(StudyProgram::class, 'study_program_id', 'id');
+    }
+
+}
