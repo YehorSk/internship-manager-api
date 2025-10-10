@@ -1,6 +1,5 @@
 <?php
 return [
-    'approved' => 'Company approved successfully.',
-    'not_found' => 'Company not found.',
-    'rejected' => 'Company is rejected',
+    'not_found' => 'Spoločnosť nebola nájdená.',
+    'status_updated' => 'Stav spoločnosti bol úspešne aktualizovaný.',
 ];
