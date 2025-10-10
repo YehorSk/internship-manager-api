@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
+use App\Http\Resources\UserResource;
 use App\Mail\CompanyConfirmationMail;
 use App\Mail\SendPasswordMail;
 use App\Models\Company;
@@ -11,8 +12,11 @@ use App\Models\Student;
 use App\Models\StudyProgram;
 use App\Models\Supervisor;
 use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
@@ -85,11 +89,69 @@ class UserController extends Controller
     }
 
     public function login(LoginRequest $request){
+        if (!Auth::attempt($request->only('email', 'password'))) {
+            return response()->json([
+                'success' => false,
+                'statusCode' => 401,
+                'message' => 'Invalid credentials.',
+            ], 401);
+        }
 
+        $user = Auth::user();
+
+        if ($user->hasRole('company') && !$user->company->status) {
+            Auth::logout();
+            return response()->json([
+                'success' => false,
+                'statusCode' => 403,
+                'message' => 'Company account is inactive.',
+            ], 403);
+        }
+
+        $user['token'] = $user->createToken('LoginToken')->accessToken;
+        $user = User::with(['roles', 'student', 'supervisor', 'company'])->find($user->id);
+
+        return response()->json([
+            'success' => true,
+            'statusCode' => 200,
+            'message' => 'User logged in successfully.',
+            'data' => new UserResource($user),
+        ]);
     }
 
     public function logout(){
+        if(Auth::check()){
+            Auth::user()->token()->revoke();
+            return response()->json([
+                'success' => true,
+                'statusCode' => 200,
+                'message' => 'User logged out successfully.'
+            ]);
+        }else{
+            return response()->json([
+                'success' => false,
+                'statusCode' => 401,
+                'message' => 'Unauthenticated.',
+            ], 401);
+        }
+    }
 
-
+    public function user(Request $request){
+        $user = $request->user();
+        if($user){
+            $user = User::with(['roles', 'student', 'supervisor', 'company'])->find($user->id);
+            return response()->json([
+                'success' => true,
+                'statusCode' => 200,
+                'message' => 'Authenticated.',
+                'data' => new UserResource($user),
+            ]);
+        }else{
+            return response()->json([
+                'success' => false,
+                'statusCode' => 401,
+                'message' => 'Unauthenticated.',
+            ], 401);
+        }
     }
 }
