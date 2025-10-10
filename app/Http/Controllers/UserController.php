@@ -108,7 +108,7 @@ class UserController extends Controller
             ], 403);
         }
 
-        $user['token'] = $user->createToken('LoginToken')->accessToken;
+        $token = $user->createToken('LoginToken')->accessToken;
         $user = User::with(['roles', 'student', 'supervisor', 'company'])->find($user->id);
 
         return response()->json([
@@ -116,6 +116,7 @@ class UserController extends Controller
             'statusCode' => 200,
             'message' => 'User logged in successfully.',
             'data' => new UserResource($user),
+            'token' => $token,
         ]);
     }
 
