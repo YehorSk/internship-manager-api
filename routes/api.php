@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\CompanyController;
 
 Route::controller(UserController::class)->group(function () {
     Route::prefix('auth')->group(function () {
@@ -15,4 +16,9 @@ Route::controller(UserController::class)->group(function () {
             Route::post('/logout', 'logout');
         });
     });
+});
+
+Route::middleware(['auth:api', 'role:supervisor'])->prefix('companies')->group(function () {
+    Route::get('/', [CompanyController::class, 'index']);
+    Route::post('/{id}/company_change_status', [CompanyController::class, 'changeCompanyStatus']);
 });
