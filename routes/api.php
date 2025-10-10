@@ -20,6 +20,5 @@ Route::controller(UserController::class)->group(function () {
 
 Route::middleware(['auth:api', 'role:supervisor'])->prefix('companies')->group(function () {
     Route::get('/', [CompanyController::class, 'index']);
-    Route::post('/{id}/company_approve', [CompanyController::class, 'approveCompanyBySupervisor']);
-    Route::post('/{id}/company_reject', [CompanyController::class, 'rejectCompanyBySupervisor']);
+    Route::post('/{id}/company_change_status', [CompanyController::class, 'changeCompanyStatus']);
 });

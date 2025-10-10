@@ -42,27 +42,18 @@ class CompanyController extends Controller
         return response()->json($companies);
     }
 
-    public function approveCompanyBySupervisor($id)
+    public function changeCompanyStatus(Request $request, $id)
     {
         $company = Company::find($id);
         if ($company) {
-            $company->status = true;
+            $company->status = $request->input('status');
             $company->save();
-            Mail::to($company->contact_email)->send(new CompanyApprovedMail($company, config('constants.MAIL_FROM_ADDRESS')));
-            return response()->json(['message' => __('company.approved')], 200);
-        } else {
-            return response()->json(['message' => __('company.not_found')], 404);
-        }
-    }
-
-    public function rejectCompanyBySupervisor($id)
-    {
-        $company = Company::find($id);
-        if ($company) {
-            $company->status = false;
-            $company->save();
-            Mail::to($company->contact_email)->send(new CompanyRejectedMail($company, config('constants.MAIL_FROM_ADDRESS')));
-            return response()->json(['message' => __('company.rejected')], 200);
+            if ($company->status) {
+                Mail::to($company->contact_email)->send(new CompanyApprovedMail($company, config('constants.MAIL_FROM_ADDRESS')));
+            } else {
+                Mail::to($company->contact_email)->send(new CompanyRejectedMail($company, config('constants.MAIL_FROM_ADDRESS')));
+            }
+            return response()->json(['message' => __('company.status_updated')], 200);
         } else {
             return response()->json(['message' => __('company.not_found')], 404);
         }

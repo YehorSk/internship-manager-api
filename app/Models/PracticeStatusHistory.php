@@ -10,7 +10,7 @@ class PracticeStatusHistory extends Model
     /** @use HasFactory<\Database\Factories\PracticeStatusHistoryFactory> */
     use HasFactory;
 
-    protected $table = 'practice_status_history';
+    protected $table = 'practice_status_histories';
 
     protected $primaryKey = 'id';
 
