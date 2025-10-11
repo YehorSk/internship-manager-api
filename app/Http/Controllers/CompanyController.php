@@ -15,9 +15,9 @@ class CompanyController extends Controller
         $companies = Company::query()
             ->when($request->has('search.status'), function ($query) use ($request) {
                 $status = $request->input('search.status');
-                if ($status === 'true') {
+                if ($status === true) {
                     $query->where('status', true);
-                } elseif ($status === 'false') {
+                } elseif ($status === false) {
                     $query->where('status', false);
                 }
             })
