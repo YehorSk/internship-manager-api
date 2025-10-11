@@ -159,10 +159,6 @@ class UserController extends Controller
         }
     }
 
-    public function reset_password($token,$email) {
-        return redirect()->to(config('app.frontend_url') . '/reset-password?token=' . $token . '&email=' . urlencode($email));
-    }
-
     public function updatePassword(UpdatePasswordRequest $request)
     {
         $status = Password::reset(

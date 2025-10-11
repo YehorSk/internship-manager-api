@@ -8,7 +8,6 @@ Route::controller(UserController::class)->group(function () {
     Route::prefix('auth')->group(function () {
         Route::post('/login', 'login');
         Route::post('/register', 'register');
-        Route::get('/reset-password/{token}/{email}', 'reset_password')->name('password.reset');
         Route::post('/update-password', 'updatePassword');
         Route::post('/forgot-password','forgotPassword');
 //        Route::post('/refresh', 'refreshToken');
