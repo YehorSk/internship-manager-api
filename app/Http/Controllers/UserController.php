@@ -26,16 +26,6 @@ use Illuminate\Support\Str;
 class UserController extends Controller
 {
 
-    private function getRoleId($type)
-    {
-        return match($type) {
-            'student' => 1,
-            'supervisor' => 2,
-            'company' => 3,
-            default => 0
-        };
-    }
-
     public function register(RegisterRequest $request){
         $userData = $request->validated();
         $type = $userData['type'];
@@ -44,14 +34,14 @@ class UserController extends Controller
         DB::transaction(function () use ($userData, $type, $plainPassword) {
 
             $email = match ($type) {
-                'student' => $userData['student_email'],
-                'company' => $userData['contact_email'],
+                '1' => $userData['student_email'],
+                '3' => $userData['contact_email'],
                 default => null,
             };
 
             $name = match ($type) {
-                'student' => $userData['first_name'],
-                'company' => $userData['name'],
+                '1' => $userData['first_name'],
+                '3' => $userData['name'],
                 default => null,
             };
 
@@ -62,7 +52,7 @@ class UserController extends Controller
             ]);
 
             switch ($type) {
-                case 'student':
+                case '1':
                     $student = new Student($userData);
                     $user->student()->save($student);
 
@@ -74,14 +64,14 @@ class UserController extends Controller
                     Mail::to($student->student_email)->send(new SendPasswordMail($plainPassword, $user));
                     break;
 
-                case 'company':
+                case '3':
                     $company = new Company($userData);
                     $user->company()->save($company);
 
                     Mail::to($company->contact_email)->send(new SendPasswordMail($plainPassword, $user)); // Doesn't work for now!
                     break;
             }
-            $user->roles()->attach($this->getRoleId($type));
+            $user->roles()->attach($type);
         });
 
         return response()->json([
