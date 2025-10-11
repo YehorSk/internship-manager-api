@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\GuarantorController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
@@ -19,6 +20,7 @@ Route::controller(UserController::class)->group(function () {
 });
 
 Route::middleware(['auth:api', 'role:supervisor'])->prefix('companies')->group(function () {
-    Route::get('/', [CompanyController::class, 'index']);
-    Route::post('/{id}/company_change_status', [CompanyController::class, 'changeCompanyStatus']);
+    Route::get('/', [GuarantorController::class, 'getCompanies']);
+    Route::get('/{id}', [GuarantorController::class, 'getCompany']);
+    Route::post('/{id}/company_change_status', [GuarantorController::class, 'changeCompanyStatus']);
 });
