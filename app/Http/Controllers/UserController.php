@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\UpdatePasswordRequest;
 use App\Http\Resources\UserResource;
 use App\Mail\CompanyConfirmationMail;
 use App\Mail\SendPasswordMail;
@@ -12,26 +13,18 @@ use App\Models\Student;
 use App\Models\StudyProgram;
 use App\Models\Supervisor;
 use App\Models\User;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
-
-    private function getRoleId($type)
-    {
-        return match($type) {
-            'student' => 1,
-            'supervisor' => 2,
-            'company' => 3,
-            default => 0
-        };
-    }
 
     public function register(RegisterRequest $request){
         $userData = $request->validated();
@@ -41,14 +34,14 @@ class UserController extends Controller
         DB::transaction(function () use ($userData, $type, $plainPassword) {
 
             $email = match ($type) {
-                'student' => $userData['student_email'],
-                'company' => $userData['contact_email'],
+                '1' => $userData['student_email'],
+                '3' => $userData['contact_email'],
                 default => null,
             };
 
             $name = match ($type) {
-                'student' => $userData['first_name'],
-                'company' => $userData['name'],
+                '1' => $userData['first_name'],
+                '3' => $userData['name'],
                 default => null,
             };
 
@@ -59,7 +52,7 @@ class UserController extends Controller
             ]);
 
             switch ($type) {
-                case 'student':
+                case '1':
                     $student = new Student($userData);
                     $user->student()->save($student);
 
@@ -71,20 +64,20 @@ class UserController extends Controller
                     Mail::to($student->student_email)->send(new SendPasswordMail($plainPassword, $user));
                     break;
 
-                case 'company':
+                case '3':
                     $company = new Company($userData);
                     $user->company()->save($company);
 
-                    Mail::to($company->contact_email)->send(new CompanyConfirmationMail()); // Doesn't work for now!
+                    Mail::to($company->contact_email)->send(new SendPasswordMail($plainPassword, $user)); // Doesn't work for now!
                     break;
             }
-            $user->roles()->attach($this->getRoleId($type));
+            $user->roles()->attach($type);
         });
 
         return response()->json([
             'success' => true,
             'statusCode' => 201,
-            'message' => 'User has been registered successfully. Please check your email to verify your account.',
+            'message' => __('auth.user_registered'),
         ], 201);
     }
 
@@ -93,7 +86,7 @@ class UserController extends Controller
             return response()->json([
                 'success' => false,
                 'statusCode' => 401,
-                'message' => 'Invalid credentials.',
+                'message' => __('auth.invalid_credentials'),
             ], 401);
         }
 
@@ -104,7 +97,7 @@ class UserController extends Controller
             return response()->json([
                 'success' => false,
                 'statusCode' => 403,
-                'message' => 'Company account is inactive.',
+                'message' => __('auth.company_inactive'),
             ], 403);
         }
 
@@ -114,7 +107,7 @@ class UserController extends Controller
         return response()->json([
             'success' => true,
             'statusCode' => 200,
-            'message' => 'User logged in successfully.',
+            'message' => __('auth.login_success'),
             'data' => new UserResource($user),
             'token' => $token,
         ]);
@@ -126,13 +119,13 @@ class UserController extends Controller
             return response()->json([
                 'success' => true,
                 'statusCode' => 200,
-                'message' => 'User logged out successfully.'
+                'message' => __('auth.logout_success')
             ]);
         }else{
             return response()->json([
                 'success' => false,
                 'statusCode' => 401,
-                'message' => 'Unauthenticated.',
+                'message' => __('auth.unauthenticated'),
             ], 401);
         }
     }
@@ -144,15 +137,84 @@ class UserController extends Controller
             return response()->json([
                 'success' => true,
                 'statusCode' => 200,
-                'message' => 'Authenticated.',
+                'message' => __('auth.authenticated'),
                 'data' => new UserResource($user),
             ]);
         }else{
             return response()->json([
                 'success' => false,
                 'statusCode' => 401,
-                'message' => 'Unauthenticated.',
+                'message' => __('auth.unauthenticated'),
             ], 401);
         }
+    }
+
+    public function updatePassword(UpdatePasswordRequest $request)
+    {
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function (User $user, string $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password)
+                ])->setRememberToken(Str::random(60));
+
+                $user->save();
+
+                event(new PasswordReset($user));
+            }
+        );
+
+        if ($status === Password::PASSWORD_RESET) {
+            return response()->json([
+                'success' => true,
+                'statusCode' => 200,
+                'message' => __('auth.password_updated'),
+            ]);
+        }
+
+        if($status === Password::INVALID_USER){
+            return response()->json([
+                'success' => false,
+                'statusCode' => 404,
+                'message' => __('auth.email_not_registered'),
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => false,
+            'statusCode' => 422,
+            'message' => __('auth.password_update_failed'),
+        ], 422);
+    }
+
+    public function forgotPassword(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+
+        $status = Password::sendResetLink(
+            $request->only('email')
+        );
+
+        if($status === Password::RESET_LINK_SENT) {
+            return response()->json([
+                'success' => true,
+                'statusCode' => 200,
+                'message' => __('auth.reset_link_sent')
+            ]);
+        }
+
+        if($status === Password::INVALID_USER){
+            return response()->json([
+                'success' => false,
+                'statusCode' => 404,
+                'message' => __('auth.email_not_registered'),
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => false,
+            'statusCode' => 422,
+            'message' => __('auth.reset_link_failed'),
+        ], 422);
     }
 }

@@ -15,11 +15,11 @@ class RegisterRequest extends FormRequest
     public function rules(): array
     {
         $rules = [
-            'type' => ['required', Rule::in(['student', 'company'])],
+            'type' => ['required', Rule::in(['1', '3'])],
         ];
 
         switch ($this->input('type')) {
-            case 'student':
+            case '1':
                 $rules = array_merge($rules, [
                     'first_name' => 'required|string|max:255',
                     'last_name' => 'required|string|max:255',
@@ -36,7 +36,7 @@ class RegisterRequest extends FormRequest
                 ]);
                 break;
 
-            case 'company':
+            case '3':
                 $rules = array_merge($rules, [
                     'name' => 'required|string|max:255',
                     'address' => 'required|string|max:255',
