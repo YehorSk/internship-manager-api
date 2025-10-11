@@ -21,5 +21,6 @@ Route::controller(UserController::class)->group(function () {
 
 Route::middleware(['auth:api', 'role:supervisor'])->prefix('companies')->group(function () {
     Route::get('/', [GuarantorController::class, 'getCompanies']);
+    Route::get('/{id}', [GuarantorController::class, 'getCompany']);
     Route::post('/{id}/company_change_status', [GuarantorController::class, 'changeCompanyStatus']);
 });
