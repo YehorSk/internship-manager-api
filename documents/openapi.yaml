@@ -2,7 +2,7 @@ openapi: "3.0.3"
 info:
   title: Internship Manager API
   description: |
-    API for managing internships with role-based access control (RBAC) for students, supervisors (guarantors), and companies. Uses tokens for authentication.
+    API for managing internships with role-based access control for students, supervisors (guarantors), and companies. Uses tokens for authentication.
 
     **Authentication flow:**
     1. The user sends a POST request to `/auth/login` with email and password.
