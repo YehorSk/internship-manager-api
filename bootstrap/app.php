@@ -17,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\RoleMiddleware::class,
         ]);
     })
+    ->withSchedule(function (Illuminate\Console\Scheduling\Schedule $schedule) {
+        $schedule->command('auth:clear-resets')->everyTwoHours();
+    })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();
