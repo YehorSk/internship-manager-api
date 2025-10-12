@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CompanyListRequest;
 use App\Mail\CompanyApprovedMail;
 use App\Mail\CompanyRejectedMail;
 use App\Models\Company;
@@ -11,16 +12,11 @@ use Illuminate\Support\Facades\Mail;
 class GuarantorController extends Controller
 {
     //
-    public function getCompanies(Request $request)
+    public function listCompanies(CompanyListRequest $request)
     {
         $companies = Company::query()
-            ->when($request->has('search.status'), function ($query) use ($request) {
-                $status = $request->input('search.status');
-                if ($status === true) {
-                    $query->where('status', true);
-                } elseif ($status === false) {
-                    $query->where('status', false);
-                }
+            ->when($request->filled('search.status'), function ($query) use ($request) {
+                $query->where('status', $request->boolean('search.status'));
             })
             ->when($request->has('search.name'), function ($query) use ($request) {
                 $query->where('name', 'like', '%' . $request->input('search.name') . '%');
@@ -37,8 +33,8 @@ class GuarantorController extends Controller
             ->when($request->has('search.contact_phone'), function ($query) use ($request) {
                 $query->where('contact_phone', 'like', '%' . $request->input('search.contact_phone') . '%');
             })
-            ->orderBy($request->get('sortBy', 'id'), $request->get('sortOrder', 'asc'))
-            ->paginate($request->get('itemsPerPage', 10), ['*'], 'page', $request->get('page', 1));
+            ->orderBy($request->input('sortBy', 'id'), $request->input('sortOrder', 'asc'))
+            ->paginate($request->input('itemsPerPage', 10), ['*'], 'page', $request->input('page', 1));
 
         return response()->json($companies);
     }

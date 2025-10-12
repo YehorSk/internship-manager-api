@@ -15,9 +15,11 @@ info:
 servers:
   - url: 'http://127.0.0.1:80'
 paths:
-  /auth/login:
+  /api/auth/login:
     post:
       summary: User login
+      parameters:
+        - $ref: '#/components/parameters/AcceptHeader'
       requestBody:
         required: true
         content:
@@ -113,10 +115,12 @@ paths:
                   value:
                     success: false
                     statusCode: 401
-                    message: Nesprávny email alebo heslo.
-  /auth/register:
+                    message: Neplatné prihlasovacie údaje.
+  /api/auth/register:
     post:
       summary: User registration
+      parameters:
+        - $ref: '#/components/parameters/AcceptHeader'
       requestBody:
         required: true
         content:
@@ -133,9 +137,11 @@ paths:
       responses:
         '201':
           description: User registered
-  /auth/update-password:
+  /api/auth/update-password:
     post:
       summary: Change password
+      parameters:
+        - $ref: '#/components/parameters/AcceptHeader'
       requestBody:
         required: true
         content:
@@ -150,9 +156,11 @@ paths:
       responses:
         '200':
           description: Password changed
-  /auth/forgot-password:
+  /api/auth/forgot-password:
     post:
       summary: Password recovery
+      parameters:
+        - $ref: '#/components/parameters/AcceptHeader'
       requestBody:
         required: true
         content:
@@ -165,68 +173,76 @@ paths:
       responses:
         '200':
           description: Recovery email sent
-  /auth/user:
+  /api/auth/user:
     get:
       summary: Get current user info
       security:
         - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptHeader'
       responses:
         '200':
           description: User info
-  /auth/logout:
+  /api/auth/logout:
     post:
       summary: User logout
       security:
         - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptHeader'
       responses:
         '200':
           description: Successful logout
-  /companies:
-    get:
+  /api/companies:
+    post:
       summary: Get list of companies (supervisor only)
       security:
         - bearerAuth: []
       parameters:
-        - in: query
-          name: search.status
-          schema:
-            type: boolean
-        - in: query
-          name: search.name
-          schema:
-            type: string
-        - in: query
-          name: search.address
-          schema:
-            type: string
-        - in: query
-          name: search.contact_name
-          schema:
-            type: string
-        - in: query
-          name: search.contact_email
-          schema:
-            type: string
-        - in: query
-          name: search.contact_phone
-          schema:
-            type: string
-        - in: query
-          name: sortBy
-          schema:
-            type: string
-        - in: query
-          name: sortOrder
-          schema:
-            type: string
-        - in: query
-          name: itemsPerPage
-          schema:
-            type: integer
-        - in: query
-          name: page
-          schema:
-            type: integer
+        - $ref: '#/components/parameters/AcceptHeader'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                search:
+                  type: object
+                  properties:
+                    status:
+                      type: boolean
+                    name:
+                      type: string
+                    address:
+                      type: string
+                    contact_name:
+                      type: string
+                    contact_email:
+                      type: string
+                    contact_phone:
+                      type: string
+                sortBy:
+                  type: string
+                  description: Field to sort by
+                sortOrder:
+                  type: string
+                  enum: [asc, desc]
+                  description: Sort order
+                itemsPerPage:
+                  type: integer
+                  description: Items per page
+                page:
+                  type: integer
+                  description: Page number
+            example:
+              search:
+                status: true
+                name: Slovenské IT
+              sortBy: name
+              sortOrder: asc
+              itemsPerPage: 10
+              page: 1
       responses:
         '200':
           description: List of companies
@@ -289,13 +305,28 @@ paths:
                   prev_page_url: null
                   to: 3
                   total: 3
+        '422':
+            description: Unprocessable Content
+            content:
+              application/json:
+                example:
+                  message: 'Vybraná hodnota pre sort by je neplatná.'
+                  errors:
+                    sortBy:
+                      - Vybraná hodnota pre sort by je neplatná.
         '403':
             description: Forbidden
             content:
               application/json:
                 example:
                   message: 'Forbidden. Role required: supervisor'
-  /companies/{id}:
+        '401':
+            description: Unauthorized
+            content:
+              application/json:
+                example:
+                  message: 'Unauthenticated.'
+  /api/companies/{id}:
     get:
       summary: Get company info by ID (supervisor only)
       security:
@@ -306,6 +337,7 @@ paths:
           required: true
           schema:
             type: integer
+        - $ref: '#/components/parameters/AcceptHeader'
       responses:
         '200':
           description: Company info
@@ -330,12 +362,18 @@ paths:
                 status: false
                 message: 'Spoločnosť nebola nájdená.'
         '403':
-            description: Forbidden
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: 'Forbidden. Role required: supervisor'
+        '401':
+            description: Unauthorized
             content:
               application/json:
                 example:
-                  message: 'Forbidden. Role required: supervisor'
-  /companies/{id}/company_change_status:
+                  message: 'Unauthenticated.'
+  /api/companies/{id}/company_change_status:
     post:
       summary: Change company status (supervisor only)
       security:
@@ -346,6 +384,7 @@ paths:
           required: true
           schema:
             type: integer
+        - $ref: '#/components/parameters/AcceptHeader'
       requestBody:
         required: true
         content:
@@ -375,9 +414,24 @@ paths:
             application/json:
               example:
                 message: 'Forbidden. Role required: supervisor'
+        '401':
+            description: Unauthorized
+            content:
+                application/json:
+                    example:
+                        message: 'Unauthenticated.'
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
+  parameters:
+    AcceptHeader:
+      in: header
+      name: Accept
+      required: true
+      schema:
+        type: string
+        enum: [application/json]
+      description: Must be 'application/json'
