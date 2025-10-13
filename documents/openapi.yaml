@@ -198,7 +198,7 @@ paths:
                   primary_email: user@student.ukf.sk
                   phone: '123456789'
                   address: 123 Main St, Cityville
-                  study_program: Bachelor in Informatics
+                  study_program: 1
               company:
                 summary: Company registration
                 value:
