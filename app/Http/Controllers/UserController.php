@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ChangePasswordRequest;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\UpdatePasswordRequest;
@@ -139,6 +140,33 @@ class UserController extends Controller
                 'statusCode' => 200,
                 'message' => __('auth.authenticated'),
                 'data' => new UserResource($user),
+            ]);
+        }else{
+            return response()->json([
+                'success' => false,
+                'statusCode' => 401,
+                'message' => __('auth.unauthenticated'),
+            ], 401);
+        }
+    }
+
+    public function changePassword(ChangePasswordRequest $request)
+    {
+        $user = $request->user();
+        if($user){
+            if(!Hash::check($request->get('current_password'), $user->password)){
+                return response()->json([
+                    'success' => false,
+                    'statusCode' => 400,
+                    'message' => __('auth.password_mismatch'),
+                ], 400);
+            }
+            $user->password = Hash::make($request->get('password'));
+            $user->save();
+            return response()->json([
+                'success' => true,
+                'statusCode' => 200,
+                'message' => __('auth.password_changed')
             ]);
         }else{
             return response()->json([
