@@ -9,18 +9,16 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class CompanyConfirmationMail extends Mailable
+class CompanyActivatedMail extends Mailable
 {
     use Queueable, SerializesModels;
-
-    protected $company;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($company)
+    public function __construct()
     {
-        $this->company = $company;
+        //
     }
 
     /**
@@ -29,7 +27,7 @@ class CompanyConfirmationMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Aktivácia účtu spoločnosti',
+            subject: 'Účet spoločnosti bol aktivovaný',
         );
     }
 
@@ -39,18 +37,8 @@ class CompanyConfirmationMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: "emails.company_confirmation",
+            markdown: 'emails.company_activated',
         );
-    }
-
-    public function build(): CompanyConfirmationMail
-    {
-        $activationUrl = url('/api/company/activate/' . $this->company->activation_token);
-        return $this->view('emails.company_confirmation')
-            ->with([
-                'company' => $this->company,
-                'activationUrl' => $activationUrl,
-            ]);
     }
 
     /**

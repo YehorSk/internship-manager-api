@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Mail;
 use Laravel\Passport\HasApiTokens;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
@@ -73,4 +73,17 @@ class User extends Authenticatable
         return $this->roles()->where('name', $role)->exists();
     }
 
+    public function markEmailAsVerified()
+    {
+        $updated = $this->forceFill([
+            'email_verified_at' => $this->freshTimestamp(),
+        ])->save();
+
+        if ($updated && $this->role_id === 3) {
+            // Ваша логика для компаний (например, уведомление, смена статуса и т.д.)
+            $this->company->update(['status' => 'approved']);
+        }
+
+        return $updated;
+    }
 }

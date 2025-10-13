@@ -11,6 +11,8 @@ class Company extends Model
 
     protected $table = 'companies';
 
+    protected $primaryKey = 'id';
+
     protected $fillable = [
         'name',
         'address',
@@ -18,6 +20,19 @@ class Company extends Model
         'contact_email',
         'contact_phone',
         'user_id',
+        'status',
+        'activation_token',
+    ];
+
+    protected $hidden = [
+        'created_at',
+        'updated_at',
+    ];
+
+    protected $casts = [
+        'status' => 'boolean',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function user()

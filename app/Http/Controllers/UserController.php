@@ -13,6 +13,7 @@ use App\Models\Student;
 use App\Models\StudyProgram;
 use App\Models\Supervisor;
 use App\Models\User;
+use App\RoleEnum;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -29,19 +30,20 @@ class UserController extends Controller
     public function register(RegisterRequest $request){
         $userData = $request->validated();
         $type = $userData['type'];
-        $plainPassword = Str::random(12);
+        $plainPassword = $type === RoleEnum::STUDENT->value
+            ? Str::random(12)
+            : $userData['password'];
 
         DB::transaction(function () use ($userData, $type, $plainPassword) {
-
             $email = match ($type) {
-                '1' => $userData['student_email'],
-                '3' => $userData['contact_email'],
+                RoleEnum::STUDENT->value => $userData['student_email'],
+                RoleEnum::COMPANY->value => $userData['contact_email'],
                 default => null,
             };
 
             $name = match ($type) {
-                '1' => $userData['first_name'],
-                '3' => $userData['name'],
+                RoleEnum::STUDENT->value => trim(($userData['first_name'] ?? '') . ' ' . ($userData['last_name'] ?? '')),
+                RoleEnum::COMPANY->value => $userData['name'] ?? null,
                 default => null,
             };
 
@@ -52,23 +54,28 @@ class UserController extends Controller
             ]);
 
             switch ($type) {
-                case '1':
+                case RoleEnum::STUDENT->value:
                     $student = new Student($userData);
                     $user->student()->save($student);
 
                     if (!empty($userData['study_program'])) {
-                        $studyProgram = StudyProgram::where('name', $userData['study_program'])->first();
+                        $studyProgram = StudyProgram::where('id', $userData['study_program'])->first();
                         $student->studyPrograms()->sync([$studyProgram->id]);
                     }
 
                     Mail::to($student->student_email)->send(new SendPasswordMail($plainPassword, $user));
                     break;
 
-                case '3':
-                    $company = new Company($userData);
+                case RoleEnum::COMPANY->value:
+                    $activationToken = Str::random(64);
+                    $companyData = array_merge($userData, [
+                        'status' => false,
+                        'activation_token' => $activationToken,
+                    ]);
+                    $company = new Company($companyData);
                     $user->company()->save($company);
 
-                    Mail::to($company->contact_email)->send(new SendPasswordMail($plainPassword, $user)); // Doesn't work for now!
+                    Mail::to($company->contact_email)->send(new CompanyConfirmationMail($company));
                     break;
             }
             $user->roles()->attach($type);
@@ -92,12 +99,12 @@ class UserController extends Controller
 
         $user = Auth::user();
 
-        if ($user->hasRole('company') && !$user->company->status) {
+        if ($user->hasRole('company') && is_null($user->email_verified_at)) {
             Auth::logout();
             return response()->json([
                 'success' => false,
                 'statusCode' => 403,
-                'message' => __('auth.company_inactive'),
+                'message' => __('auth.email_not_verified'),
             ], 403);
         }
 

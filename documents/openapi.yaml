@@ -107,15 +107,28 @@ paths:
                         contact_phone: '+421-2-5555-1234'
                     token: <jwt_token>
         '401':
-            description: Unauthorized
-            content:
-              application/json:
-                example:
-                  summary: Login failed
-                  value:
-                    success: false
-                    statusCode: 401
-                    message: Neplatné prihlasovacie údaje.
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                summary: Login failed
+                value:
+                  success: false
+                  statusCode: 401
+                  message: Neplatné prihlasovacie údaje.
+        '422':
+          description: Unprocessable Content
+          content:
+            application/json:
+              example:
+                message: 'The given data was invalid.'
+                errors:
+                  email:
+                    - The email field is required.
+                  password:
+                    - The password field is required.
+                  type:
+                    - Pole typ je povinné.
   /api/auth/register:
     post:
       summary: User registration
@@ -126,17 +139,155 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                type:
-                  type: string
-                email:
-                  type: string
-                password:
-                  type: string
+              oneOf:
+                - title: Student registration
+                  type: object
+                  required: [type, student_email, first_name, password]
+                  properties:
+                    type:
+                      type: integer
+                      enum: [1]
+                      description: Role type (1 = student)
+                    first_name:
+                      type: string
+                    last_name:
+                      type: string
+                    student_email:
+                      type: string
+                      format: email
+                    primary_email:
+                      type: string
+                      format: email
+                    phone:
+                      type: string
+                    address:
+                      type: string
+                    study_program:
+                      type: integer
+                      description: IDs of study programs as defined in the study_programs table (e.g., 1 = INF-B, Bachelor in Informatics).
+                - title: Company registration
+                  type: object
+                  required: [type, contact_email, name, password]
+                  properties:
+                    type:
+                      type: integer
+                      enum: [3]
+                      description: Role type (3 = company)
+                    name:
+                      type: string
+                    address:
+                      type: string
+                    contact_name:
+                      type: string
+                    contact_email:
+                      type: string
+                      format: email
+                    contact_phone:
+                      type: string
+                    password:
+                      type: string
+                      format: password
+            examples:
+              student:
+                summary: Student registration
+                value:
+                  type: 1
+                  first_name: John
+                  last_name: Doe
+                  student_email: user@student.ukf.sk
+                  primary_email: user@student.ukf.sk
+                  phone: '123456789'
+                  address: 123 Main St, Cityville
+                  study_program: Bachelor in Informatics
+              company:
+                summary: Company registration
+                value:
+                  type: 3
+                  name: Slovenské IT
+                  address: Mlynské nivy 16, 821 09 Bratislava
+                  contact_name: Michal Kráľ
+                  contact_email: company@example.com
+                  contact_phone: '+421-2-5555-1234'
+                  password: password123
       responses:
         '201':
           description: User registered
+          content:
+            application/json:
+              example:
+                success: true
+                statusCode: 201
+                message: Používateľ bol úspešne zaregistrovaný. Skontrolujte svoj e-mail, aby ste overili svoj účet.
+        '422':
+          description: Unprocessable Content
+          content:
+            application/json:
+              examples:
+                missing_field:
+                  summary: Missing required field
+                  value:
+                    message: 'Vybraná hodnota pre {property} je neplatná.'
+                    errors:
+                      type:
+                        - Pole typ je povinné.
+                      first_name:
+                        - Pole krstné meno je povinné.
+                      last_name:
+                        - Pole priezvisko je povinné.
+                      student_email:
+                        - Pole študentský email je povinné.
+                      primary_email:
+                        - Pole primárny email je povinné.
+                      phone:
+                        - Pole telefónne číslo je povinné.
+                      address:
+                        - Pole adresa je povinné.
+                      study_program:
+                        - Pole študijný program je povinné.
+                      name:
+                        - Pole názov spoločnosti je povinné.
+                      contact_name:
+                        - Pole kontaktné meno je povinné.
+                      contact_email:
+                        - Pole kontaktný email je povinné.
+                      contact_phone:
+                        - Pole kontaktné telefónne číslo je povinné.
+                      password:
+                        - The password field is required.
+                email_taken:
+                  summary: Email already taken
+                  value:
+                    message: 'Táto hodnota pre e-mail kontaktnej osoby už bola použitá'
+                    errors:
+                      contact_email:
+                        - Táto hodnota pre e-mail kontaktnej osoby už bola použitá.
+  /api/company/activate/{token}:
+    get:
+      summary: Activate company account
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AcceptHeader'
+      responses:
+        '200':
+          description: Company account activated
+          content:
+            application/json:
+              example:
+                success: true
+                statusCode: 200
+                message: Účet spoločnosti bol úspešne aktivovaný. Môžete sa prihlásiť.
+        '404':
+          description: Token not found or expired
+          content:
+            application/json:
+              example:
+                success: false
+                statusCode: 404
+                message: Neplatný alebo expirovaný aktivačný token.
   /api/auth/update-password:
     post:
       summary: Change password
@@ -193,6 +344,12 @@ paths:
       responses:
         '200':
           description: Successful logout
+          content:
+            application/json:
+              example:
+                success: true
+                statusCode: 200
+                message: Používateľ bol úspešne odhlásený.
   /api/companies:
     post:
       summary: Get list of companies (supervisor only)
@@ -306,26 +463,26 @@ paths:
                   to: 3
                   total: 3
         '422':
-            description: Unprocessable Content
-            content:
-              application/json:
-                example:
-                  message: 'Vybraná hodnota pre sort by je neplatná.'
-                  errors:
-                    sortBy:
-                      - Vybraná hodnota pre sort by je neplatná.
+          description: Unprocessable Content
+          content:
+            application/json:
+              example:
+                message: 'Vybraná hodnota pre sort by je neplatná.'
+                errors:
+                  sortBy:
+                    - Vybraná hodnota pre sort by je neplatná.
         '403':
-            description: Forbidden
-            content:
-              application/json:
-                example:
-                  message: 'Forbidden. Role required: supervisor'
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: 'Forbidden. Role required: supervisor'
         '401':
-            description: Unauthorized
-            content:
-              application/json:
-                example:
-                  message: 'Unauthenticated.'
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: 'Unauthenticated.'
   /api/companies/{id}:
     get:
       summary: Get company info by ID (supervisor only)
@@ -368,11 +525,11 @@ paths:
               example:
                 message: 'Forbidden. Role required: supervisor'
         '401':
-            description: Unauthorized
-            content:
-              application/json:
-                example:
-                  message: 'Unauthenticated.'
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: 'Unauthenticated.'
   /api/companies/{id}/company_change_status:
     post:
       summary: Change company status (supervisor only)
@@ -415,11 +572,11 @@ paths:
               example:
                 message: 'Forbidden. Role required: supervisor'
         '401':
-            description: Unauthorized
-            content:
-                application/json:
-                    example:
-                        message: 'Unauthenticated.'
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: 'Unauthenticated.'
 components:
   securitySchemes:
     bearerAuth:

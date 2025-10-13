@@ -1,9 +1,12 @@
 <?php
 
 use App\Http\Controllers\GuarantorController;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\CompanyController;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
 Route::controller(UserController::class)->group(function () {
     Route::prefix('auth')->group(function () {
@@ -27,3 +30,4 @@ Route::middleware(['auth:api', 'role:supervisor'])->prefix('companies')->group(f
     Route::post('/{id}/company_change_status', [GuarantorController::class, 'changeCompanyStatus']);
 });
 
+Route::get('/company/activate/{token}', [CompanyController::class, 'activate']);
