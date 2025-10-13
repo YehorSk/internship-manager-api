@@ -81,6 +81,38 @@ class UserController extends Controller
         ], 201);
     }
 
+    public function forgotPassword(Request $request)
+    {
+        echo "function was called";
+        $request->validate(['email' => 'required|email']);
+
+        echo "got email";
+        $user = User::where('email', $request->email)->first();
+        print("recuest to db");
+        if (!$user) {
+            return response()->json(['message' => 'If account exists, email sent'], 200);
+        }
+        echo "found";
+        $token = Str::random(64);
+        PasswordReset::updateOrCreate(
+            ['email' => $user->email],
+            [
+                'token' => $token,
+                'created_at' => Carbon::now()
+            ]
+        );
+        $link = config('app.frontend_url') . '/new-password?token=' . $token . '&email=' . urlencode($user->email);
+
+        Mail::send('emails.password_reset', ['link' => $link, 'user' => $user], function ($message) use ($user) {
+            $message->to($user->email);
+            $message->subject('Obnova hesla – Internship Manager');
+        });
+
+        return response()->json(['message' => 'Reset link sent']);
+    }
+
+
+
     public function login(LoginRequest $request){
         if (!Auth::attempt($request->only('email', 'password'))) {
             return response()->json([
@@ -89,7 +121,6 @@ class UserController extends Controller
                 'message' => __('auth.invalid_credentials'),
             ], 401);
         }
-
         $user = Auth::user();
 
         if ($user->hasRole('company') && !$user->company->status) {
@@ -187,34 +218,34 @@ class UserController extends Controller
         ], 422);
     }
 
-    public function forgotPassword(Request $request)
-    {
-        $request->validate(['email' => 'required|email']);
+    // public function forgotPassword(ForgotPasswordRequest $request)
+    // {
+    //     $request->validate(['email' => 'required|email']);
 
-        $status = Password::sendResetLink(
-            $request->only('email')
-        );
+    //     $status = Password::sendResetLink(
+    //         $request->only('email')
+    //     );
 
-        if($status === Password::RESET_LINK_SENT) {
-            return response()->json([
-                'success' => true,
-                'statusCode' => 200,
-                'message' => __('auth.reset_link_sent')
-            ]);
-        }
+    //     if($status === Password::RESET_LINK_SENT) {
+    //         return response()->json([
+    //             'success' => true,
+    //             'statusCode' => 200,
+    //             'message' => __('auth.reset_link_sent')
+    //         ]);
+    //     }
 
-        if($status === Password::INVALID_USER){
-            return response()->json([
-                'success' => false,
-                'statusCode' => 404,
-                'message' => __('auth.email_not_registered'),
-            ], 404);
-        }
+    //     if($status === Password::INVALID_USER){
+    //         return response()->json([
+    //             'success' => false,
+    //             'statusCode' => 404,
+    //             'message' => __('auth.email_not_registered'),
+    //         ], 404);
+    //     }
 
-        return response()->json([
-            'success' => false,
-            'statusCode' => 422,
-            'message' => __('auth.reset_link_failed'),
-        ], 422);
-    }
+    //     return response()->json([
+    //         'success' => false,
+    //         'statusCode' => 422,
+    //         'message' => __('auth.reset_link_failed'),
+    //     ], 422);
+    // }
 }
