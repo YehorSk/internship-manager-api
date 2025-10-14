@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\GuarantorController;
+use App\Http\Controllers\StudyProgramController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -31,3 +32,10 @@ Route::middleware(['auth:api', 'role:supervisor'])->prefix('companies')->group(f
 });
 
 Route::get('/company/activate/{token}', [CompanyController::class, 'activate']);
+
+Route::controller(StudyProgramController::class)->prefix('study-programs')->group(function () {
+    Route::get('/index', 'index');
+    Route::group(['middleware' => ['auth:api']], function () {
+
+    });
+});
