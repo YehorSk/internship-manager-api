@@ -37,7 +37,7 @@ class UserController extends Controller
         DB::transaction(function () use ($userData, $type, $plainPassword) {
             $email = match ($type) {
                 RoleEnum::STUDENT->value => $userData['student_email'],
-                RoleEnum::COMPANY->value => $userData['contact_email'],
+                RoleEnum::COMPANY->value => $userData['company_email'],
                 default => null,
             };
 
@@ -75,7 +75,7 @@ class UserController extends Controller
                     $company = new Company($companyData);
                     $user->company()->save($company);
 
-                    Mail::to($company->contact_email)->send(new CompanyConfirmationMail($company));
+                    Mail::to($company->company_email)->send(new CompanyConfirmationMail($company));
                     break;
             }
             $user->roles()->attach($type);

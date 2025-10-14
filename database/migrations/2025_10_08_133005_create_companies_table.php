@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('address');
             $table->string('contact_name');
+            $table->string('company_email')->unique();
             $table->string('contact_email');
             $table->string('contact_phone');
             $table->boolean('status')->default(false);
