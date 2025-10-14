@@ -2,7 +2,8 @@ openapi: "3.0.3"
 info:
   title: Internship Manager API
   description: |
-    API for managing internships with role-based access control for students, supervisors (guarantors), and companies. Uses tokens for authentication.
+    API for managing internships with role-based access control for students, supervisors (guarantors), and companies.
+    Uses tokens for authentication.
 
     **Authentication flow:**
     1. The user sends a POST request to `/auth/login` with email and password.
@@ -129,6 +130,28 @@ paths:
                     - The password field is required.
                   type:
                     - Pole typ je povinné.
+  /api/auth/logout:
+    post:
+      summary: User logout
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptHeader'
+      responses:
+        '200':
+          description: Successful logout
+          content:
+            application/json:
+              example:
+                success: true
+                statusCode: 200
+                message: Používateľ bol úspešne odhlásený.
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: 'Unauthenticated.'
   /api/auth/register:
     post:
       summary: User registration
@@ -164,7 +187,9 @@ paths:
                       type: string
                     study_program:
                       type: integer
-                      description: IDs of study programs as defined in the study_programs table (e.g., 1 = INF-B, Bachelor in Informatics).
+                      description: |
+                        IDs of study programs as defined in the study_programs table (e.g., 1 = INF-B, Bachelor in
+                        Informatics).
                 - title: Company registration
                   type: object
                   required: [type, contact_email, name, password]
@@ -288,28 +313,13 @@ paths:
                 success: false
                 statusCode: 404
                 message: Neplatný alebo expirovaný aktivačný token.
-  /api/auth/update-password:
-    post:
-      summary: Change password
-      parameters:
-        - $ref: '#/components/parameters/AcceptHeader'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                old_password:
-                  type: string
-                new_password:
-                  type: string
-      responses:
-        '200':
-          description: Password changed
   /api/auth/forgot-password:
     post:
-      summary: Password recovery
+      summary: Request password recovery email with link to reset password
+      description: |
+        After submitting the request, a password reset link will be sent to the specified email address.
+        The link has the following format and leads to the password reset form on the frontend:
+        Example: http://localhost:3000/reset-password?token={token}&email={email}
       parameters:
         - $ref: '#/components/parameters/AcceptHeader'
       requestBody:
@@ -324,6 +334,60 @@ paths:
       responses:
         '200':
           description: Recovery email sent
+          content:
+            application/json:
+              example:
+                success: true
+                statusCode: 200
+                message: Odkaz na obnovenie hesla bol odoslaný na váš e-mail.
+        '404':
+          description: Email not found
+          content:
+            application/json:
+              example:
+                success: false
+                statusCode: 404
+                message: Tento e-mail nie je zaregistrovaný.
+  /api/auth/update-password:
+    post:
+      summary: Change password
+      description: |
+        This endpoint is called from the password reset form, which is opened via the link sent to the user's email
+        address (see the link format in the /api/auth/forgot-password endpoint description).
+      parameters:
+        - $ref: '#/components/parameters/AcceptHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+                password_confirmation:
+                  type: string
+      responses:
+        '200':
+          description: Password changed
+          content:
+            application/json:
+              example:
+                success: true
+                statusCode: 200
+                message: Heslo bolo úspešne aktualizované.
+        '422':
+          description: Unprocessable Content
+          content:
+            application/json:
+              example:
+                success: false
+                statusCode: 422
+                message: 'Nepodarilo sa aktualizovať heslo. Token je neplatný alebo expirovaný.'
   /api/auth/user:
     get:
       summary: Get current user info
@@ -334,22 +398,82 @@ paths:
       responses:
         '200':
           description: User info
-  /api/auth/logout:
-    post:
-      summary: User logout
-      security:
-        - bearerAuth: []
-      parameters:
-        - $ref: '#/components/parameters/AcceptHeader'
-      responses:
-        '200':
-          description: Successful logout
+          content:
+            application/json:
+              examples:
+                supervisor:
+                  summary: Supervisor info
+                  value:
+                    success: true
+                    statusCode: 200
+                    message: Prihlásený.
+                    data:
+                      id: 2
+                      name: Ing.Ján Novák
+                      email: jan.novak@ukf.sk
+                      roles:
+                        - id: 2
+                          name: supervisor
+                      student: null
+                      supervisor:
+                        id: 1
+                        title: Ing.
+                        first_name: Ján
+                        last_name: Novák
+                        email: jan.novak@ukf.sk
+                      company: null
+                student:
+                  summary: Student info
+                  value:
+                    success: true
+                    statusCode: 200
+                    message: Prihlásený.
+                    data:
+                      id: 1
+                      name: John Doe
+                      email: john.student@example.com
+                      roles:
+                        - id: 1
+                          name: student
+                      student:
+                        id: 1
+                        first_name: John
+                        last_name: Doe
+                        student_email: john.student@example.com
+                        primary_email: john.alt@example.com
+                        phone: '123456789'
+                        address: 123 Main St, Cityville
+                      supervisor: null
+                      company: null
+                company:
+                  summary: Company info
+                  value:
+                    success: true
+                    statusCode: 200
+                    message: Prihlásený.
+                    data:
+                      id: 5
+                      name: Slovenské IT s.r.o.
+                      email: michal.kral@slovenskeit.sk
+                      roles:
+                        - id: 3
+                          name: company
+                    student: null
+                    supervisor: null
+                    company:
+                      id: 1
+                      name: Slovenské IT s.r.o.
+                      address: Mlynské nivy 16, 821 09 Bratislava
+                      contact_name: Michal Kráľ
+                      company_email: null
+                      contact_email: michal.kral@slovenskeit.sk
+                      contact_phone: '+421-2-5555-1234'
+        '401':
+          description: Unauthorized
           content:
             application/json:
               example:
-                success: true
-                statusCode: 200
-                message: Používateľ bol úspešne odhlásený.
+                message: 'Unauthenticated.'
   /api/companies:
     post:
       summary: Get list of companies (supervisor only)
