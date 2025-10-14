@@ -64,7 +64,7 @@ class CompanySeeder extends Seeder
         foreach ($companies as $company) {
             $user = \App\Models\User::create([
                 'name' => $company['name'],
-                'email' => $company['email'],
+                'email' => $company['company_email'],
                 'password' => $company['password'],
                 'email_verified_at' => $company['email_verified_at'],
                 'remember_token' => $company['remember_token'],
@@ -80,6 +80,7 @@ class CompanySeeder extends Seeder
                 'user_id' => $user->id,
                 'name' => $company['name'],
                 'address' => $company['address'],
+                'company_email' => $company['company_email'],
                 'contact_phone' => $company['contact_phone'],
                 'contact_email' => $company['contact_email'],
                 'contact_name' => $company['contact_name'],
