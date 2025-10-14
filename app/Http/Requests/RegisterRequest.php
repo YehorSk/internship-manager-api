@@ -42,9 +42,9 @@ class RegisterRequest extends FormRequest
                     'name' => 'required|string|max:255',
                     'address' => 'required|string|max:255',
                     'contact_name' => 'required|string|max:255',
-                    'contact_email' => 'required|email|unique:companies,contact_email',
+                    'contact_email' => 'required|email',
                     'contact_phone' => 'required|string|max:20',
-                    'password' => 'required|string|min:8', // пароль обязателен для компании
+                    'password' => 'required|string|min:8|confirmed', // пароль обязателен для компании
                 ]);
                 break;
         }
