@@ -15,9 +15,16 @@ info:
   version: 1.0.0
 servers:
   - url: 'http://127.0.0.1:8000'
+tags:
+  - name: Authentication
+    description: Endpoints for user authentication and registration
+  - name: Supervisors
+    description: Endpoints for supervisors (guarantors)
 paths:
   /api/auth/login:
     post:
+      tags:
+        - Authentication
       summary: User login
       parameters:
         - $ref: '#/components/parameters/AcceptHeader'
@@ -132,6 +139,8 @@ paths:
                     - Pole typ je povinné.
   /api/auth/logout:
     post:
+      tags:
+        - Authentication
       summary: User logout
       security:
         - bearerAuth: []
@@ -154,6 +163,8 @@ paths:
                 message: 'Unauthenticated.'
   /api/auth/register:
     post:
+      tags:
+        - Authentication
       summary: User registration
       parameters:
         - $ref: '#/components/parameters/AcceptHeader'
@@ -288,6 +299,8 @@ paths:
                         - Táto hodnota pre e-mail kontaktnej osoby už bola použitá.
   /api/company/activate/{token}:
     get:
+      tags:
+        - Authentication
       summary: Activate company account
       parameters:
         - in: path
@@ -315,6 +328,8 @@ paths:
                 message: Neplatný alebo expirovaný aktivačný token.
   /api/auth/forgot-password:
     post:
+      tags:
+        - Authentication
       summary: Request password recovery email with link to reset password
       description: |
         After submitting the request, a password reset link will be sent to the specified email address.
@@ -350,6 +365,8 @@ paths:
                 message: Tento e-mail nie je zaregistrovaný.
   /api/auth/update-password:
     post:
+      tags:
+        - Authentication
       summary: Change password
       description: |
         This endpoint is called from the password reset form, which is opened via the link sent to the user's email
@@ -390,6 +407,8 @@ paths:
                 message: 'Nepodarilo sa aktualizovať heslo. Token je neplatný alebo expirovaný.'
   /api/auth/user:
     get:
+      tags:
+        - Authentication
       summary: Get current user info
       security:
         - bearerAuth: []
@@ -476,6 +495,8 @@ paths:
                 message: 'Unauthenticated.'
   /api/companies:
     post:
+      tags:
+        - Supervisors
       summary: Get list of companies (supervisor only)
       security:
         - bearerAuth: []
@@ -609,6 +630,8 @@ paths:
                 message: 'Unauthenticated.'
   /api/companies/{id}:
     get:
+      tags:
+        - Supervisors
       summary: Get company info by ID (supervisor only)
       security:
         - bearerAuth: []
@@ -656,6 +679,8 @@ paths:
                 message: 'Unauthenticated.'
   /api/companies/{id}/company_change_status:
     post:
+      tags:
+        - Supervisors
       summary: Change company status (supervisor only)
       security:
         - bearerAuth: []
