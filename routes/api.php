@@ -18,6 +18,7 @@ Route::controller(UserController::class)->group(function () {
 //        Route::post('/refresh', 'refreshToken');
 
         Route::group(['middleware' => ['auth:api']], function () {
+            Route::post('/change-password', 'changePassword');
             Route::get('/user', 'user');
             Route::post('/logout', 'logout');
         });

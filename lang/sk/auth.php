@@ -12,4 +12,6 @@ return [
     'reset_link_sent' => 'Odkaz na obnovenie hesla bol odoslaný na váš e-mail.',
     'reset_link_failed' => 'Nepodarilo sa odoslať odkaz na obnovenie hesla. Skontrolujte svoj e-mail a skúste to znova.',
     'email_not_registered' => 'Tento e-mail nie je zaregistrovaný.',
+    'password_mismatch' => 'Súčasné heslo, ktoré ste zadali, je nesprávne.',
+    'password_changed' => 'Heslo bolo úspešne zmenené.',
 ];
