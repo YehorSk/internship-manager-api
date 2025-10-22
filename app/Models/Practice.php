@@ -23,6 +23,8 @@ class Practice extends Model
         'end_date',
         'status',
         'study_program_id',
+        'job_title',
+        'job_description',
     ];
 
     protected $hidden = [
@@ -45,6 +47,11 @@ class Practice extends Model
     public function company()
     {
         return $this->belongsTo(Company::class, 'company_id', 'id');
+    }
+
+    public function practiceCompany()
+    {
+        return $this->hasOne(PracticeCompany::class, 'practice_id');
     }
 
     public function studyProgram()

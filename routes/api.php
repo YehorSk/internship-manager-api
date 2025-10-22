@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\GuarantorController;
+use App\Http\Controllers\PracticeController;
 use App\Http\Controllers\StudyProgramController;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -25,6 +26,16 @@ Route::controller(UserController::class)->group(function () {
     });
 });
 
+Route::middleware(['auth:api'])
+    ->prefix('practices')
+    ->controller(PracticeController::class)->group(function () {
+        Route::middleware(['role:supervisor'])->group(function () {
+
+        });
+        Route::middleware(['role:student'])->group(function () {
+            Route::post('/', 'store');
+        });
+});
 
 Route::middleware(['auth:api', 'role:supervisor'])->prefix('companies')->group(function () {
     Route::post('/', [GuarantorController::class, 'listCompanies']);
@@ -32,7 +43,13 @@ Route::middleware(['auth:api', 'role:supervisor'])->prefix('companies')->group(f
     Route::post('/{id}/company_change_status', [GuarantorController::class, 'changeCompanyStatus']);
 });
 
-Route::get('/company/activate/{token}', [CompanyController::class, 'activate']);
+Route::controller(CompanyController::class)->prefix('company')->group(function () {
+    Route::get('/activate/{token}', 'activate');
+
+    Route::group(['middleware' => ['auth:api']], function () {
+        Route::get('/search/{value}', 'search');
+    });
+});
 
 Route::controller(StudyProgramController::class)->prefix('study-programs')->group(function () {
     Route::get('/index', 'index');

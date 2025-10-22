@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\CompanyResource;
 use App\Mail\CompanyActivatedMail;
 use App\Mail\CompanyApprovedMail;
 use App\Mail\CompanyRejectedMail;
@@ -11,6 +12,14 @@ use Illuminate\Support\Facades\Mail;
 
 class CompanyController extends Controller
 {
+
+    public function search($value){
+        $companies = Company::orderBy('name')
+            ->where('name', 'like', '%'.$value.'%')
+            ->get();
+        return CompanyResource::collection($companies);
+    }
+
     public function activate($token)
     {
         $company = Company::where('activation_token', $token)->first();

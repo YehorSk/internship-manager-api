@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('practices', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('student_id');
-            $table->unsignedBigInteger('company_id');
-            $table->enum('semester', ['summer', 'winter'])->nullable();
-            $table->string('academic_year', 9)->nullable();
+            $table->unsignedBigInteger('company_id')->nullable();
+            $table->enum('semester', ['summer', 'winter']);
+            $table->string('academic_year', 9);
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
             $table->enum('status', [
@@ -32,9 +32,11 @@ return new class extends Migration
                 'report_rejected',
                 'report_removed',
                 'rejected'
-            ])->nullable();
+            ])->default('created');
+            $table->string('job_title')->nullable();
+            $table->string('job_description')->nullable();
             $table->unsignedBigInteger('study_program_id');
-            $table->foreign('student_id')->references('id')->on('students')->onDelete('cascade');
+            $table->foreign('student_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
             $table->foreign('study_program_id')->references('id')->on('study_programs')->onDelete('cascade');
             $table->timestamps();

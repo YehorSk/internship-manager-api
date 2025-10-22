@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('practice_id');
             $table->string('name');
             $table->string('address');
-            $table->string('ico', 20);
+            $table->string('company_email');
             $table->string('contact_phone', 50);
             $table->string('contact_email');
             $table->string('contact_name');
