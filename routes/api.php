@@ -30,10 +30,13 @@ Route::middleware(['auth:api'])
     ->prefix('practices')
     ->controller(PracticeController::class)->group(function () {
         Route::middleware(['role:supervisor'])->group(function () {
-
         });
         Route::middleware(['role:student'])->group(function () {
             Route::post('/', 'store');
+            Route::post('/list', 'list');
+            Route::get('/{id}', 'get');
+            Route::put('/{id}', 'update');
+            Route::delete('/{id}', 'delete');
         });
 });
 

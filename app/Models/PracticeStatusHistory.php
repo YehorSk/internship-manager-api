@@ -17,7 +17,6 @@ class PracticeStatusHistory extends Model
     protected $fillable = [
         'practice_id',
         'user_id',
-        'document_id',
         'status',
         'comment',
     ];

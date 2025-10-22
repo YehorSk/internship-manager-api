@@ -15,25 +15,23 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('practice_id');
             $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('document_id');
             $table->enum('status', [
                 'created',
-                'agreement_uploaded',
-                'agreement_confirmed',
-                'agreement_approved',
-                'agreement_rejected',
-                'agreement_removed',
-                'report_uploaded',
-                'defended_by_company',
-                'defended_by_guarantor',
-                'report_rejected',
-                'report_removed',
-                'rejected'
+                'agreement_confirm_requested',
+                'agreement_confirmed_by_company',
+                'agreement_confirmed_by_supervisor',
+                'agreement_rejected_by_company',
+                'agreement_rejected_by_supervisor',
+                'report_confirm_requested',
+                'report_confirmed_by_company',
+                'report_confirmed_by_supervisor',
+                'report_rejected_by_company',
+                'report_rejected_by_supervisor',
+                'canceled',
             ])->nullable();
             $table->text('comment')->nullable();
             $table->foreign('practice_id')->references('id')->on('practices')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('document_id')->references('id')->on('documents')->onDelete('cascade');
             $table->timestamps();
         });
     }

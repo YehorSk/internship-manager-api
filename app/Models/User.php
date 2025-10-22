@@ -71,7 +71,15 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function hasRole($role)
     {
-        return $this->roles()->where('name', $role)->exists();
+        // Явно префиксуем имя колонки таблицей roles, чтобы избежать неоднозначности
+        return $this->roles()->where('roles.name', $role)->exists();
+    }
+
+    public function hasRoleId(int $roleId): bool
+    {
+        // Явно префиксуем имя колонки таблицей roles, иначе при join с pivot-таблицей
+        // может возникать "Column 'id' in WHERE is ambiguous" (если в pivot тоже есть id)
+        return $this->roles()->where('roles.id', $roleId)->exists();
     }
 
     public function markEmailAsVerified()

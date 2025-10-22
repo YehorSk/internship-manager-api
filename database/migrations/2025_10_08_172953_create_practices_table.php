@@ -21,17 +21,17 @@ return new class extends Migration
             $table->date('end_date')->nullable();
             $table->enum('status', [
                 'created',
-                'agreement_uploaded',
-                'agreement_confirmed',
-                'agreement_approved',
-                'agreement_rejected',
-                'agreement_removed',
-                'report_uploaded',
-                'defended_by_company',
-                'defended_by_guarantor',
-                'report_rejected',
-                'report_removed',
-                'rejected'
+                'agreement_confirm_requested',
+                'agreement_confirmed_by_company',
+                'agreement_confirmed_by_supervisor',
+                'agreement_rejected_by_company',
+                'agreement_rejected_by_supervisor',
+                'report_confirm_requested',
+                'report_confirmed_by_company',
+                'report_confirmed_by_supervisor',
+                'report_rejected_by_company',
+                'report_rejected_by_supervisor',
+                'canceled',
             ])->default('created');
             $table->string('job_title')->nullable();
             $table->string('job_description')->nullable();
