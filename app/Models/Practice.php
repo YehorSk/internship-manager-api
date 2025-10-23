@@ -59,4 +59,9 @@ class Practice extends Model
         return $this->belongsTo(StudyProgram::class, 'study_program_id', 'id');
     }
 
+    public function practiceStatusHistory()
+    {
+        return $this->hasMany(PracticeStatusHistory::class, 'practice_id');
+    }
+
 }

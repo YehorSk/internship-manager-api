@@ -6,7 +6,6 @@ use App\Enums\RoleEnum;
 use App\Enums\PracticeStatusEnum;
 use App\Http\Requests\PracticeListRequest;
 use App\Http\Requests\StorePracticeRequest;
-use App\Http\Requests\UpdatePracticeRequest;
 use App\Models\Company;
 use App\Models\Practice;
 use App\Models\PracticeCompany;
@@ -18,48 +17,64 @@ class PracticeController extends Controller
 {
     public function store(StorePracticeRequest $request)
     {
-        $data = $request->validated();
-        $practice = new Practice();
-
-        foreach (['start_date', 'end_date', 'academic_year', 'semester', 'study_program_id'] as $field) {
-            if (array_key_exists($field, $data)) {
-                $practice->$field = $data[$field];
-            }
-        }
+        $validated = $request->validated();
 
         $user = $request->user();
-        $practice['student_id'] = $user->id;
 
-        $practiceCompany = new PracticeCompany();
-        // practice_id будет установлен после сохранения practice, иначе id будет null
+        DB::transaction(function () use ($request, $validated, $user) {
+            $practice = new Practice();
 
-        if ($request->company_id) {
-            $company = Company::find($request->company_id);
-            $practice->company_id = $request->company_id;
-            $practiceCompany->name = $company->name;
-            $practiceCompany->address = $company->address;
-            $practiceCompany->contact_name = $company->contact_name;
-            $practiceCompany->contact_email = $company->contact_email;
-            $practiceCompany->contact_phone = $company->contact_phone;
-        } else {
-            $practice->company_id = null;
-            foreach (['name', 'address', 'company_name', 'company_address', 'contact_name', 'contact_email', 'contact_phone'] as $field) {
-                if (array_key_exists($field, $data)) {
-                    $practiceCompany->$field = $data[$field];
+            foreach (['start_date', 'end_date', 'academic_year', 'semester', 'study_program_id', 'job_title', 'job_description'] as $field) {
+                if (array_key_exists($field, $validated)) {
+                    $practice->$field = $validated[$field];
                 }
             }
-        }
-        $practice->save();
-        // установить корректный practice_id после сохранения
-        $practiceCompany->practice_id = $practice->id;
-        $practiceCompany->save();
 
-        PracticeStatusHistory::create([
-            'practice_id' => $practice->id,
-            'user_id' => $user->id,
-            'status' => PracticeStatusEnum::CREATED,
-            'comment' => null,
-        ]);
+            $practice['student_id'] = $user->id;
+
+            $practiceCompany = new PracticeCompany();
+
+            if ($validated['company_id']) {
+                $company = Company::where('user_id', $validated['company_id'])->first();
+                $practice->company_id = $validated['company_id'];
+                $practiceCompany->name = $company->name;
+                $practiceCompany->address = $company->address;
+                $practiceCompany->contact_name = $company->contact_name;
+                $practiceCompany->contact_email = $company->contact_email;
+                $practiceCompany->contact_phone = $company->contact_phone;
+                $practiceCompany->company_email = $company->company_email;
+            } else {
+                $practice->company_id = null;
+
+                foreach (['company_email', 'contact_name', 'contact_email', 'contact_phone'] as $field) {
+                    if (array_key_exists($field, $validated)) {
+                        $practiceCompany->$field = $validated[$field];
+                    }
+                }
+
+                if (array_key_exists('company_name', $validated)) {
+                    $practiceCompany->name = $validated['company_name'];
+                } elseif (array_key_exists('name', $validated)) {
+                    $practiceCompany->name = $validated['name'];
+                }
+
+                if (array_key_exists('company_address', $validated)) {
+                    $practiceCompany->address = $validated['company_address'];
+                } elseif (array_key_exists('address', $validated)) {
+                    $practiceCompany->address = $validated['address'];
+                }
+            }
+            $practice->save();
+            $practiceCompany->practice_id = $practice->id;
+            $practiceCompany->save();
+
+            PracticeStatusHistory::create([
+                'practice_id' => $practice->id,
+                'user_id' => $user->id,
+                'status' => PracticeStatusEnum::CREATED->value,
+                'comment' => null,
+            ]);
+        });
 
         return response()->json([
             'success' => true,
@@ -142,7 +157,7 @@ class PracticeController extends Controller
         return response()->json($practices);
     }
 
-    public function get($id, $request)
+    public function get($id, Request $request)
     {
         $user = $request->user();
 
@@ -150,7 +165,7 @@ class PracticeController extends Controller
         $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
         $isSupervisor = $user && $user->hasRoleId(RoleEnum::SUPERVISOR->value);
 
-        $with = [];
+        $with = ['studyProgram', 'practiceStatusHistory'];
 
         if ($isStudent || $isSupervisor) {
             $with[] = 'practiceCompany';
@@ -178,8 +193,10 @@ class PracticeController extends Controller
         return response()->json($practice);
     }
 
-    public function update(int $id, UpdatePracticeRequest $request)
+    public function update(int $id, StorePracticeRequest $request)
     {
+        $validated = $request->validated();
+
         $user = $request->user();
 
         $isStudent = $user && $user->hasRoleId(RoleEnum::STUDENT->value);
@@ -199,42 +216,52 @@ class PracticeController extends Controller
             return response()->json(['status' => false, 'message' => __('practice.not_found')], 404);
         }
 
-        $validated = $request->validated();
-
-        if ($isStudent && $practice->status !== PracticeStatusEnum::CREATED) {
-            return response()->json(['status' => false, 'message' => __('practice.cannot_edit_after_company_confirm')], 403);
+        if ($isStudent && $practice->status !== PracticeStatusEnum::CREATED->value) {
+            return response()->json(['status' => false, 'message' => __('practice.cannot_edit')], 403);
         }
 
         DB::transaction(function () use ($request, $practice, $validated, $user, $isStudent) {
-            foreach (['start_date', 'end_date', 'academic_year', 'semester', 'study_program_id'] as $field) {
+            foreach (['start_date', 'end_date', 'academic_year', 'semester', 'study_program_id', 'job_title', 'job_description'] as $field) {
                 if (array_key_exists($field, $validated)) {
                     $practice->$field = $validated[$field];
                 }
             }
 
-            $practice->save();
-
             $practiceCompany = $practice->practiceCompany()->first() ?? new PracticeCompany();
             $practiceCompany->practice_id = $practice->id;
 
-            if ($practice->company_id) {
+            if ($validated['company_id']) {
                 $practice->company_id = $validated['company_id'];
-                $company = Company::find($request->company_id);
+                $company = Company::where('user_id', $validated['company_id'])->first();
                 $practiceCompany->name = $company->name;
                 $practiceCompany->address = $company->address;
                 $practiceCompany->contact_name = $company->contact_name;
                 $practiceCompany->contact_email = $company->contact_email;
                 $practiceCompany->contact_phone = $company->contact_phone;
+                $practiceCompany->company_email = $company->company_email;
             } else {
                 $practice->company_id = null;
-                foreach (['name', 'address', 'company_name', 'company_address', 'contact_name', 'contact_email', 'contact_phone'] as $field) {
+                foreach (['company_email', 'contact_name', 'contact_email', 'contact_phone'] as $field) {
                     if (array_key_exists($field, $validated)) {
                         $practiceCompany->$field = $validated[$field];
                     }
                 }
+
+                if (array_key_exists('company_name', $validated)) {
+                    $practiceCompany->name = $validated['company_name'];
+                } elseif (array_key_exists('name', $validated)) {
+                    $practiceCompany->name = $validated['name'];
+                }
+
+                if (array_key_exists('company_address', $validated)) {
+                    $practiceCompany->address = $validated['company_address'];
+                } elseif (array_key_exists('address', $validated)) {
+                    $practiceCompany->address = $validated['address'];
+                }
             }
 
-            $practice->practiceCompany()->save($practiceCompany);
+            $practice->save();
+            $practiceCompany->save();
         });
 
         return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('practice.updated_successfully')]);
@@ -252,7 +279,7 @@ class PracticeController extends Controller
 
         $practice = Practice::query()
             ->where('student_id', $user->id)
-            ->where('status', PracticeStatusEnum::CREATED)
+            ->where('status', PracticeStatusEnum::CREATED->value)
             ->where('id', $id)
             ->first();
 
@@ -260,8 +287,15 @@ class PracticeController extends Controller
             return response()->json(['status' => false, 'message' => __('practice.not_found')], 404);
         }
 
-        $practice->status = PracticeStatusEnum::CANCELED;
+        $practice->status = PracticeStatusEnum::CANCELED->value;
         $practice->save();
+
+        PracticeStatusHistory::create([
+            'practice_id' => $practice->id,
+            'user_id' => $user->id,
+            'status' => PracticeStatusEnum::CANCELED->value,
+            'comment' => null,
+        ]);
 
         return response()->json(['status' => true, 'message' => __('practice.deleted_successfully')]);
     }

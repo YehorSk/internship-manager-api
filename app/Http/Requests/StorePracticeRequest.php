@@ -23,7 +23,7 @@ class StorePracticeRequest extends FormRequest
     public function rules(): array
     {
         $rules = [
-            'company_id' => 'nullable|exists:companies,id',
+            'company_id' => 'nullable|exists:companies,user_id',
             'study_program_id' => 'required|exists:study_programs,id',
             'semester' => ['required', 'string', Rule::in(['summer', 'winter'])],
             'academic_year' => ['required', 'string', 'max:9'],
@@ -37,9 +37,9 @@ class StorePracticeRequest extends FormRequest
                 'company_name' => 'required|string|max:255',
                 'company_address' => 'required|string|max:255',
                 'company_email' => 'required|email',
-                'contact_name' => 'required|string',
+                'contact_name' => 'required|string|max:255',
                 'contact_email' => 'required|email',
-                'contact_phone' => 'required|numeric',
+                'contact_phone' => 'required|string|max:50',
             ]);
         }
         return $rules;

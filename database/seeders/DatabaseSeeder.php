@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             SupervisorsSeeder::class,
             CompanySeeder::class,
+            PracticeSeeder::class,
         ]);
     }
 }

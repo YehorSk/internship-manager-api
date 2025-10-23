@@ -37,7 +37,7 @@ return new class extends Migration
             $table->string('job_description')->nullable();
             $table->unsignedBigInteger('study_program_id');
             $table->foreign('student_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
+            $table->foreign('company_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('study_program_id')->references('id')->on('study_programs')->onDelete('cascade');
             $table->timestamps();
         });
