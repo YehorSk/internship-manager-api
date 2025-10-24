@@ -6,6 +6,7 @@ use App\Enums\RoleEnum;
 use App\Enums\PracticeStatusEnum;
 use App\Http\Requests\PracticeListRequest;
 use App\Http\Requests\StorePracticeRequest;
+use App\Http\Resources\PracticeResource;
 use App\Models\Company;
 use App\Models\Practice;
 use App\Models\PracticeCompany;
@@ -154,7 +155,7 @@ class PracticeController extends Controller
             ->orderBy($request->input('sortBy', 'id'), $request->input('sortOrder', 'asc'))
             ->paginate($request->input('itemsPerPage', 10), ['*'], 'page', $request->input('page', 1));
 
-        return response()->json($practices);
+        return PracticeResource::collection($practices);
     }
 
     public function get($id, Request $request)
@@ -190,7 +191,7 @@ class PracticeController extends Controller
             return response()->json(['status' => false, 'message' => __('practice.not_found')], 404);
         }
 
-        return response()->json($practice);
+        return new PracticeResource($practice);
     }
 
     public function update(int $id, StorePracticeRequest $request)
