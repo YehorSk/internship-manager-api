@@ -134,12 +134,13 @@ class PracticeController extends Controller
                 });
             })
             ->when($request->filled('search.student_name') && ($isCompany || $isSupervisor), function ($query) use ($request) {
-                $name = trim($request->input('search.student_name'));
-                if ($name === '') {
+                $fullName = trim($request->input('search.student_name'));
+                if ($fullName === '') {
                     return;
                 }
-                $query->whereHas('student', function ($q) use ($name) {
-                    $q->where('name', 'like', '%' . $name . '%');
+
+                $query->whereHas('student', function ($q) use ($fullName) {
+                    $q->whereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$fullName}%"]);
                 });
             })
             ->when($request->filled('search.company_name') && ($isStudent || $isSupervisor), function ($query) use ($request) {
