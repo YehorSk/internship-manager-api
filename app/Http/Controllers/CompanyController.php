@@ -29,6 +29,7 @@ class CompanyController extends Controller
         if (!$company) {
             return response()->json([
                 'success' => false,
+                'statusCode' => 404,
                 'message' => 'Neplatný alebo expirovaný aktivačný token.'
             ], 404);
         }
@@ -36,12 +37,14 @@ class CompanyController extends Controller
         if (!$user || !$user->hasRole('company')) {
             return response()->json([
                 'success' => false,
+                'statusCode' => 404,
                 'message' => 'Používateľ nie je spoločnosť.'
             ], 404);
         }
         if ($user->hasVerifiedEmail()) {
             return response()->json([
                 'success' => false,
+                'statusCode' => 400,
                 'message' => 'Účet už bol aktivovaný.'
             ], 400);
         }
@@ -51,6 +54,7 @@ class CompanyController extends Controller
         Mail::to($user->email)->send(new CompanyActivatedMail());
         return response()->json([
             'success' => true,
+            'statusCode' => 200,
             'message' => 'Účet spoločnosti bol úspešne aktivovaný. Môžete sa prihlásiť.'
         ]);
     }
@@ -89,7 +93,7 @@ class CompanyController extends Controller
         $company = Company::where('user_id', $id)->first();
 
         if (!$company) {
-            return response()->json(['status' => false, 'message' => __('company.not_found')], 404);
+            return response()->json(['success' => false, 'statusCode' => 404,  'message' => __('company.not_found')], 404);
         }
 
         return response()->json($company);
@@ -122,15 +126,15 @@ class CompanyController extends Controller
                         Mail::to($company->contact_email)->send(new CompanyRejectedMail());
                     }
 
-                    return response()->json(['message' => __('company.status_updated')]);
+                    return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('company.status_updated')]);
                 } else {
-                    return response()->json(['message' => __('company.not_found')], 404);
+                    return response()->json(['success' => false, 'statusCode' => 404, 'message' => __('company.not_found')], 404);
                 }
             } else {
-                return response()->json(['message' => __('No valid status provided.')], 400);
+                return response()->json(['success' => false, 'statusCode' => 400, 'message' => __('No valid status provided.')], 400);
             }
         } else {
-            return response()->json(['message' => __('Method not allowed.')], 405);
+            return response()->json(['success' => false, 'statusCode' => 200, 'message' => __('Method not allowed.')], 405);
         }
     }
 }

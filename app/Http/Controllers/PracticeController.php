@@ -79,9 +79,9 @@ class PracticeController extends Controller
 
         return response()->json([
             'success' => true,
-            'statusCode' => 200,
+            'statusCode' => 201,
             'message' => __('practice.practice_created_successfully'),
-        ]);
+        ], 201);
     }
 
     function list(PracticeListRequest $request)
@@ -183,7 +183,7 @@ class PracticeController extends Controller
             ->first();
 
         if (!$practice) {
-            return response()->json(['status' => false, 'message' => __('practice.not_found')], 404);
+            return response()->json(['success' => false, 'statusCode' => 404, 'message' => __('practice.not_found')], 404);
         }
 
         return new PracticeResource($practice);
@@ -209,11 +209,11 @@ class PracticeController extends Controller
             ->first();
 
         if (!$practice) {
-            return response()->json(['status' => false, 'message' => __('practice.not_found')], 404);
+            return response()->json(['success' => false, 'statusCode' => 404, 'message' => __('practice.not_found')], 404);
         }
 
         if ($isStudent && $practice->status !== PracticeStatusEnum::CREATED->value) {
-            return response()->json(['status' => false, 'message' => __('practice.cannot_edit')], 403);
+            return response()->json(['success' => false, 'statusCode' => 403, 'message' => __('practice.cannot_edit')], 403);
         }
 
         DB::transaction(function () use ($request, $practice, $validated, $user, $isStudent) {
@@ -270,7 +270,7 @@ class PracticeController extends Controller
         $isStudent = $user && $user->hasRoleId(RoleEnum::STUDENT->value);
 
         if (!$isStudent) {
-            return response()->json(['status' => false, 'message' => __('practice.delete_not_allowed')], 403);
+            return response()->json(['success' => false, 'statusCode' => 403, 'message' => __('practice.delete_not_allowed')], 403);
         }
 
         $practice = Practice::query()
@@ -280,7 +280,7 @@ class PracticeController extends Controller
             ->first();
 
         if (!$practice) {
-            return response()->json(['status' => false, 'message' => __('practice.not_found')], 404);
+            return response()->json(['success' => false, 'statusCode' => 404, 'message' => __('practice.not_found')], 404);
         }
 
         $practice->status = PracticeStatusEnum::CANCELED->value;
@@ -293,6 +293,6 @@ class PracticeController extends Controller
             'comment' => null,
         ]);
 
-        return response()->json(['status' => true, 'message' => __('practice.deleted_successfully')]);
+        return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('practice.deleted_successfully')]);
     }
 }
