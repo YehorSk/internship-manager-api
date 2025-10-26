@@ -35,7 +35,6 @@ Route::middleware(['auth:api'])
         });
         Route::middleware(['role:student'])->group(function () {
             Route::post('/', 'store');
-            Route::get('/{id}', 'get');
             Route::put('/{id}', 'update');
             Route::delete('/{id}', 'delete');
         });
