@@ -16,6 +16,7 @@ class CompanyController extends Controller
     public function search($value){
         $companies = Company::orderBy('name')
             ->where('name', 'like', '%'.$value.'%')
+            ->where('status', 1)
             ->get();
         return CompanyResource::collection($companies);
     }
