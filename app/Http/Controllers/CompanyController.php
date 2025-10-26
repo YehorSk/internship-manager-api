@@ -86,12 +86,12 @@ class CompanyController extends Controller
 
     public function show($id)
     {
-        $user = auth()->user();
+        $company = Company::where('user_id', $id)->first();
 
-        $company = Company::find($id);
         if (!$company) {
             return response()->json(['status' => false, 'message' => __('company.not_found')], 404);
         }
+
         return response()->json($company);
     }
 
@@ -103,7 +103,7 @@ class CompanyController extends Controller
 
         if ($request->isMethod('patch') && $isSupervisor) {
             if ($request->has('status')) {
-                $company = Company::find($id);
+                $company = Company::where('user_id', $id)->first();
 
                 if ($company) {
                     $currentStatus = $company->status;
