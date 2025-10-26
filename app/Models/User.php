@@ -86,7 +86,6 @@ class User extends Authenticatable implements MustVerifyEmail
         ])->save();
 
         if ($updated && $this->role_id === 3) {
-            // Ваша логика для компаний (например, уведомление, смена статуса и т.д.)
             $this->company->update(['status' => 'approved']);
         }
 
