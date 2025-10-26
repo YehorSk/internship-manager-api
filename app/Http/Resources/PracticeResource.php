@@ -28,7 +28,7 @@ class PracticeResource extends JsonResource
             'study_program' => new StudyProgramResource($this->whenLoaded('studyProgram')),
             'practice_status_history' => PracticeStatusHistoryResource::collection($this->whenLoaded('practiceStatusHistory')),
             'practice_company' => $this->whenLoaded('practiceCompany'),
-            'student' => $this->whenLoaded('student'),
+            'student' => new StudentResource($this->whenLoaded('student')),
             'created_at' => $this->created_at ? $this->created_at->toDateTimeString() : null,
             'updated_at' => $this->updated_at ? $this->updated_at->toDateTimeString() : null,
         ];

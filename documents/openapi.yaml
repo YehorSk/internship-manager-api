@@ -20,6 +20,12 @@ tags:
     description: Endpoints for user authentication and registration
   - name: Supervisors
     description: Endpoints for supervisors (guarantors)
+  - name: Students
+    description: Endpoints for students
+  - name: Companies
+    description: Endpoints for companies
+  - name: Practices
+    description: Endpoints for managing practices (internships)
 paths:
   /api/auth/login:
     post:
@@ -367,7 +373,7 @@ paths:
     post:
       tags:
         - Authentication
-      summary: Change password
+      summary: Set new password using token from password recovery email
       description: |
         This endpoint is called from the password reset form, which is opened via the link sent to the user's email
         address (see the link format in the /api/auth/forgot-password endpoint description).
@@ -493,7 +499,7 @@ paths:
             application/json:
               example:
                 message: 'Unauthenticated.'
-  /api/companies:
+  /api/companies/list:
     post:
       tags:
         - Supervisors
@@ -677,8 +683,7 @@ paths:
             application/json:
               example:
                 message: 'Unauthenticated.'
-  /api/companies/{id}/company_change_status:
-    post:
+    patch:
       tags:
         - Supervisors
       summary: Change company status (supervisor only)
@@ -726,6 +731,705 @@ paths:
             application/json:
               example:
                 message: 'Unauthenticated.'
+  /api/practices/list:
+    post:
+      tags:
+        - Practices
+      summary: Get list of practices
+      description: |
+        Returns a paginated list of practices visible to the current authenticated user. Visibility depends on the
+        current user's role:
+          - student: sees only their own practices (where student_id = current user id)
+          - company: sees practices related to their company (where company_id = current company id)
+          - supervisor: sees practices for the programs they supervise
+        The endpoint requires a Bearer token.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptHeader'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                search:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      description: one of enum values from PracticeStatusEnum
+                    semester:
+                      type: string
+                    academic_year:
+                      type: string
+                    start_date:
+                      type: string
+                    end_date:
+                      type: string
+                    study_program_name:
+                      type: string
+                    company_name:
+                      type: string
+                    student_name:
+                      type: string
+                sortBy:
+                  type: string
+                sortOrder:
+                  type: string
+                  enum: [asc, desc]
+                itemsPerPage:
+                  type: integer
+                page:
+                  type: integer
+            examples:
+              default:
+                summary: Example list request
+                value:
+                  search:
+                    status: true
+                  sortBy: id
+                  sortOrder: asc
+                  itemsPerPage: 10
+                  page: 1
+      responses:
+        '200':
+          description: List of practices
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+              examples:
+                default:
+                  summary: Example response
+                  value:
+                    data:
+                      - id: 1
+                        student_id: 1
+                        company_id: 5
+                        semester: "winter"
+                        academic_year: "2025/2026"
+                        start_date: "2025-10-22"
+                        end_date: "2025-12-23"
+                        status: "created"
+                        job_title: "Software Developer Intern"
+                        job_description: "Assist in developing web applications."
+                        study_program:
+                          - id: 1
+                            code: "INF-B"
+                            name: "Bachelor in Informatics"
+                        practice_company:
+                          - id: 1
+                            practice_id: 1
+                            name: "Slovenské IT s.r.o."
+                            address: "Mlynské nivy 16, 821 09 Bratislava"
+                            company_email: "slovenske@gmail.com"
+                            contact_phone: "+421-2-5555-1234"
+                            contact_email: "michal.kral@slovenskeit.sk"
+                            contact_name: "Michal Kráľ"
+                        created_at: "2025-10-23 22:53:50"
+                        updated_at: "2025-10-23 22:53:50"
+                      - id: 2
+                        student_id: 1
+                        company_id: 6
+                        semester: "winter"
+                        academic_year: "2025/2026"
+                        start_date: null
+                        end_date: null
+                        status: "created"
+                        job_title: "Data Analyst Intern"
+                        job_description: "Support data analysis and reporting tasks."
+                        study_program:
+                          - id: 2
+                            code: "INF-M"
+                            name: "Master in Informatics"
+                        practice_company:
+                          - id: 2
+                            practice_id: 2
+                            name: "Energo Slovensko a.s."
+                            address: "Štefánikova 24, 811 05 Bratislava"
+                            company_email: "energo@gmail.com"
+                            contact_phone: "+421-2-4444-5678"
+                            contact_email: "veronika.holubova@energosk.sk"
+                            contact_name: "Veronika Holubová"
+                        created_at: "2025-10-23 22:53:50"
+                        updated_at: "2025-10-23 22:53:50"
+                    links:
+                      first: "http://127.0.0.1:8000/api/practices/list?page=1"
+                      last: "http://127.0.0.1:8000/api/practices/list?page=1"
+                      prev: null
+                      next: null
+                    meta:
+                      current_page: 1
+                      from: 1
+                      last_page: 1
+                      links:
+                        - url: null
+                          label: "&laquo; Previous"
+                          page: null
+                          active: false
+                        - url: "http://127.0.0.1:8000/api/practices/list?page=1"
+                          label: "1"
+                          page: 1
+                          active: true
+                        - url: null
+                          label: "Next &raquo;"
+                          page: null
+                          active: false
+                      path: "http://127.0.0.1:8000/api/practices/list"
+                      per_page: 10
+                      to: 5
+                      total: 5
+                without_data:
+                  summary: No practices found
+                  value:
+                    data: []
+                    links:
+                      first: "http://127.0.0.1:8000/api/practices/list?page=1"
+                      last: "http://127.0.0.1:8000/api/practices/list?page=1"
+                      prev: null
+                      next: null
+                    meta:
+                      current_page: 1
+                      from: null
+                      last_page: 1
+                      links:
+                        - url: null
+                          label: "&laquo; Previous"
+                          page: null
+                          active: false
+                        - url: "http://127.0.0.1:8000/api/practices/list?page=1"
+                          label: "1"
+                          page: 1
+                          active: true
+                        - url: null
+                          label: "Next &raquo;"
+                          page: null
+                          active: false
+                      path: "http://127.0.0.1:8000/api/practices/list"
+                      per_page: 10
+                      to: 5
+                      total: 5
+        '422':
+          description: Unprocessable Content
+          content:
+            application/json:
+              example:
+                message: 'Vybraná hodnota pre sort by je neplatná.'
+                errors:
+                  sortBy:
+                    - Vybraná hodnota pre sort by je neplatná.
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: 'Forbidden. Insufficient permissions.'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: 'Unauthenticated.'
+  /api/practices/{id}:
+    get:
+      tags:
+        - Practices
+      summary: Get practice info by ID
+      description: |
+        Returns detailed information about a practice by id. Access is limited according to the current user's role
+        (student sees their own, company sees practices for their company, supervisor sees relevant programs).
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/AcceptHeader'
+      responses:
+        '200':
+          description: Practice info
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  student_id:
+                    type: integer
+                  company_id:
+                    type: integer
+                    nullable: true
+                  semester:
+                    type: string
+                  academic_year:
+                    type: string
+                  start_date:
+                    type: string
+                    format: date
+                    nullable: true
+                  end_date:
+                    type: string
+                    format: date
+                    nullable: true
+                  status:
+                    type: string
+                  job_title:
+                    type: string
+                  job_description:
+                    type: string
+                  study_program:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      code:
+                        type: string
+                      name:
+                        type: string
+                  practice_status_history:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        practice_id:
+                          type: integer
+                        user_id:
+                          type: integer
+                        status:
+                          type: string
+                          enum: [created, agreement_confirm_requested, agreement_confirmed_by_company, agreement_confirmed_by_supervisor, agreement_rejected_by_company, agreement_rejected_by_supervisor, report_confirm_requested, report_confirmed_by_company, report_confirmed_by_supervisor, report_rejected_by_company, report_rejected_by_supervisor, canceled]
+                        comment:
+                          type: string
+                        created_at:
+                          type: string
+                          format: date-time
+                        updated_at:
+                          type: string
+                          format: date-time
+                  practice_company:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      practice_id:
+                        type: integer
+                      name:
+                        type: string
+                      address:
+                        type: string
+                      company_email:
+                        type: string
+                        nullable: true
+                      contact_name:
+                        type: string
+                      contact_email:
+                        type: string
+                      contact_phone:
+                        type: string
+              examples:
+                default:
+                  value:
+                    id: 1
+                    student_id: 1
+                    company_id: 1
+                    semester: summer
+                    academic_year: '2025/2026'
+                    start_date: '2025-06-01'
+                    end_date: '2025-08-31'
+                    status: created
+                    job_title: Software Developer Intern
+                    job_description: Assist in developing web applications.
+                    study_program_id: 1
+                    practice_company:
+                      name: Slovenské IT s.r.o.
+                      address: Mlynské nivy 16, 821 09 Bratislava
+                      company_email: slovenske@gmail.com
+                      contact_name: Michal Kráľ
+                      contact_email: michal.kral@slovenskeit.sk
+                      contact_phone: '+421-2-5555-1234'
+                    practice_status_history:
+                      - user_id: 1
+                        status: created
+                        comment: null
+                        created_at: '2025-10-09T20:22:24.000000Z'
+        '404':
+          description: Practice not found
+          content:
+            application/json:
+              example:
+                status: false
+                message: 'Praxa nebola nájdená.'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: 'Forbidden. Insufficient permissions.'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: 'Unauthenticated.'
+    put:
+      tags:
+        - Practices
+      summary: Update an existing practice (internship)
+      description: |
+        Update a practice by id. Only the student who owns the practice (student role) or other authorized roles
+        (e.g. company/supervisor depending on status and permissions) may update the practice. The API checks
+        the current user's role and ownership and will return 403 if the caller is not permitted.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/AcceptHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                company_id:
+                  type: integer
+                  nullable: true
+                semester:
+                  type: string
+                  enum: [ summer, winter ]
+                academic_year:
+                  type: string
+                start_date:
+                  type: string
+                  format: date
+                  nullable: true
+                end_date:
+                  type: string
+                  format: date
+                  nullable: true
+                job_title:
+                  type: string
+                job_description:
+                  type: string
+                study_program_id:
+                  type: integer
+                company_name:
+                  type: string
+                company_address:
+                  type: string
+                company_email:
+                  type: string
+                  format: email
+                contact_name:
+                  type: string
+                contact_email:
+                  type: string
+                  format: email
+                contact_phone:
+                  type: string
+            examples:
+              update_example_with_company_id:
+                summary: Update practice using existing company
+                value:
+                  company_id: 7
+                  semester: "summer"
+                  academic_year: "2025/2026"
+                  start_date: "2025-06-15"
+                  end_date: "2025-08-15"
+                  job_title: "Business Analyst Intern"
+                  job_description: "Analyze business processes and suggest improvements."
+                  study_program_id: 2
+              update_example_without_company_id:
+                summary: Update practice with free-form company fields
+                value:
+                  company_id: null
+                  semester: "summer"
+                  academic_year: "2025/2026"
+                  start_date: "2025-06-15"
+                  end_date: "2025-08-15"
+                  job_title: "Business Analyst Intern"
+                  job_description: "Analyze business processes and suggest improvements."
+                  study_program_id: 2
+                  company_name: "Balog s.r.o."
+                  company_address: "Vícenová Plaza 2631\n 558 91\n Kristy"
+                  company_email: "gaspar.masaryk@cierna.sk"
+                  contact_phone: "+421962307558"
+                  contact_email: "samson.rudolf@example.com"
+                  contact_name: "Juliana Ferjenčíková"
+      responses:
+        '200':
+          description: Practice updated
+          content:
+            application/json:
+              example:
+                success: true
+                statusCode: 200
+                message: Praktika bola úspešne aktualizovaná.
+        '403':
+          description: Forbidden - role or ownership check failed
+          content:
+            application/json:
+              examples:
+                wrong_role:
+                  summary: Wrong role
+                  value:
+                    message: 'Forbidden. Role required: student'
+                not_owner:
+                  summary: Not the owner student
+                  value:
+                    status: false
+                    message: 'Túto prax nie je možné upraviť.'
+        '404':
+          description: Practice not found
+          content:
+            application/json:
+              example:
+                status: false
+                message: 'Praxa nebola nájdená.'
+        '422':
+          description: Unprocessable Content
+          content:
+            application/json:
+              examples:
+                missing_field:
+                  summary: Missing required field
+                  value:
+                    message: "Pole študijný program je povinné. (and 8 more errors)"
+                    errors:
+                      study_program_id:
+                        - "Pole študijný program je povinné."
+                      semester:
+                        - "Pole semester je povinné."
+                      academic_year:
+                        - "Pole akademický rok je povinné."
+                      company_name:
+                        - "Pole názov firmy je povinné."
+                      company_address:
+                        - "Pole adresa firmy je povinné."
+                      company_email:
+                        - "Pole e-mail firmy je povinné."
+                      contact_name:
+                        - "Pole meno kontaktnej osoby je povinné."
+                      contact_email:
+                        - "Pole e-mail kontaktnej osoby je povinné."
+                      contact_phone:
+                        - "Pole telefón kontaktnej osoby je povinné."
+                malformed_field:
+                  summary: Malformed field
+                  value:
+                    message: "Vybraná hodnota pre študijný program je neplatná. (and 2 more errors)"
+                    errors:
+                      study_program_id:
+                        - "Vybraná hodnota pre študijný program je neplatná."
+                      company_email:
+                        - "Pole e-mail firmy musí byť platná emailová adresa."
+                      contact_email:
+                        - "Pole e-mail kontaktnej osoby musí byť platná emailová adresa."
+    delete:
+        tags:
+            - Practices
+        summary: Delete a practice by ID
+        description: |
+            Delete a practice by id. Only the student who owns the practice (student role) may delete it.
+        security:
+            - bearerAuth: []
+        parameters:
+          - in: path
+            name: id
+            required: true
+            schema:
+              type: integer
+          - $ref: '#/components/parameters/AcceptHeader'
+        responses:
+          '200':
+            description: Practice deleted
+            content:
+              application/json:
+                example:
+                  success: true
+                  statusCode: 200
+                  message: Praxa bola úspešne odstránená.
+          '403':
+            description: Forbidden - role or ownership check failed
+            content:
+              application/json:
+                examples:
+                  wrong_role:
+                    summary: Wrong role
+                    value:
+                      message: 'Forbidden. Role required: student'
+                  not_owner:
+                    summary: Not the owner student
+                    value:
+                      status: false
+                      message: 'Túto prax nie je možné odstrániť.'
+          '404':
+            description: Practice not found
+            content:
+              application/json:
+                example:
+                  status: false
+                  message: 'Praxa nebola nájdená.'
+  /api/practices:
+    post:
+      tags:
+        - Practices
+      summary: Create a new practice (internship)
+      description: |
+        Create a new practice. Only authenticated users with the student role are allowed to create a practice.
+        Student identity (student_id) is taken from the authentication token; it must not be supplied in the body.
+        You can either reference an existing partner company by `company_id` (companies.id) or provide free-form
+        company fields (company_name, company_address, company_email, contact_name, contact_email, contact_phone).
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - study_program_id
+                - semester
+                - academic_year
+              properties:
+                company_id:
+                  type: integer
+                  nullable: true
+                  description: Existing partner company id. If provided, company_* fields are ignored.
+                semester:
+                  type: string
+                  enum: [summer, winter]
+                academic_year:
+                  type: string
+                  description: 'Format YYYY/YYYY'
+                start_date:
+                  type: string
+                  format: date
+                  nullable: true
+                end_date:
+                  type: string
+                  format: date
+                  nullable: true
+                job_title:
+                  type: string
+                job_description:
+                  type: string
+                study_program_id:
+                  type: integer
+                company_name:
+                  type: string
+                company_address:
+                  type: string
+                company_email:
+                  type: string
+                  format: email
+                contact_name:
+                  type: string
+                contact_email:
+                  type: string
+                  format: email
+                contact_phone:
+                  type: string
+            examples:
+              with_company_id:
+                summary: Use existing company
+                value:
+                  company_id: 5
+                  semester: "summer"
+                  academic_year: "2025/2026"
+                  start_date: null
+                  end_date: null
+                  job_title: "Business Analyst Intern"
+                  job_description: "Analyze business processes and suggest improvements."
+                  study_program_id: 2
+              without_company_id:
+                summary: Provide company fields manually
+                value:
+                  company_id: null
+                  semester: "summer"
+                  academic_year: "2025/2026"
+                  start_date: null
+                  end_date: null
+                  job_title: "Business Analyst Intern"
+                  job_description: "Analyze business processes and suggest improvements."
+                  study_program_id: 2
+                  company_name: "Balog s.r.o."
+                  company_address: "Vícenová Plaza 2631\n 558 91\n Kristy"
+                  company_email: "gaspar.masaryk@cierna.sk"
+                  contact_phone: "+421962307558"
+                  contact_email: "samson.rudolf@example.com"
+                  contact_name: "Juliana Ferjenčíková"
+      responses:
+        '201':
+          description: Practice created
+          content:
+            application/json:
+              example:
+                success: true
+                statusCode: 201
+                message: Praktika bola úspešne vytvorená.
+        '403':
+          description: Forbidden - role check failed
+          content:
+            application/json:
+              example:
+                message: 'Forbidden. Role required: student'
+        '422':
+          description: Unprocessable Content
+          content:
+            application/json:
+              examples:
+                missing_field:
+                  summary: Missing required field
+                  value:
+                    message: "Pole študijný program je povinné. (and 8 more errors)"
+                    errors:
+                      study_program_id:
+                        - "Pole študijný program je povinné."
+                      semester:
+                        - "Pole semester je povinné."
+                      academic_year:
+                        - "Pole akademický rok je povinné."
+                      company_name:
+                        - "Pole názov firmy je povinné."
+                      company_address:
+                        - "Pole adresa firmy je povinné."
+                      company_email:
+                        - "Pole e-mail firmy je povinné."
+                      contact_name:
+                        - "Pole meno kontaktnej osoby je povinné."
+                      contact_email:
+                        - "Pole e-mail kontaktnej osoby je povinné."
+                      contact_phone:
+                        - "Pole telefón kontaktnej osoby je povinné."
+                malformed_field:
+                  summary: Malformed field
+                  value:
+                    message: "Vybraná hodnota pre študijný program je neplatná. (and 2 more errors)"
+                    errors:
+                      study_program_id:
+                        - "Vybraná hodnota pre študijný program je neplatná."
+                      company_email:
+                        - "Pole e-mail firmy musí byť platná emailová adresa."
+                      contact_email:
+                        - "Pole e-mail kontaktnej osoby musí byť platná emailová adresa."
 components:
   securitySchemes:
     bearerAuth:

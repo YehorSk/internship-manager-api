@@ -129,29 +129,22 @@ class PracticeController extends Controller
                 if ($pname === '') {
                     return;
                 }
-                $query->whereHas('studyProgram', function ($q) use ($pname) {
-                    $q->where('name', 'like', '%' . $pname . '%');
-                });
+                $query->whereRelation('studyProgram', 'name', 'like', '%' . $pname . '%');
+
             })
             ->when($request->filled('search.student_name') && ($isCompany || $isSupervisor), function ($query) use ($request) {
                 $fullName = trim($request->input('search.student_name'));
                 if ($fullName === '') {
                     return;
                 }
-
-                $query->whereHas('student.user', function ($q) use ($fullName) {
-//                    $q->whereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$fullName}%"]);
-                    $q->where('name', 'like', '%' . $fullName . '%');
-                });
+                $query->whereRelation('student.user', 'name', 'like', '%' . $fullName . '%');
             })
             ->when($request->filled('search.company_name') && ($isStudent || $isSupervisor), function ($query) use ($request) {
                 $cname = trim($request->input('search.company_name'));
                 if ($cname === '') {
                     return;
                 }
-                $query->whereHas('practiceCompany', function ($q) use ($cname) {
-                    $q->where('name', 'like', '%' . $cname . '%');
-                });
+                $query->whereRelation('practiceCompany', 'name', 'like', '%' . $cname . '%');
             })
             ->with($with)
             ->orderBy($request->input('sortBy', 'id'), $request->input('sortOrder', 'asc'))
@@ -160,7 +153,7 @@ class PracticeController extends Controller
         return PracticeResource::collection($practices);
     }
 
-    public function get($id, Request $request)
+    public function show($id, Request $request)
     {
         $user = $request->user();
 
@@ -270,7 +263,7 @@ class PracticeController extends Controller
         return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('practice.updated_successfully')]);
     }
 
-    public function delete($id, Request $request)
+    public function destroy($id, Request $request)
     {
         $user = $request->user();
 
