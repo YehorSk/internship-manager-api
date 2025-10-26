@@ -669,7 +669,8 @@ paths:
           content:
             application/json:
               example:
-                status: false
+                success: false
+                statusCode: 404
                 message: 'Spoločnosť nebola nájdená.'
         '403':
           description: Forbidden
@@ -1067,7 +1068,8 @@ paths:
           content:
             application/json:
               example:
-                status: false
+                success: false
+                statusCode: 404
                 message: 'Praxa nebola nájdená.'
         '403':
           description: Forbidden
@@ -1191,7 +1193,8 @@ paths:
                 not_owner:
                   summary: Not the owner student
                   value:
-                    status: false
+                    success: false
+                    statusCode: 403
                     message: 'Túto prax nie je možné upraviť.'
         '404':
           description: Practice not found
@@ -1275,14 +1278,16 @@ paths:
                   not_owner:
                     summary: Not the owner student
                     value:
-                      status: false
+                      success: false
+                      statusCode: 403
                       message: 'Túto prax nie je možné odstrániť.'
           '404':
             description: Practice not found
             content:
               application/json:
                 example:
-                  status: false
+                  success: false
+                  statusCode: 404
                   message: 'Praxa nebola nájdená.'
   /api/practices:
     post:
