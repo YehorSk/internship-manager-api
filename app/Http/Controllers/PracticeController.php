@@ -295,4 +295,14 @@ class PracticeController extends Controller
 
         return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('practice.deleted_successfully')]);
     }
+
+    public function downloadAgreement($id, Request $request)
+    {
+        //
+    }
+
+    public function requestAgreementApproval($id, Request $request)
+    {
+        //
+    }
 }
