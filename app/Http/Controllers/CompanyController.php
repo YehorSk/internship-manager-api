@@ -61,8 +61,6 @@ class CompanyController extends Controller
 
     public function list(CompanyListRequest $request)
     {
-        $user = $request->user();
-
         $companies = Company::query()
             ->when($request->has('search.status'), function ($query) use ($request) {
                 $query->where('status', $request->boolean('search.status'));
