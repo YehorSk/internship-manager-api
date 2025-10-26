@@ -29,12 +29,12 @@ Route::controller(UserController::class)->group(function () {
 Route::middleware(['auth:api'])
     ->prefix('practices')
     ->controller(PracticeController::class)->group(function () {
-        Route::middleware(['role:supervisor'])->group(function () {
+        Route::middleware(['role:supervisor,company,student'])->group(function () {
             Route::post('/list', 'list');
+            // Другие рауты доступные для этих ролей
         });
         Route::middleware(['role:student'])->group(function () {
             Route::post('/', 'store');
-            Route::post('/list-student', 'list');
             Route::get('/{id}', 'get');
             Route::put('/{id}', 'update');
             Route::delete('/{id}', 'delete');
