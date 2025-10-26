@@ -31,7 +31,7 @@ Route::middleware(['auth:api'])
     ->controller(PracticeController::class)->group(function () {
         Route::middleware(['role:supervisor,company,student'])->group(function () {
             Route::post('/list', 'list');
-            // Другие рауты доступные для этих ролей
+            Route::get('/{id}', 'get');
         });
         Route::middleware(['role:student'])->group(function () {
             Route::post('/', 'store');

@@ -139,8 +139,9 @@ class PracticeController extends Controller
                     return;
                 }
 
-                $query->whereHas('student', function ($q) use ($fullName) {
-                    $q->whereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$fullName}%"]);
+                $query->whereHas('student.user', function ($q) use ($fullName) {
+//                    $q->whereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$fullName}%"]);
+                    $q->where('name', 'like', '%' . $fullName . '%');
                 });
             })
             ->when($request->filled('search.company_name') && ($isStudent || $isSupervisor), function ($query) use ($request) {

@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Enums\RoleEnum;
 use App\Models\Company;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
 
@@ -61,7 +62,7 @@ class CompanySeeder extends Seeder
         Company::truncate();
 
         foreach ($companies as $company) {
-            $user = \App\Models\User::create([
+            $user = User::create([
                 'name' => $company['name'],
                 'email' => $company['company_email'],
                 'password' => $company['password'],
