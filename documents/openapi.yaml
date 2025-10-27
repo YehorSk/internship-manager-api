@@ -1398,6 +1398,61 @@ paths:
                   success: false
                   statusCode: 404
                   message: 'Praxa nebola nájdená.'
+  /api/practices/{id}/agreement-confirmation-request:
+    get:
+      tags:
+        - Practices
+      summary: Send request for practice agreement confirmation to supervisor and company
+      description: |
+        Send a request for practice agreement confirmation to the supervisor and company. Only the student who owns the
+        practice (student role) may send the request.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/AcceptHeader'
+      responses:
+        '200':
+          description: Request sent
+          content:
+            application/json:
+              example:
+                success: true
+                statusCode: 200
+                message: Žiadosť o schválenie dohody o praxi bola úspešne odoslaná.
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: 'Unauthenticated.'
+        '403':
+          description: Forbidden - role or ownership check failed
+          content:
+            application/json:
+              examples:
+                wrong_role:
+                  summary: Wrong role
+                  value:
+                    message: 'Forbidden. Roles required: student'
+                not_owner:
+                  summary: Not the owner student
+                  value:
+                    success: false
+                    statusCode: 403
+                    message: 'Túto prax nie je možné potvrdiť.'
+        '404':
+          description: Practice not found
+          content:
+            application/json:
+              example:
+                success: false
+                statusCode: 404
+                message: 'Praxa nebola nájdená.'
   /api/practices:
     post:
       tags:
