@@ -15,7 +15,7 @@ Prosím, skontrolujte detaily nižšie a potvrďte alebo odmietnite zmluvu.
 
 **Študijný program:** {{ $practice->studyProgram->name }}
 
-**Obdobie stáže:** {{ $practice->start_date }} — {{ $practice->end_date }}
+**Obdobie stáže:** {{ $practice->start_date?->format('d.m.Y') ?? '—' }} - {{ $practice->end_date?->format('d.m.Y') ?? '—' }}
 
 **Spoločnosť:** {{ $practice->practiceCompany->name }}
 
