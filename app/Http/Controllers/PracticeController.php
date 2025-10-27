@@ -2,17 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\DocumentTypeEnum;
 use App\Enums\RoleEnum;
 use App\Enums\PracticeStatusEnum;
 use App\Http\Requests\PracticeListRequest;
 use App\Http\Requests\StorePracticeRequest;
+use App\Http\Requests\UploadAgreementRequest;
 use App\Http\Resources\PracticeResource;
 use App\Models\Company;
+use App\Models\Document;
 use App\Models\Practice;
 use App\Models\PracticeCompany;
 use App\Models\PracticeStatusHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class PracticeController extends Controller
 {
@@ -31,7 +35,7 @@ class PracticeController extends Controller
                 }
             }
 
-            $practice['student_id'] = $user->id;
+            $practice['student_id'] = $user->student->id;
 
             $practiceCompany = new PracticeCompany();
 
@@ -259,6 +263,67 @@ class PracticeController extends Controller
             $practice->save();
             $practiceCompany->save();
         });
+
+        return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('practice.updated_successfully')]);
+    }
+
+    public function uploadAgreement(UploadAgreementRequest $request){
+        $user = $request->user();
+        $practice = Practice::where('id', $request->input('practice_id'))->first();
+
+        if (!$user->student || $practice->student_id !== $user->student->id) {
+            return response()->json([
+                'success' => false,
+                'statusCode' => 403,
+                'message' => __('practice.not_your_practice'),
+            ]);
+        }
+
+        if(
+            $practice->lastStatusIs(PracticeStatusEnum::AGREEMENT_CONFIRMED_BY_COMPANY) ||
+            $practice->lastStatusIs(PracticeStatusEnum::AGREEMENT_CONFIRMED_BY_SUPERVISOR) ||
+            $practice->lastStatusIs(PracticeStatusEnum::AGREEMENT_CONFIRM_REQUESTED)
+        ){
+            return response()->json([
+                'success' => false,
+                'statusCode' => 403,
+                'message' => __('practice.cannot_upload_agreement_in_this_status'),
+            ]);
+        }
+
+        if(
+            $practice->lastStatusIs(PracticeStatusEnum::AGREEMENT_REJECTED_BY_COMPANY) ||
+            $practice->lastStatusIs(PracticeStatusEnum::AGREEMENT_REJECTED_BY_SUPERVISOR)
+        ){
+            $lastDocument = $practice->documents()
+                ->where('type', DocumentTypeEnum::AGREEMENT)
+                ->latest()
+                ->first();
+
+            if ($lastDocument) {
+                Storage::disk('s3')->delete($lastDocument->file_path);
+                $lastDocument->delete();
+            }
+        }
+
+        $file = $request->file('agreement');
+        $filename = $user->student->id . '_' . time() . '_' . $file->getClientOriginalName();
+        $key = $file->storeAs('agreements', $filename, 's3');
+
+        if (!$key) {
+            return response()->json([
+                'success' => false,
+                'statusCode' => 500,
+                'message' => __('practice.file_upload_failed'),
+            ]);
+        }
+
+        $document = new Document([
+            'practice_id' => $practice->id,
+            'type' => DocumentTypeEnum::AGREEMENT,
+            'file_path' => $key,
+        ]);
+        $document->save();
 
         return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('practice.updated_successfully')]);
     }

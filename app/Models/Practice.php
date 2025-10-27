@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PracticeStatusEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -62,6 +63,17 @@ class Practice extends Model
     public function practiceStatusHistory()
     {
         return $this->hasMany(PracticeStatusHistory::class, 'practice_id');
+    }
+
+    public function documents()
+    {
+        return $this->hasMany(Document::class, 'practice_id');
+    }
+
+    public function lastStatusIs(PracticeStatusEnum $status): bool
+    {
+        $lastStatus = $this->practiceStatusHistory->last()->status;
+        return $lastStatus === $status->value;
     }
 
 }
