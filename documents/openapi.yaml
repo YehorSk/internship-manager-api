@@ -1439,12 +1439,6 @@ paths:
                   summary: Wrong role
                   value:
                     message: 'Forbidden. Roles required: student'
-                not_owner:
-                  summary: Not the owner student
-                  value:
-                    success: false
-                    statusCode: 403
-                    message: 'Túto prax nie je možné potvrdiť.'
         '404':
           description: Practice not found
           content:
