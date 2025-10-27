@@ -31,7 +31,7 @@ class PracticeController extends Controller
                 }
             }
 
-            $practice['student_id'] = $user->id;
+            $practice['student_id'] = $user->student->id;
 
             $practiceCompany = new PracticeCompany();
 
@@ -104,7 +104,7 @@ class PracticeController extends Controller
 
         $practices = Practice::query()
             ->when($isStudent, function ($query) use ($user) {
-                $query->where('student_id', $user->id);
+                $query->where('student_id', $user->student->id);
             })
             ->when($isCompany, function ($query) use ($user) {
                 $query->where('company_id', $user->id);
