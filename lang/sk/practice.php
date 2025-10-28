@@ -10,4 +10,5 @@
         'agreement_confirmation_requested' => 'Žiadosť o potvrdenie dohody o praxi bola úspešne odoslaná.',
         'agreement_reconfirmation_requested' => 'Žiadosť o opätovné potvrdenie dohody o praxi bola úspešne odoslaná.',
         'request_approval_not_allowed' => 'Žiadosť o schválenie dohody o praxi nie je povolená.',
+        'agreement_template_error' => 'Šablóna dohody o praxi nie je k dispozícii.',
     ];
