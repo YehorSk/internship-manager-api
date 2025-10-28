@@ -326,17 +326,8 @@ class PracticeController extends Controller
             return response()->json(['success' => false, 'statusCode' => 404, 'message' => __('practice.not_found')], 404);
         }
 
-//        $student = $practice->student;
-//        $studentUser = $student->user ?? null;
-//        $company = $practice->practiceCompany;
-//        $studyProgram = $practice->studyProgram;
-
         $data = [
             'practice' => $practice,
-//            'student' => $student,
-//            'studentUser' => $studentUser,
-//            'company' => $company,
-//            'studyProgram' => $studyProgram,
         ];
 
         try {
