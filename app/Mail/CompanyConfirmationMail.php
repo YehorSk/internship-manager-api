@@ -45,7 +45,9 @@ class CompanyConfirmationMail extends Mailable
 
     public function build(): CompanyConfirmationMail
     {
-        $activationUrl = url('/api/company/activate/' . $this->company->activation_token);
+//        $activationUrl = url('/api/company/activate/' . $this->company->activation_token);
+        $frontendUrl = config('app.frontend_url', 'http://localhost:3000');
+        $activationUrl = $frontendUrl . '/company-activation?token=' . $this->company->activation_token;
         return $this->view('emails.company_confirmation')
             ->with([
                 'company' => $this->company,

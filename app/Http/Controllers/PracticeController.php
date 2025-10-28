@@ -7,12 +7,17 @@ use App\Enums\PracticeStatusEnum;
 use App\Http\Requests\PracticeListRequest;
 use App\Http\Requests\StorePracticeRequest;
 use App\Http\Resources\PracticeResource;
+use App\Mail\AgreementConfirmationRequestedMail;
 use App\Models\Company;
 use App\Models\Practice;
 use App\Models\PracticeCompany;
 use App\Models\PracticeStatusHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class PracticeController extends Controller
 {
@@ -294,5 +299,180 @@ class PracticeController extends Controller
         ]);
 
         return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('practice.deleted_successfully')]);
+    }
+
+    public function downloadAgreement($id, Request $request)
+    {
+        $user = $request->user();
+
+        $isStudent = $user && $user->hasRoleId(RoleEnum::STUDENT->value);
+        $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
+        $isSupervisor = $user && $user->hasRoleId(RoleEnum::SUPERVISOR->value);
+
+        $with = ['studyProgram', 'practiceCompany', 'student'];
+
+        $practice = Practice::query()
+            ->when($isStudent, function ($query) use ($user) {
+                $query->where('student_id', $user->id);
+            })
+            ->when($isCompany, function ($query) use ($user) {
+                $query->where('company_id', $user->id);
+            })
+            ->where('id', $id)
+            ->with($with)
+            ->first();
+
+        if (!$practice) {
+            return response()->json(['success' => false, 'statusCode' => 404, 'message' => __('practice.not_found')], 404);
+        }
+
+//        $student = $practice->student;
+//        $studentUser = $student->user ?? null;
+//        $company = $practice->practiceCompany;
+//        $studyProgram = $practice->studyProgram;
+
+        $data = [
+            'practice' => $practice,
+//            'student' => $student,
+//            'studentUser' => $studentUser,
+//            'company' => $company,
+//            'studyProgram' => $studyProgram,
+        ];
+
+        try {
+            $html = view('documents.agreement', $data)->render();
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'statusCode' => 500, 'message' => __('practice.agreement_template_error')], 500);
+        }
+
+        $options = new Options();
+        $options->set('isRemoteEnabled', true);
+        $options->set('isHtml5ParserEnabled', true);
+        // отключаем выполнение PHP в шаблоне по соображениям безопасности
+        $options->set('isPhpEnabled', false);
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        $pdfContent = $dompdf->output();
+
+        $disk = 'local';
+        $prefix = 'documents/filled';
+        $path = $prefix . '/practice_' . $practice->id . '.pdf';
+
+        try {
+            Storage::disk($disk)->put($path, $pdfContent);
+            $saved = true;
+        } catch (\Exception $e) {
+            logger()->error('Cannot save generated agreement', ['error' => $e->getMessage()]);
+            $saved = false;
+        }
+
+        $filename = 'agreement_practice_' . $practice->id . '.pdf';
+
+        if (!empty($saved)) {
+            try {
+                if (Storage::disk($disk)->exists($path)) {
+                    $stream = Storage::disk($disk)->readStream($path);
+                    if ($stream) {
+                        return response()->stream(function () use ($stream) {
+                            fpassthru($stream);
+                        }, 200, [
+                            'Content-Type' => 'application/pdf',
+                            'Content-Disposition' => 'attachment; filename="' . $filename . '"'
+                        ]);
+                    }
+                }
+            } catch (\Exception $e) {
+                logger()->warning('Saved agreement but cannot read stream', ['error' => $e->getMessage()]);
+            }
+        }
+
+        return response()->streamDownload(function () use ($pdfContent) {
+            echo $pdfContent;
+        }, $filename, ['Content-Type' => 'application/pdf']);
+    }
+
+    public function agreementConfirmationRequest($id, Request $request)
+    {
+        $user = $request->user();
+
+        $isStudent = $user && $user->hasRoleId(RoleEnum::STUDENT->value);
+
+        if (!$isStudent) {
+            return response()->json(['success' => false, 'statusCode' => 403, 'message' => __('practice.request_approval_not_allowed')], 403);
+        }
+
+        $with = ['studyProgram', 'practiceCompany', 'student'];
+/*        DB::listen(function ($query) {
+            // $query->sql, $query->bindings, $query->time
+            logger()->info('SQL', ['sql' => $query->sql, 'bindings' => $query->bindings, 'time' => $query->time]);
+        });*/
+        $practice = Practice::query()
+            ->where('student_id', $user->id)
+            ->whereIn('status', [
+                PracticeStatusEnum::CREATED->value,
+                PracticeStatusEnum::AGREEMENT_REJECTED_BY_COMPANY->value,
+                PracticeStatusEnum::AGREEMENT_REJECTED_BY_SUPERVISOR->value,
+            ])
+            ->where('id', $id)
+            ->with($with)
+            ->first();
+
+        if (!$practice) {
+            return response()->json(['success' => false, 'statusCode' => 404, 'message' => __('practice.not_found')], 404);
+        }
+
+        $currentStatus = $practice->status;
+
+        $practice->status = PracticeStatusEnum::AGREEMENT_CONFIRM_REQUESTED->value;
+        $practice->save();
+
+        PracticeStatusHistory::create([
+            'practice_id' => $practice->id,
+            'user_id' => $user->id,
+            'status' => PracticeStatusEnum::AGREEMENT_CONFIRM_REQUESTED->value,
+            'comment' => ($currentStatus === PracticeStatusEnum::CREATED->value) ? __('practice.agreement_confirmation_requested') : __('practice.agreement_reconfirmation_requested'),
+        ]);
+
+        if ($practice->company_id) {
+            try {
+                $confirmLink = route('practices.agreement.confirm', ['id' => $practice->id]);
+            } catch (\Exception $e) {
+                $confirmLink = null;
+            }
+
+            try {
+                $rejectLink = route('practices.agreement.reject', ['id' => $practice->id]);
+            } catch (\Exception $e) {
+                $rejectLink = null;
+            }
+
+            $firstInit = mb_substr($practice->student->first_name, 0, 1);
+            $lastInit  = mb_substr($practice->student->last_name, 0, 1);
+            $printName = trim($firstInit . '. ' . $lastInit . '.');
+
+            $options = [
+                'isReconfirm' => $currentStatus !== PracticeStatusEnum::CREATED->value,
+                'confirmLink' => $confirmLink,
+                'rejectLink' => $rejectLink,
+                'printName' => $printName,
+            ];
+
+            Mail::to($practice->practiceCompany->contact_email)->send(new AgreementConfirmationRequestedMail($practice, $options));
+        }
+
+        return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('practice.agreement_approval_requested_successfully')]);
+    }
+
+    public function agreementConfirm($id, Request $request)
+    {
+        //
+    }
+
+    public function agreementReject($id, Request $request)
+    {
+        //
     }
 }

@@ -33,6 +33,12 @@ Route::middleware(['auth:api'])
             Route::post('/', 'store');
             Route::put('/{id}', 'update');
             Route::delete('/{id}', 'destroy');
+            Route::get('/{id}/download-agreement', 'downloadAgreement');
+            Route::get('/{id}/agreement-confirmation-request', 'agreementConfirmationRequest');
+        });
+        Route::middleware(['role:supervisor,company'])->group(function () {
+            Route::patch('/{id}/agreement-confirm', 'agreementConfirm')->name('practices.agreement.confirm');
+            Route::patch('/{id}/agreement-reject', 'agreementReject')->name('practices.agreement.reject');
         });
 });
 
