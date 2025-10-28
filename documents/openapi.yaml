@@ -1398,6 +1398,51 @@ paths:
                   success: false
                   statusCode: 404
                   message: 'Praxa nebola nájdená.'
+  /api/practices/{id}/download-agreement:
+    get:
+      tags:
+        - Practices
+      summary: Download practice agreement PDF
+      description: |
+        Download the practice agreement PDF for the specified practice. Access is limited according to the current
+        user's role (student sees their own, company sees practices for their company, supervisor sees relevant programs).
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/AcceptHeader'
+      responses:
+        '200':
+          description: PDF file
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Practice or agreement not found
+          content:
+            application/json:
+              example:
+                success: false
+                statusCode: 404
+                message: 'Praxa nebola nájdená.'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: 'Forbidden. Insufficient permissions.'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: 'Unauthenticated.'
   /api/practices/{id}/agreement-confirmation-request:
     get:
       tags:

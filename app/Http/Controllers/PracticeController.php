@@ -36,7 +36,7 @@ class PracticeController extends Controller
                 }
             }
 
-            $practice['student_id'] = $user->student->id;
+            $practice['student_id'] = $user->id;
 
             $practiceCompany = new PracticeCompany();
 
@@ -109,7 +109,7 @@ class PracticeController extends Controller
 
         $practices = Practice::query()
             ->when($isStudent, function ($query) use ($user) {
-                $query->where('student_id', $user->student->id);
+                $query->where('student_id', $user->id);
             })
             ->when($isCompany, function ($query) use ($user) {
                 $query->where('company_id', $user->id);
@@ -347,9 +347,6 @@ class PracticeController extends Controller
 
         $options = new Options();
         $options->set('isRemoteEnabled', true);
-        $options->set('isHtml5ParserEnabled', true);
-        // отключаем выполнение PHP в шаблоне по соображениям безопасности
-        $options->set('isPhpEnabled', false);
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
