@@ -33,6 +33,7 @@ Route::middleware(['auth:api'])
             Route::post('/', 'store');
             Route::put('/{id}', 'update');
             Route::delete('/{id}', 'destroy');
+            Route::post('/upload-agreement', 'uploadAgreement');
             Route::get('/{id}/download-agreement', 'downloadAgreement');
             Route::get('/{id}/agreement-confirmation-request', 'agreementConfirmationRequest');
         });

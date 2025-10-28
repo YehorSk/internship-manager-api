@@ -11,4 +11,7 @@
         'agreement_reconfirmation_requested' => 'Žiadosť o opätovné potvrdenie dohody o praxi bola úspešne odoslaná.',
         'request_approval_not_allowed' => 'Žiadosť o schválenie dohody o praxi nie je povolená.',
         'agreement_template_error' => 'Šablóna dohody o praxi nie je k dispozícii.',
+        'cannot_upload_agreement_in_this_status' => 'Nie je možné nahrať spravu v tomto stave.',
+        'not_your_practice' => 'Táto prax vám nepatrí.',
+        'file_upload_failed' => 'Nepodarilo sa nahrať súbor.',
     ];
