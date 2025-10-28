@@ -307,10 +307,9 @@ class PracticeController extends Controller
 
         $isStudent = $user && $user->hasRoleId(RoleEnum::STUDENT->value);
         $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
-        $isSupervisor = $user && $user->hasRoleId(RoleEnum::SUPERVISOR->value);
+//        $isSupervisor = $user && $user->hasRoleId(RoleEnum::SUPERVISOR->value);
 
         $with = ['studyProgram', 'practiceCompany', 'student'];
-
         $practice = Practice::query()
             ->when($isStudent, function ($query) use ($user) {
                 $query->where('student_id', $user->id);
@@ -318,7 +317,7 @@ class PracticeController extends Controller
             ->when($isCompany, function ($query) use ($user) {
                 $query->where('company_id', $user->id);
             })
-            ->where('id', $id)
+            ->where('id', (int) $id)
             ->with($with)
             ->first();
 

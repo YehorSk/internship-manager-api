@@ -41,12 +41,12 @@ class Practice extends Model
 
     public function student()
     {
-        return $this->belongsTo(Student::class, 'student_id', 'id');
+        return $this->belongsTo(Student::class, 'student_id', 'user_id');
     }
 
     public function company()
     {
-        return $this->belongsTo(Company::class, 'company_id', 'id');
+        return $this->belongsTo(Company::class, 'company_id', 'user_id');
     }
 
     public function practiceCompany()
