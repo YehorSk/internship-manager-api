@@ -7,14 +7,18 @@ use App\Enums\RoleEnum;
 use App\Enums\PracticeStatusEnum;
 use App\Http\Requests\PracticeListRequest;
 use App\Http\Requests\StorePracticeRequest;
+use App\Http\Requests\UpdateAgreementStatusRequest;
 use App\Http\Requests\UploadAgreementRequest;
 use App\Http\Resources\PracticeResource;
 use App\Mail\AgreementConfirmationRequestedMail;
+use App\Mail\NotifyStudentAgreementStatusMail;
+use App\Mail\NotifySupervisorAgreementStatusMail;
 use App\Models\Company;
 use App\Models\Document;
 use App\Models\Practice;
 use App\Models\PracticeCompany;
 use App\Models\PracticeStatusHistory;
+use App\Models\Supervisor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -521,13 +525,52 @@ class PracticeController extends Controller
         return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('practice.agreement_approval_requested_successfully')]);
     }
 
-    public function agreementConfirm($id, Request $request)
-    {
-        //
+    public function updateAgreementStatus($id, UpdateAgreementStatusRequest $request){
+        $user = $request->user();
+
+        $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
+
+        $practice = Practice::where('id', $id)->first();
+        if(!$practice->lastStatusIs(PracticeStatusEnum::AGREEMENT_CONFIRM_REQUESTED)){
+            return response()->json([
+                'success' => false,
+                'statusCode' => 403,
+                'message' => __('practice.cannot_upload_agreement_in_this_status'),
+            ]);
+        }
+
+        switch ($request->input('status')) {
+            case 'agree':
+                $status = $isCompany
+                    ? PracticeStatusEnum::AGREEMENT_CONFIRMED_BY_COMPANY->value
+                    : PracticeStatusEnum::AGREEMENT_CONFIRMED_BY_SUPERVISOR->value;
+                $mailStatus = __('practice.agreement_confirmed');
+                break;
+
+            case 'reject':
+                $status = $isCompany
+                    ? PracticeStatusEnum::AGREEMENT_REJECTED_BY_COMPANY->value
+                    : PracticeStatusEnum::AGREEMENT_REJECTED_BY_SUPERVISOR->value;
+                $mailStatus = __('practice.agreement_rejected');
+                break;
+        }
+
+        PracticeStatusHistory::create([
+            'practice_id' => $practice->id,
+            'user_id' => $user->id,
+            'status' => $status,
+            'comment' => $request->input('comment') ?: null,
+        ]);
+
+        Mail::to($practice->student->student_email)->send(new NotifyStudentAgreementStatusMail($practice, $mailStatus, $user));
+
+        $supervisors = Supervisor::all();
+        foreach ($supervisors as $supervisor) {
+            Mail::to($supervisor->email)->send(new NotifySupervisorAgreementStatusMail($practice, $mailStatus, $user));
+        }
+
+        return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('practice.updated_successfully')]);
+
     }
 
-    public function agreementReject($id, Request $request)
-    {
-        //
-    }
 }
