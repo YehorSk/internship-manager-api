@@ -70,6 +70,10 @@ class Practice extends Model
         return $this->hasMany(Document::class, 'practice_id');
     }
 
+    public function hasDocumentType(string $type): bool{
+        return $this->documents()->where('type', $type)->exists();
+    }
+
     public function lastStatusIs(PracticeStatusEnum $status): bool
     {
         $lastStatus = $this->practiceStatusHistory->last()->status;

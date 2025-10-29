@@ -14,4 +14,5 @@
         'cannot_upload_agreement_in_this_status' => 'Nie je možné nahrať spravu v tomto stave.',
         'not_your_practice' => 'Táto prax vám nepatrí.',
         'file_upload_failed' => 'Nepodarilo sa nahrať súbor.',
+        'agreement_not_found' => 'Dohoda nebola nájdená, najskôr ju nahrajte.'
     ];

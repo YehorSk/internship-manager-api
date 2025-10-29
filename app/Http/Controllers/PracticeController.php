@@ -39,7 +39,7 @@ class PracticeController extends Controller
                 }
             }
 
-            $practice['student_id'] = $user->student->id;
+            $practice['student_id'] = $user->id;
 
             $practiceCompany = new PracticeCompany();
 
@@ -473,6 +473,10 @@ class PracticeController extends Controller
 
         if (!$practice) {
             return response()->json(['success' => false, 'statusCode' => 404, 'message' => __('practice.not_found')], 404);
+        }
+
+        if ($practice->hasDocumentType(DocumentTypeEnum::AGREEMENT->value)) {
+            return response()->json(['success' => false, 'statusCode' => 404, 'message' => __('practice.agreement_not_found')], 404);
         }
 
         $currentStatus = $practice->status;
