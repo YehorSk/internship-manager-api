@@ -12,6 +12,7 @@ info:
     4. Example:
        - Login: `POST /auth/login` with JSON body `{ "email": "user@example.com", "password": "password" }`
        - Use token: `Authorization: Bearer <token>` in all subsequent requests.
+       - Use `Accept: application/json` header in all requests to receive JSON responses from the API.
   version: 1.0.0
 servers:
   - url: 'http://127.0.0.1:8000'

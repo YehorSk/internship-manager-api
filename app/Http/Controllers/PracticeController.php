@@ -446,7 +446,7 @@ class PracticeController extends Controller
             return response()->json(['success' => false, 'statusCode' => 404, 'message' => __('practice.not_found')], 404);
         }
 
-        if ($practice->hasDocumentType(DocumentTypeEnum::AGREEMENT->value)) {
+        if (!$practice->hasDocumentType(DocumentTypeEnum::AGREEMENT->value)) {
             return response()->json(['success' => false, 'statusCode' => 404, 'message' => __('practice.agreement_not_found')], 404);
         }
 
