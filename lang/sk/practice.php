@@ -15,6 +15,6 @@
         'not_your_practice' => 'Táto prax vám nepatrí.',
         'file_upload_failed' => 'Nepodarilo sa nahrať súbor.',
         'agreement_not_found' => 'Dohoda nebola nájdená, najskôr ju nahrajte.',
-        'agreement_confirmed' => 'potvrdená',
-        'agreement_rejected' => 'zamietnutá',
+        'document_confirmed' => 'potvrdená',
+        'document_rejected' => 'zamietnutá',
     ];

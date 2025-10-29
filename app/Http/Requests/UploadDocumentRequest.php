@@ -3,8 +3,9 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class UploadAgreementRequest extends FormRequest
+class UploadDocumentRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,7 +24,8 @@ class UploadAgreementRequest extends FormRequest
     {
         return [
             'practice_id' => ['required', 'integer', 'exists:practices,id'],
-            'agreement' => ['required', 'extensions:pdf', 'mimetypes:application/pdf'],
+            'document_type' => ['required', 'string', Rule::in(['agreement','report'])],
+            'document' => ['required', 'extensions:pdf', 'mimetypes:application/pdf'],
         ];
     }
 }

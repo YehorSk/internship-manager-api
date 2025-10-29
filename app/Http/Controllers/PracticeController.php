@@ -8,7 +8,7 @@ use App\Enums\PracticeStatusEnum;
 use App\Http\Requests\PracticeListRequest;
 use App\Http\Requests\StorePracticeRequest;
 use App\Http\Requests\UpdateDocumentStatusRequest;
-use App\Http\Requests\UploadAgreementRequest;
+use App\Http\Requests\UploadDocumentRequest;
 use App\Http\Resources\PracticeResource;
 use App\Mail\AgreementConfirmationRequestedMail;
 use App\Mail\NotifyStudentAgreementStatusMail;
@@ -275,7 +275,7 @@ class PracticeController extends Controller
         return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('practice.updated_successfully')]);
     }
 
-    public function uploadAgreement(UploadAgreementRequest $request){
+    public function uploadDocument(UploadDocumentRequest $request){
         $user = $request->user();
         $practice = Practice::where('id', $request->input('practice_id'))->first();
 
@@ -287,9 +287,14 @@ class PracticeController extends Controller
             ]);
         }
 
-        if ($practice->hasDocumentType(DocumentTypeEnum::AGREEMENT->value)) {
+        $documentType = [
+            'agreement' => DocumentTypeEnum::AGREEMENT,
+            'report' => DocumentTypeEnum::REPORT,
+        ];
+
+        if ($practice->hasDocumentType($documentType[$request->input('document_type')]->value)) {
             $lastDocument = $practice->documents()
-                ->where('type', DocumentTypeEnum::AGREEMENT->value)
+                ->where('type', $documentType[$request->input('document_type')]->value)
                 ->latest()
                 ->first();
 
@@ -299,21 +304,37 @@ class PracticeController extends Controller
             }
         }
 
-        if(
-            $practice->lastStatusIs(PracticeStatusEnum::AGREEMENT_CONFIRMED_BY_COMPANY) ||
-            $practice->lastStatusIs(PracticeStatusEnum::AGREEMENT_CONFIRMED_BY_SUPERVISOR) ||
-            $practice->lastStatusIs(PracticeStatusEnum::AGREEMENT_CONFIRM_REQUESTED)
-        ){
-            return response()->json([
-                'success' => false,
-                'statusCode' => 403,
-                'message' => __('practice.cannot_upload_agreement_in_this_status'),
-            ]);
+        if ($request->input('document_type') === 'agreement') {
+            if (
+                $practice->lastStatusIs(PracticeStatusEnum::AGREEMENT_CONFIRMED_BY_COMPANY) ||
+                $practice->lastStatusIs(PracticeStatusEnum::AGREEMENT_CONFIRMED_BY_SUPERVISOR) ||
+                !$practice->lastStatusIs(PracticeStatusEnum::AGREEMENT_CONFIRM_REQUESTED)
+            ) {
+                return response()->json([
+                    'success' => false,
+                    'statusCode' => 403,
+                    'message' => __('practice.cannot_upload_document_in_this_status'),
+                ]);
+            }
+        } elseif ($request->input('document_type') === 'report') {
+            if (
+                $practice->lastStatusIs(PracticeStatusEnum::REPORT_CONFIRMED_BY_COMPANY) ||
+                $practice->lastStatusIs(PracticeStatusEnum::REPORT_CONFIRMED_BY_SUPERVISOR) ||
+                !$practice->lastStatusIs(PracticeStatusEnum::REPORT_CONFIRM_REQUESTED)
+            ) {
+                return response()->json([
+                    'success' => false,
+                    'statusCode' => 403,
+                    'message' => __('practice.cannot_upload_document_in_this_status'),
+                ]);
+            }
         }
 
-        $file = $request->file('agreement');
+        $file = $request->file('document');
         $filename = $user->student->id . '_' . time() . '_' . $file->getClientOriginalName();
-        $key = $file->storeAs('agreements', $filename, 's3');
+
+        $folder = $request->input('document_type') === 'agreement' ? 'agreements' : 'reports';
+        $key = $file->storeAs($folder, $filename, 's3');
 
         if (!$key) {
             return response()->json([
@@ -325,7 +346,7 @@ class PracticeController extends Controller
 
         $document = new Document([
             'practice_id' => $practice->id,
-            'type' => DocumentTypeEnum::AGREEMENT,
+            'type' => $documentType[$request->input('document_type')],
             'file_path' => $key,
         ]);
         $document->save();
@@ -494,11 +515,18 @@ class PracticeController extends Controller
 
     public function updateDocumentStatus($id, UpdateDocumentStatusRequest $request){
         $user = $request->user();
-
         $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
-
         $practice = Practice::where('id', $id)->first();
-        if(!$practice->lastStatusIs(PracticeStatusEnum::AGREEMENT_CONFIRM_REQUESTED)){
+
+        $allowedStatuses = [
+            'agreement' => PracticeStatusEnum::AGREEMENT_CONFIRM_REQUESTED,
+            'report' => PracticeStatusEnum::REPORT_CONFIRM_REQUESTED,
+        ];
+
+        $documentType = $request->input('document_type');
+        $statusAction = $request->input('status');
+
+        if(! $practice->lastStatusIs($allowedStatuses[$documentType])){
             return response()->json([
                 'success' => false,
                 'statusCode' => 403,
@@ -506,20 +534,30 @@ class PracticeController extends Controller
             ]);
         }
 
-        switch ($request->input('status')) {
-            case 'agree':
+        if ($documentType === 'agreement') {
+            if ($statusAction === 'agree') {
                 $status = $isCompany
                     ? PracticeStatusEnum::AGREEMENT_CONFIRMED_BY_COMPANY->value
                     : PracticeStatusEnum::AGREEMENT_CONFIRMED_BY_SUPERVISOR->value;
-                $mailStatus = __('practice.agreement_confirmed');
-                break;
-
-            case 'reject':
+                $mailStatus = __('practice.document_confirmed');
+            } elseif ($statusAction === 'reject') {
                 $status = $isCompany
                     ? PracticeStatusEnum::AGREEMENT_REJECTED_BY_COMPANY->value
                     : PracticeStatusEnum::AGREEMENT_REJECTED_BY_SUPERVISOR->value;
-                $mailStatus = __('practice.agreement_rejected');
-                break;
+                $mailStatus = __('practice.document_rejected');
+            }
+        } elseif ($documentType === 'report') {
+            if ($statusAction === 'agree') {
+                $status = $isCompany
+                    ? PracticeStatusEnum::REPORT_CONFIRMED_BY_COMPANY->value
+                    : PracticeStatusEnum::REPORT_CONFIRMED_BY_SUPERVISOR->value;
+                $mailStatus = __('practice.document_confirmed');
+            } elseif ($statusAction === 'reject') {
+                $status = $isCompany
+                    ? PracticeStatusEnum::REPORT_REJECTED_BY_COMPANY->value
+                    : PracticeStatusEnum::REPORT_REJECTED_BY_SUPERVISOR->value;
+                $mailStatus = __('practice.document_rejected');
+            }
         }
 
         PracticeStatusHistory::create([
