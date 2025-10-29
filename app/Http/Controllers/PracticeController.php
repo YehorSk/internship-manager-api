@@ -7,7 +7,7 @@ use App\Enums\RoleEnum;
 use App\Enums\PracticeStatusEnum;
 use App\Http\Requests\PracticeListRequest;
 use App\Http\Requests\StorePracticeRequest;
-use App\Http\Requests\UpdateAgreementStatusRequest;
+use App\Http\Requests\UpdateDocumentStatusRequest;
 use App\Http\Requests\UploadAgreementRequest;
 use App\Http\Resources\PracticeResource;
 use App\Mail\AgreementConfirmationRequestedMail;
@@ -279,12 +279,24 @@ class PracticeController extends Controller
         $user = $request->user();
         $practice = Practice::where('id', $request->input('practice_id'))->first();
 
-        if (!$user->student || $practice->student_id !== $user->student->id) {
+        if (!$user->student || $practice->student_id !== $user->id) {
             return response()->json([
                 'success' => false,
                 'statusCode' => 403,
                 'message' => __('practice.not_your_practice'),
             ]);
+        }
+
+        if ($practice->hasDocumentType(DocumentTypeEnum::AGREEMENT->value)) {
+            $lastDocument = $practice->documents()
+                ->where('type', DocumentTypeEnum::AGREEMENT->value)
+                ->latest()
+                ->first();
+
+            if ($lastDocument) {
+                Storage::disk('s3')->delete($lastDocument->file_path);
+                $lastDocument->delete();
+            }
         }
 
         if(
@@ -297,21 +309,6 @@ class PracticeController extends Controller
                 'statusCode' => 403,
                 'message' => __('practice.cannot_upload_agreement_in_this_status'),
             ]);
-        }
-
-        if(
-            $practice->lastStatusIs(PracticeStatusEnum::AGREEMENT_REJECTED_BY_COMPANY) ||
-            $practice->lastStatusIs(PracticeStatusEnum::AGREEMENT_REJECTED_BY_SUPERVISOR)
-        ){
-            $lastDocument = $practice->documents()
-                ->where('type', DocumentTypeEnum::AGREEMENT)
-                ->latest()
-                ->first();
-
-            if ($lastDocument) {
-                Storage::disk('s3')->delete($lastDocument->file_path);
-                $lastDocument->delete();
-            }
         }
 
         $file = $request->file('agreement');
@@ -495,7 +492,7 @@ class PracticeController extends Controller
         return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('practice.agreement_approval_requested_successfully')]);
     }
 
-    public function updateAgreementStatus($id, UpdateAgreementStatusRequest $request){
+    public function updateDocumentStatus($id, UpdateDocumentStatusRequest $request){
         $user = $request->user();
 
         $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
@@ -505,7 +502,7 @@ class PracticeController extends Controller
             return response()->json([
                 'success' => false,
                 'statusCode' => 403,
-                'message' => __('practice.cannot_upload_agreement_in_this_status'),
+                'message' => __('practice.cannot_upload_document_in_this_status'),
             ]);
         }
 

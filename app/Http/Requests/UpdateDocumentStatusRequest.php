@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class UpdateAgreementStatusRequest extends FormRequest
+class UpdateDocumentStatusRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,6 +24,7 @@ class UpdateAgreementStatusRequest extends FormRequest
     {
         return [
             'comment' => ['nullable', 'string'],
+            'document_type' => ['required', 'string', Rule::in(['agreement','report'])],
             'status' => ['required', 'string', Rule::in(['agree', 'reject',])],
         ];
     }

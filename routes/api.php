@@ -38,7 +38,7 @@ Route::middleware(['auth:api'])
             Route::get('/{id}/agreement-confirmation-request', 'agreementConfirmationRequest');
         });
         Route::middleware(['role:supervisor,company'])->group(function () {
-            Route::patch('/{id}/update-agreement-status', 'updateAgreementStatus');
+            Route::patch('/{id}/update-agreement-status', 'updateDocuemntStatus');
         });
 });
 
