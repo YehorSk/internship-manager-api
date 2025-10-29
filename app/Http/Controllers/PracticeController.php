@@ -412,37 +412,7 @@ class PracticeController extends Controller
 
         $pdfContent = $dompdf->output();
 
-        $disk = 'local';
-        $prefix = 'documents/filled';
-        $path = $prefix . '/practice_' . $practice->id . '.pdf';
-
-        try {
-            Storage::disk($disk)->put($path, $pdfContent);
-            $saved = true;
-        } catch (\Exception $e) {
-            logger()->error('Cannot save generated agreement', ['error' => $e->getMessage()]);
-            $saved = false;
-        }
-
         $filename = 'agreement_practice_' . $practice->id . '.pdf';
-
-        if (!empty($saved)) {
-            try {
-                if (Storage::disk($disk)->exists($path)) {
-                    $stream = Storage::disk($disk)->readStream($path);
-                    if ($stream) {
-                        return response()->stream(function () use ($stream) {
-                            fpassthru($stream);
-                        }, 200, [
-                            'Content-Type' => 'application/pdf',
-                            'Content-Disposition' => 'attachment; filename="' . $filename . '"'
-                        ]);
-                    }
-                }
-            } catch (\Exception $e) {
-                logger()->warning('Saved agreement but cannot read stream', ['error' => $e->getMessage()]);
-            }
-        }
 
         return response()->streamDownload(function () use ($pdfContent) {
             echo $pdfContent;
