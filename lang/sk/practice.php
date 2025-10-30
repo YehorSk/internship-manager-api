@@ -17,4 +17,5 @@
         'agreement_not_found' => 'Dohoda nebola nájdená, najskôr ju nahrajte.',
         'document_confirmed' => 'potvrdená',
         'document_rejected' => 'zamietnutá',
+        'please_fill_date_fields' => 'Prosím, vyplňte dátum začiatku a konca.',
     ];

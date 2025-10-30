@@ -105,7 +105,7 @@ class PracticeController extends Controller
         $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
         $isSupervisor = $user && $user->hasRoleId(RoleEnum::SUPERVISOR->value);
 
-        $with = ['studyProgram', 'documents'];
+        $with = ['studyProgram'];
 
         if ($isStudent || $isSupervisor) {
             $with[] = 'practiceCompany';
@@ -174,7 +174,7 @@ class PracticeController extends Controller
         $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
         $isSupervisor = $user && $user->hasRoleId(RoleEnum::SUPERVISOR->value);
 
-        $with = ['studyProgram', 'practiceStatusHistory'];
+        $with = ['studyProgram', 'practiceStatusHistory', 'documents'];
 
         if ($isStudent || $isSupervisor) {
             $with[] = 'practiceCompany';
@@ -307,10 +307,9 @@ class PracticeController extends Controller
 
         if ($request->input('document_type') === 'agreement') {
             if (
-                $practice->lastStatusIs(PracticeStatusEnum::CREATED) ||
-                $practice->lastStatusIs(PracticeStatusEnum::AGREEMENT_CONFIRMED_BY_COMPANY) ||
-                $practice->lastStatusIs(PracticeStatusEnum::AGREEMENT_CONFIRMED_BY_SUPERVISOR) ||
-                !$practice->lastStatusIs(PracticeStatusEnum::AGREEMENT_CONFIRM_REQUESTED)
+                !$practice->lastStatusIs(PracticeStatusEnum::CREATED) &&
+                !$practice->lastStatusIs(PracticeStatusEnum::AGREEMENT_REJECTED_BY_SUPERVISOR) &&
+                !$practice->lastStatusIs(PracticeStatusEnum::AGREEMENT_REJECTED_BY_COMPANY)
             ) {
                 return response()->json([
                     'success' => false,
@@ -320,9 +319,10 @@ class PracticeController extends Controller
             }
         } elseif ($request->input('document_type') === 'report') {
             if (
-                $practice->lastStatusIs(PracticeStatusEnum::REPORT_CONFIRMED_BY_COMPANY) ||
-                $practice->lastStatusIs(PracticeStatusEnum::REPORT_CONFIRMED_BY_SUPERVISOR) ||
-                !$practice->lastStatusIs(PracticeStatusEnum::REPORT_CONFIRM_REQUESTED)
+                !$practice->lastStatusIs(PracticeStatusEnum::AGREEMENT_CONFIRMED_BY_SUPERVISOR) &&
+                !$practice->lastStatusIs(PracticeStatusEnum::AGREEMENT_CONFIRMED_BY_COMPANY) &&
+                !$practice->lastStatusIs(PracticeStatusEnum::REPORT_REJECTED_BY_SUPERVISOR) &&
+                !$practice->lastStatusIs(PracticeStatusEnum::REPORT_REJECTED_BY_COMPANY)
             ) {
                 return response()->json([
                     'success' => false,
@@ -471,6 +471,10 @@ class PracticeController extends Controller
 
         if (!$practice->hasDocumentType(DocumentTypeEnum::AGREEMENT->value)) {
             return response()->json(['success' => false, 'statusCode' => 404, 'message' => __('practice.agreement_not_found')], 404);
+        }
+
+        if(!$practice->start_date && !$practice->end_date){
+            return response()->json(['success' => false, 'statusCode' => 422, 'message' => __('practice.please_fill_date_fields')], 422);
         }
 
         $currentStatus = $practice->status;
