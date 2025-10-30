@@ -26,6 +26,7 @@ class PracticeResource extends JsonResource
             'job_title' => $this->job_title,
             'job_description' => $this->job_description,
             'study_program' => new StudyProgramResource($this->whenLoaded('studyProgram')),
+            'documents' => DocumentResource::collection($this->whenLoaded('documents')),
             'practice_status_history' => PracticeStatusHistoryResource::collection($this->whenLoaded('practiceStatusHistory')),
             'practice_company' => $this->whenLoaded('practiceCompany'),
             'student' => new StudentResource($this->whenLoaded('student')),

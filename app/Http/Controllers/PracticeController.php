@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\DocumentTypeEnum;
 use App\Enums\RoleEnum;
 use App\Enums\PracticeStatusEnum;
+use App\Http\Requests\DownloadDocumentRequest;
 use App\Http\Requests\PracticeListRequest;
 use App\Http\Requests\StorePracticeRequest;
 use App\Http\Requests\UpdateDocumentStatusRequest;
@@ -104,7 +105,7 @@ class PracticeController extends Controller
         $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
         $isSupervisor = $user && $user->hasRoleId(RoleEnum::SUPERVISOR->value);
 
-        $with = ['studyProgram'];
+        $with = ['studyProgram', 'documents'];
 
         if ($isStudent || $isSupervisor) {
             $with[] = 'practiceCompany';
@@ -576,6 +577,32 @@ class PracticeController extends Controller
 
         return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('practice.updated_successfully')]);
 
+    }
+
+    public function downloadDocument($practice_id, DownloadDocumentRequest $request){
+        $user = $request->user();
+        $practice = Practice::where('id', $practice_id)->first();
+
+        if (!$user->student || $practice->student_id !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'statusCode' => 403,
+                'message' => __('practice.not_your_practice'),
+            ]);
+        }
+
+        $filePath = $request->input('file_path');
+
+        $url = Storage::disk('s3')->temporaryUrl(
+            $filePath,
+            now()->addMinutes(5),
+            [
+                'ResponseContentType' => 'application/octet-stream',
+                'ResponseContentDisposition' => 'attachment; filename="' . basename($filePath) . '"',
+            ]
+        );
+
+        return response()->json(['url' => $url]);
     }
 
 }

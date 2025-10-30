@@ -28,6 +28,7 @@ Route::middleware(['auth:api'])
         Route::middleware(['role:supervisor,company,student'])->group(function () {
             Route::post('/list', 'list');
             Route::get('/{id}', 'show');
+            Route::get('/{id}/download-document', 'downloadDocument');
         });
         Route::middleware(['role:student'])->group(function () {
             Route::post('/', 'store');
