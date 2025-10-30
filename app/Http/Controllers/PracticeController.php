@@ -307,6 +307,7 @@ class PracticeController extends Controller
 
         if ($request->input('document_type') === 'agreement') {
             if (
+                $practice->lastStatusIs(PracticeStatusEnum::CREATED) ||
                 $practice->lastStatusIs(PracticeStatusEnum::AGREEMENT_CONFIRMED_BY_COMPANY) ||
                 $practice->lastStatusIs(PracticeStatusEnum::AGREEMENT_CONFIRMED_BY_SUPERVISOR) ||
                 !$practice->lastStatusIs(PracticeStatusEnum::AGREEMENT_CONFIRM_REQUESTED)
