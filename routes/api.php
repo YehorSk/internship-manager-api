@@ -41,6 +41,9 @@ Route::middleware(['auth:api'])
         Route::middleware(['role:supervisor,company'])->group(function () {
             Route::patch('/{id}/update-document-status', 'updateDocumentStatus');
         });
+        Route::middleware(['role:supervisor,student'])->group(function () {
+            Route::delete('/{id}/delete-document', 'deleteDocument');
+        });
 });
 
 Route::middleware(['auth:api'])

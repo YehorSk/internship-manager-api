@@ -610,4 +610,54 @@ class PracticeController extends Controller
         return response()->json(['url' => $url]);
     }
 
+    public function deleteDocument($practice_id, DownloadDocumentRequest $request)
+    {
+        $user = $request->user();
+        $filePath = $request->input('file_path');
+
+        $practice = Practice::find($practice_id);
+        if (!$practice) {
+            return response()->json([
+                'success' => false,
+                'statusCode' => 404,
+                'message' => __('practice.not_found'),
+            ]);
+        }
+
+        if (!$user->student || $practice->student_id !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'statusCode' => 403,
+                'message' => __('practice.not_your_practice'),
+            ]);
+        }
+
+        $document = Document::where('file_path', $filePath)->first();
+        if (!$document) {
+            return response()->json([
+                'success' => false,
+                'statusCode' => 404,
+                'message' => __('practice.document_doesnt_exist'),
+            ]);
+        }
+
+        if (!$practice->hasDocument($filePath)) {
+            return response()->json([
+                'success' => false,
+                'statusCode' => 404,
+                'message' => __('practice.document_does_not_belong_to_practice'),
+            ]);
+        }
+
+        Storage::disk('s3')->delete($filePath);
+        $document->delete();
+
+        return response()->json([
+            'success' => true,
+            'statusCode' => 200,
+            'message' => __('practice.document_deleted_successfully'),
+        ]);
+    }
+
+
 }

@@ -74,6 +74,10 @@ class Practice extends Model
         return $this->documents()->where('type', $type)->exists();
     }
 
+    public function hasDocument(string $path): bool{
+        return $this->documents()->where('file_path', $path)->exists();
+    }
+
     public function lastStatusIs(PracticeStatusEnum $status): bool
     {
         $lastStatus = $this->practiceStatusHistory->last()->status;

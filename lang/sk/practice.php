@@ -18,4 +18,7 @@
         'document_confirmed' => 'potvrdená',
         'document_rejected' => 'zamietnutá',
         'please_fill_date_fields' => 'Prosím, vyplňte dátum začiatku a konca.',
+        'document_deleted_successfully' => 'Dokument bol úspešne odstránený.',
+        'document_does_not_belong_to_practice' => 'Dokument nepatrí do praxe.',
+        'document_doesnt_exist' => 'Dokument neexistuje.',
     ];
