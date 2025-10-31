@@ -35,6 +35,7 @@ Route::middleware(['auth:api'])
             Route::post('/upload-document', 'uploadDocument');
             Route::get('/{id}/download-agreement', 'downloadAgreement');
             Route::get('/{id}/agreement-confirmation-request', 'agreementConfirmationRequest');
+            Route::get('/{id}/report-confirmation-request', 'reportConfirmationRequest');
             Route::get('/{id}/download-report', 'downloadReport');
         });
         Route::middleware(['role:supervisor,company'])->group(function () {

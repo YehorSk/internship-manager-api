@@ -1,13 +1,12 @@
 <x-mail::message>
 # Dobrý deň,
-
 @if($options['isReconfirm'])
-Máme pre Vás žiadosť o opätovné schválenie zmluvy týkajúcej sa stáže.
+Máme pre Vás žiadosť o opätovné schválenie{{ $options['actionType'] == 'report' ? ' správy' : ' zmluvy' }} týkajúcej sa stáže.
 @else
-Máme pre Vás žiadosť o schválenie zmluvy týkajúcej sa novej stáže.
+Máme pre Vás žiadosť o schválenie{{ $options['actionType'] == 'report' ? ' správy' : ' zmluvy' }} týkajúcej sa stáže.
 @endif
 
-Prosím, skontrolujte detaily nižšie a potvrďte alebo odmietnite zmluvu.
+Prosím, skontrolujte detaily nižšie a potvrďte alebo odmietnite {{ $options['actionType'] == 'report' ? 'správu' : 'zmluvu' }}.
 
 **Študent:** {{ $options['printName'] }}
 
@@ -21,21 +20,13 @@ Prosím, skontrolujte detaily nižšie a potvrďte alebo odmietnite zmluvu.
 
 **ID praxe:** {{ $practice->id }}
 
-@isset($options['confirmLink'])
-<x-mail::button :url="$options['confirmLink']">
-Potvrdiť zmluvu
+@isset($options['updateLink'])
+<x-mail::button :url="$options['updateLink']">
+Skontrolovať a potvrdiť
 </x-mail::button>
 @endisset
 
-@isset($options['rejectLink'])
-<x-mail::button :url="$options['rejectLink']" color="secondary">
-Odmietnuť / Požiadať o zmeny
-</x-mail::button>
-@endisset
-
-@if(empty($options['confirmLink']) && empty($options['rejectLink']))
-Ak máte otázky k dohode, prosím, kontaktujte nás na tomto e-maile: {{ config('mail.from.address') ?? '—' }}.
-@endif
+Ak máte otázky k {{ $options['actionType'] == 'report' ? 'správe' : 'zmluve' }}, prosím, kontaktujte nás na tomto e-maile: {{ config('mail.from.address') ?? '—' }}.
 
 Poznámka: Toto oznámenie bolo vytvorené automaticky. Ak už bol dokument spracovaný, ignorujte, prosím, tento e-mail.
 

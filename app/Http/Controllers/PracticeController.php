@@ -294,7 +294,8 @@ class PracticeController extends Controller
         return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('practice.updated_successfully')]);
     }
 
-    public function uploadDocument(UploadDocumentRequest $request){
+    public function uploadDocument(UploadDocumentRequest $request)
+    {
         $user = $request->user();
         $practice = Practice::where('id', $request->input('practice_id'))->first();
 
@@ -428,17 +429,16 @@ class PracticeController extends Controller
         $user = $request->user();
 
         $isStudent = $user && $user->hasRoleId(RoleEnum::STUDENT->value);
-//        $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
-//        $isSupervisor = $user && $user->hasRoleId(RoleEnum::SUPERVISOR->value);
+
+        if (!$isStudent) {
+            return response()->json(['success' => false, 'statusCode' => 403, 'message' => __('practice.document_download_not_allowed')], 403);
+        }
 
         $with = ['studyProgram', 'practiceCompany', 'student'];
         $practice = Practice::query()
             ->when($isStudent, function ($query) use ($user) {
                 $query->where('student_id', $user->id);
             })
-//            ->when($isCompany, function ($query) use ($user) {
-//                $query->where('company_id', $user->id);
-//            })
             ->where('id', (int) $id)
             ->with($with)
             ->first();
@@ -473,6 +473,61 @@ class PracticeController extends Controller
         }, $filename, ['Content-Type' => 'application/pdf']);
     }
 
+    public function reportConfirmationRequest($id, Request $request)
+    {
+        $user = $request->user();
+
+        $isStudent = $user && $user->hasRoleId(RoleEnum::STUDENT->value);
+
+        if (!$isStudent) {
+            return response()->json(['success' => false, 'statusCode' => 403, 'message' => __('practice.request_approval_not_allowed')], 403);
+        }
+
+        $with = ['studyProgram', 'practiceCompany', 'student'];
+        $practice = Practice::query()
+            ->where('student_id', $user->id)
+            ->whereIn('status', [
+                PracticeStatusEnum::AGREEMENT_CONFIRMED_BY_SUPERVISOR->value,
+                PracticeStatusEnum::AGREEMENT_CONFIRMED_BY_COMPANY->value,
+                PracticeStatusEnum::REPORT_REJECTED_BY_SUPERVISOR->value,
+                PracticeStatusEnum::REPORT_REJECTED_BY_COMPANY->value,
+            ])
+            ->where('id', $id)
+            ->with($with)
+            ->first();
+        if (!$practice) {
+            return response()->json(['success' => false, 'statusCode' => 404, 'message' => __('practice.not_found')], 404);
+        }
+        if (!$practice->hasDocumentType(DocumentTypeEnum::REPORT->value)) {
+            return response()->json(['success' => false, 'statusCode' => 404, 'message' => __('practice.report_not_found')], 404);
+        }
+        $practice->status = PracticeStatusEnum::REPORT_CONFIRM_REQUESTED->value;
+        $practice->save();
+        PracticeStatusHistory::create([
+            'practice_id' => $practice->id,
+            'user_id' => $user->id,
+            'status' => PracticeStatusEnum::REPORT_CONFIRM_REQUESTED->value,
+            'comment' => __('practice.report_confirmation_requested'),
+        ]);
+        if ($practice->company_id) {
+            $frontendUrl = config('app.frontend_url', 'http://localhost:3000');
+
+            $firstInit = mb_substr($practice->student->first_name, 0, 1);
+            $lastInit  = mb_substr($practice->student->last_name, 0, 1);
+            $printName = trim($firstInit . '. ' . $lastInit . '.');
+
+            $options = [
+                'isReconfirm' => false,
+                'updateLink' => $frontendUrl . '/login',
+                'printName' => $printName,
+                'actionType' => 'report',
+            ];
+
+            Mail::to($practice->practiceCompany->contact_email)->send(new AgreementConfirmationRequestedMail($practice, $options));
+        }
+        return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('practice.report_approval_requested_successfully')]);
+    }
+
     public function agreementConfirmationRequest($id, Request $request)
     {
         $user = $request->user();
@@ -484,10 +539,7 @@ class PracticeController extends Controller
         }
 
         $with = ['studyProgram', 'practiceCompany', 'student'];
-/*        DB::listen(function ($query) {
-            // $query->sql, $query->bindings, $query->time
-            logger()->info('SQL', ['sql' => $query->sql, 'bindings' => $query->bindings, 'time' => $query->time]);
-        });*/
+
         $practice = Practice::query()
             ->where('student_id', $user->id)
             ->whereIn('status', [
@@ -524,17 +576,7 @@ class PracticeController extends Controller
         ]);
 
         if ($practice->company_id) {
-            try {
-                $confirmLink = route('practices.agreement.confirm', ['id' => $practice->id]);
-            } catch (\Exception $e) {
-                $confirmLink = null;
-            }
-
-            try {
-                $rejectLink = route('practices.agreement.reject', ['id' => $practice->id]);
-            } catch (\Exception $e) {
-                $rejectLink = null;
-            }
+            $frontendUrl = config('app.frontend_url', 'http://localhost:3000');
 
             $firstInit = mb_substr($practice->student->first_name, 0, 1);
             $lastInit  = mb_substr($practice->student->last_name, 0, 1);
@@ -542,9 +584,9 @@ class PracticeController extends Controller
 
             $options = [
                 'isReconfirm' => $currentStatus !== PracticeStatusEnum::CREATED->value,
-                'confirmLink' => $confirmLink,
-                'rejectLink' => $rejectLink,
+                'updateLink' => $frontendUrl,
                 'printName' => $printName,
+                'actionType' => 'agreement',
             ];
 
             Mail::to($practice->practiceCompany->contact_email)->send(new AgreementConfirmationRequestedMail($practice, $options));
@@ -775,6 +817,5 @@ class PracticeController extends Controller
             'message' => __('practice.document_deleted_successfully'),
         ]);
     }
-
 
 }
