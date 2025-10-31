@@ -1403,10 +1403,9 @@ paths:
     get:
       tags:
         - Practices
-      summary: Download practice agreement PDF
+      summary: Download auto-filled standard practice agreement (PDF) — printable for the student owner
       description: |
-        Download the practice agreement PDF for the specified practice. Access is limited according to the current
-        user's role (student sees their own, company sees practices for their company, supervisor sees relevant programs).
+        Download an auto-filled standard practice agreement PDF for the specified practice. Only the student who owns the specified practice may download this agreement.
       security:
         - bearerAuth: []
       parameters:
@@ -1425,7 +1424,53 @@ paths:
                 type: string
                 format: binary
         '404':
-          description: Practice or agreement not found
+          description: Practice or agreement template not found
+          content:
+            application/json:
+              example:
+                success: false
+                statusCode: 404
+                message: 'Praxa nebola nájdená.'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: 'Forbidden. Insufficient permissions.'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: 'Unauthenticated.'
+  /api/practices/{id}/download-report:
+    get:
+      tags:
+        - Practices
+      summary: Download editable practice report (DOCX) — auto-filled, editable template for the student owner
+      description: |
+        Generates an editable DOCX file from a template with practice metadata pre-filled (student, company, dates, standard duration and other fixed fields).
+        Intended for the student who owns the practice to complete narrative sections (e.g. list of performed tasks) in MS Word before printing or handing to the employer for review and signature.
+        Only the student who owns the specified practice may download this template. This endpoint does not produce the final signed PDF that a student may scan and upload to the practice record.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/AcceptHeader'
+      responses:
+        '200':
+          description: DOCX file
+          content:
+            application/vnd.openxmlformats-officedocument.wordprocessingml.document:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Practice or report template not found
           content:
             application/json:
               example:
