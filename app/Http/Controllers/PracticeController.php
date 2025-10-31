@@ -14,6 +14,8 @@ use App\Http\Resources\PracticeResource;
 use App\Mail\AgreementConfirmationRequestedMail;
 use App\Mail\NotifyStudentAgreementStatusMail;
 use App\Mail\NotifySupervisorAgreementStatusMail;
+use App\Mail\PracticeDeletedBySupervisor;
+use App\Mail\PracticeUpdatedBySupervisor;
 use App\Models\Company;
 use App\Models\Document;
 use App\Models\Practice;
@@ -210,6 +212,7 @@ class PracticeController extends Controller
 
         $isStudent = $user && $user->hasRoleId(RoleEnum::STUDENT->value);
         $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
+        $isSupervisor = $user && $user->hasRoleId(RoleEnum::SUPERVISOR->value);
 
         $practice = Practice::query()
             ->when($isStudent, function ($query) use ($user) {
@@ -272,6 +275,19 @@ class PracticeController extends Controller
             $practice->save();
             $practiceCompany->save();
         });
+
+        if($isSupervisor){
+            Mail::to($practice->practiceCompany->contact_email)->send(new PracticeUpdatedBySupervisor(
+                practice: $practice,
+                student: null,
+                company: $practice->practiceCompany
+            ));
+            Mail::to($practice->student->student_email)->send(new PracticeUpdatedBySupervisor(
+                practice: $practice,
+                student: $practice->student,
+                company: null
+            ));
+        }
 
         return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('practice.updated_successfully')]);
     }
@@ -361,13 +377,16 @@ class PracticeController extends Controller
         $user = $request->user();
 
         $isStudent = $user && $user->hasRoleId(RoleEnum::STUDENT->value);
+        $isSupervisor = $user && $user->hasRoleId(RoleEnum::SUPERVISOR->value);
 
-        if (!$isStudent) {
+        if (!$isStudent && !$isSupervisor) {
             return response()->json(['success' => false, 'statusCode' => 403, 'message' => __('practice.delete_not_allowed')], 403);
         }
 
         $practice = Practice::query()
-            ->where('student_id', $user->id)
+            ->when($isStudent, function ($query) use ($user) {
+                $query->where('student_id', $user->id);
+            })
             ->where('status', PracticeStatusEnum::CREATED->value)
             ->where('id', $id)
             ->first();
@@ -385,6 +404,19 @@ class PracticeController extends Controller
             'status' => PracticeStatusEnum::CANCELED->value,
             'comment' => null,
         ]);
+
+        if($isSupervisor){
+            Mail::to($practice->practiceCompany->contact_email)->send(new PracticeDeletedBySupervisor(
+                practice: $practice,
+                student: null,
+                company: $practice->practiceCompany
+            ));
+            Mail::to($practice->student->student_email)->send(new PracticeDeletedBySupervisor(
+                practice: $practice,
+                student: $practice->student,
+                company: null
+            ));
+        }
 
         return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('practice.deleted_successfully')]);
     }

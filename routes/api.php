@@ -32,8 +32,6 @@ Route::middleware(['auth:api'])
         });
         Route::middleware(['role:student'])->group(function () {
             Route::post('/', 'store');
-            Route::put('/{id}', 'update');
-            Route::delete('/{id}', 'destroy');
             Route::post('/upload-document', 'uploadDocument');
             Route::get('/{id}/download-agreement', 'downloadAgreement');
             Route::get('/{id}/agreement-confirmation-request', 'agreementConfirmationRequest');
@@ -42,6 +40,8 @@ Route::middleware(['auth:api'])
             Route::patch('/{id}/update-document-status', 'updateDocumentStatus');
         });
         Route::middleware(['role:supervisor,student'])->group(function () {
+            Route::delete('/{id}', 'destroy');
+            Route::put('/{id}', 'update');
             Route::delete('/{id}/delete-document', 'deleteDocument');
         });
 });
