@@ -732,6 +732,9 @@ class PracticeController extends Controller
             'comment' => $request->input('comment') ?: null,
         ]);
 
+        $practice->status = $status;
+        $practice->save();
+
         Mail::to($practice->student->student_email)->send(new NotifyStudentAgreementStatusMail($practice, $mailStatus, $user));
 
         $supervisors = Supervisor::all();
