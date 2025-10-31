@@ -581,8 +581,8 @@ class PracticeController extends Controller
             foreach ($values as $key => $val) {
                 $templateProcessor->setValue($key, $val === null ? '' : $val);
             }
-
-            $outPath = $templateProcessor->save();
+            $outPath = $tmpDir . DIRECTORY_SEPARATOR . 'report_practice_' . $practice->id . '_' . bin2hex(random_bytes(12)) . '.docx';
+            $templateProcessor->saveAs($outPath);
         } catch (\Exception $e) {
             if (isset($outPath) && file_exists($outPath)) {
                 @unlink($outPath);
