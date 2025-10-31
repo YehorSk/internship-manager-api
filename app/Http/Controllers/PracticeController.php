@@ -22,10 +22,12 @@ use App\Models\PracticeStatusHistory;
 use App\Models\Supervisor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use PhpOffice\PhpWord\TemplateProcessor;
 
 class PracticeController extends Controller
 {
@@ -394,7 +396,7 @@ class PracticeController extends Controller
         $user = $request->user();
 
         $isStudent = $user && $user->hasRoleId(RoleEnum::STUDENT->value);
-        $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
+//        $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
 //        $isSupervisor = $user && $user->hasRoleId(RoleEnum::SUPERVISOR->value);
 
         $with = ['studyProgram', 'practiceCompany', 'student'];
@@ -402,9 +404,9 @@ class PracticeController extends Controller
             ->when($isStudent, function ($query) use ($user) {
                 $query->where('student_id', $user->id);
             })
-            ->when($isCompany, function ($query) use ($user) {
-                $query->where('company_id', $user->id);
-            })
+//            ->when($isCompany, function ($query) use ($user) {
+//                $query->where('company_id', $user->id);
+//            })
             ->where('id', (int) $id)
             ->with($with)
             ->first();
@@ -517,6 +519,89 @@ class PracticeController extends Controller
         }
 
         return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('practice.agreement_approval_requested_successfully')]);
+    }
+
+    public function downloadReport($id, Request $request)
+    {
+        $user = $request->user();
+        $isStudent = $user && $user->hasRoleId(RoleEnum::STUDENT->value);
+
+        if (!$isStudent) {
+            return response()->json(['success' => false, 'statusCode' => 403, 'message' => __('practice.document_download_not_allowed')], 403);
+        }
+
+        $with = ['studyProgram', 'practiceCompany', 'student'];
+        $practice = Practice::query()
+            ->when($isStudent, function ($query) use ($user) {
+                $query->where('student_id', $user->id);
+            })
+            ->where('id', (int)$id)
+            ->with($with)
+            ->first();
+
+        if (!$practice) {
+            return response()->json(['success' => false, 'statusCode' => 404, 'message' => __('practice.not_found')], 404);
+        }
+
+        $templateS3Path = 'templates/Priloha_Vykaz_o_vykonanej_odbornej_praxi-AI.docx';
+        try {
+            $templateContent = Storage::disk('s3')->get($templateS3Path);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'statusCode' => 500, 'message' => __('practice.document_doesnt_exist')], 500);
+        }
+
+        try {
+            $tmpDir = sys_get_temp_dir();
+            $tmpTemplate = $tmpDir . DIRECTORY_SEPARATOR . 'tpl_' . bin2hex(random_bytes(12)) . '.docx';
+            file_put_contents($tmpTemplate, $templateContent, LOCK_EX);
+        } catch (\Exception $e) {
+            if (isset($tmpTemplate) && file_exists($tmpTemplate)) {
+                @unlink($tmpTemplate);
+            }
+
+            return response()->json(['success' => false, 'statusCode' => 500, 'message' => __('practice.document_processing_failed')], 500);
+        }
+
+        $school_name = 'FPVaI UKF v Nitre';
+        $practice_hours = '150';
+
+        $values = [
+            'student_full_name' => $practice->student->user->name ?? trim(($practice->student->first_name ?? '') . ' ' . ($practice->student->last_name ?? '')),
+            'student_study_program' => $practice->studyProgram->name ?? '',
+            'student_school_name' => $school_name,
+            'company_name' => $practice->practiceCompany->name ?? '',
+            'company_contact_name' => $practice->practiceCompany->contact_name ?? '',
+            'practice_start_date' => $practice->start_date?->format('d.m.Y') ?? '—',
+            'practice_end_date' => $practice->end_date?->format('d.m.Y') ?? '—',
+            'practice_hours' => $practice_hours,
+        ];
+
+        try {
+            $templateProcessor = new TemplateProcessor($tmpTemplate);
+            foreach ($values as $key => $val) {
+                $templateProcessor->setValue($key, $val === null ? '' : $val);
+            }
+
+            $outPath = $templateProcessor->save();
+        } catch (\Exception $e) {
+            if (isset($outPath) && file_exists($outPath)) {
+                @unlink($outPath);
+            }
+
+            if (isset($tmpTemplate) && file_exists($tmpTemplate)) {
+                @unlink($tmpTemplate);
+            }
+
+            return response()->json(['success' => false, 'statusCode' => 500, 'message' => __('practice.document_generation_failed')], 500);
+        }
+
+        $filename = 'report_practice_' . $practice->id . '.docx';
+
+        return response()->streamDownload(function () use ($outPath, $tmpTemplate) {
+            readfile($outPath);
+            @unlink($outPath);
+            @unlink($tmpTemplate);
+        }, $filename, ['Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']);
     }
 
     public function updateDocumentStatus($id, UpdateDocumentStatusRequest $request){

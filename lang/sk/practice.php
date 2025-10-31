@@ -21,4 +21,7 @@
         'document_deleted_successfully' => 'Dokument bol úspešne odstránený.',
         'document_does_not_belong_to_practice' => 'Dokument nepatrí do praxe.',
         'document_doesnt_exist' => 'Dokument neexistuje.',
+        'document_generation_failed' => 'Generovanie dokumentu zlyhalo.',
+        'document_download_not_allowed' => 'Nie je povolené sťahovať tento dokument.',
+        'document_processing_failed' => 'Spracovanie vstupnej šablóny zlyhalo.',
     ];
