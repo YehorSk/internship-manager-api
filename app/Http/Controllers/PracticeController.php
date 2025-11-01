@@ -750,15 +750,41 @@ class PracticeController extends Controller
         $user = $request->user();
         $practice = Practice::where('id', $practice_id)->first();
 
-        if (!$user->student || $practice->student_id !== $user->id) {
+        if (!$practice) {
             return response()->json([
                 'success' => false,
-                'statusCode' => 403,
-                'message' => __('practice.not_your_practice'),
+                'statusCode' => 404,
+                'message' => __('practice.not_found'),
             ]);
         }
 
+        $isStudent = $user->hasRoleId(RoleEnum::STUDENT->value);
+        $isSupervisor = $user->hasRoleId(RoleEnum::SUPERVISOR->value);
+        $isCompany = $user->hasRoleId(RoleEnum::COMPANY->value);
+
+        if (
+            !(
+                ($isStudent && $practice->student_id === $user->id) ||
+                $isSupervisor ||
+                ($isCompany && $practice->company_id === $user->company_id)
+            )
+        ) {
+            return response()->json([
+                'success' => false,
+                'statusCode' => 403,
+                'message' => __('practice.document_download_not_allowed'),
+            ], 403);
+        }
+
         $filePath = $request->input('file_path');
+
+        if (!$filePath || !Storage::disk('s3')->exists($filePath)) {
+            return response()->json([
+                'success' => false,
+                'statusCode' => 404,
+                'message' => __('practice.file_not_found'),
+            ], 404);
+        }
 
         $url = Storage::disk('s3')->temporaryUrl(
             $filePath,
