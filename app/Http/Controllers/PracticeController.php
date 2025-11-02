@@ -766,7 +766,7 @@ class PracticeController extends Controller
             !(
                 ($isStudent && $practice->student_id === $user->id) ||
                 $isSupervisor ||
-                ($isCompany && $practice->company_id === $user->company_id)
+                ($isCompany && $practice->company_id === $user->id)
             )
         ) {
             return response()->json([
