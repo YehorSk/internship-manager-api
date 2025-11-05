@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\PracticeController;
+use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StudyProgramController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
@@ -63,6 +64,14 @@ Route::controller(CompanyController::class)->prefix('company')->group(function (
     Route::get('/activate/{token}', 'activate');
 
     Route::group(['middleware' => ['auth:api']], function () {
+        Route::get('/search/{value}', 'search');
+    });
+});
+
+Route::middleware(['auth:api'])
+    ->prefix('students')
+    ->controller(StudentController::class)->group(function () {
+    Route::middleware(['role:supervisor,company'])->group(function () {
         Route::get('/search/{value}', 'search');
     });
 });
