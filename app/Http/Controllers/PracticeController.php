@@ -164,7 +164,7 @@ class PracticeController extends Controller
                 $query->whereRelation('practiceCompany', 'name', 'like', '%' . $cname . '%');
             })
             ->with($with)
-            ->orderBy($request->input('sortBy', 'id'), $request->input('sortOrder', 'asc'))
+            ->orderBy($request->input('sortBy', 'created_at'), $request->input('sortOrder', 'desc'))
             ->paginate($request->input('itemsPerPage', 10), ['*'], 'page', $request->input('page', 1));
 
         return PracticeResource::collection($practices);
