@@ -139,7 +139,7 @@ class UserController extends Controller
     public function user(Request $request){
         $user = $request->user();
         if($user){
-            $user = User::with(['roles', 'student', 'supervisor', 'company'])->find($user->id);
+            $user = User::with(['roles', 'student.studyPrograms', 'supervisor', 'company'])->find($user->id);
             return response()->json([
                 'success' => true,
                 'statusCode' => 200,
