@@ -23,6 +23,7 @@ class StudentResource extends JsonResource
             'primary_email' => $this->primary_email,
             'phone'         => $this->phone,
             'address'       => $this->address,
+            'study_program' => StudyProgramResource::collection($this->whenLoaded('studyPrograms')),
         ];
     }
 }

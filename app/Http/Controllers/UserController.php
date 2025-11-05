@@ -108,7 +108,7 @@ class UserController extends Controller
         }
 
         $token = $user->createToken('LoginToken')->accessToken;
-        $user = User::with(['roles', 'student', 'supervisor', 'company'])->find($user->id);
+        $user = User::with(['roles', 'student.studyPrograms', 'supervisor', 'company'])->find($user->id);
 
         return response()->json([
             'success' => true,
