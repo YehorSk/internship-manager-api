@@ -22,8 +22,7 @@ class StudentController extends Controller
             })
             ->where(function ($query) use ($value) {
                 $query->where('first_name', 'like', '%'.$value.'%')
-                    ->orWhere('last_name', 'like', '%'.$value.'%')
-                    ->orWhere('student_email', 'like', '%'.$value.'%');
+                    ->orWhere('last_name', 'like', '%'.$value.'%');
             })
             ->distinct()
             ->get();

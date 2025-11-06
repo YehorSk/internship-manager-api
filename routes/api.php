@@ -13,12 +13,12 @@ Route::controller(UserController::class)->group(function () {
         Route::post('/register', 'register');
         Route::post('/update-password', 'updatePassword');
         Route::post('/forgot-password','forgotPassword');
-//        Route::post('/refresh', 'refreshToken');
 
         Route::group(['middleware' => ['auth:api']], function () {
             Route::post('/change-password', 'changePassword');
             Route::get('/user', 'user');
             Route::post('/logout', 'logout');
+            Route::post('/update-profile', 'updateProfile');
         });
     });
 });

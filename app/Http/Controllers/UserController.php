@@ -6,6 +6,7 @@ use App\Http\Requests\ChangePasswordRequest;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\UpdatePasswordRequest;
+use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Mail\CompanyConfirmationMail;
 use App\Mail\SendPasswordMail;
@@ -153,6 +154,47 @@ class UserController extends Controller
                 'message' => __('auth.unauthenticated'),
             ], 401);
         }
+    }
+
+    public function updateProfile(UpdateUserRequest $request){
+        $user = $request->user();
+        $data = $request->validated();
+
+        if (empty($data)) {
+            return response()->json([
+                'success' => false,
+                'statusCode' => 422,
+                'message' => __('auth.data_empty'),
+            ], 422);
+        }
+
+        $isStudent = $user && $user->hasRoleId(RoleEnum::STUDENT->value);
+        $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
+        $isSupervisor = $user && $user->hasRoleId(RoleEnum::SUPERVISOR->value);
+
+        if($isStudent){
+            $studentData = collect($data)->except(['study_program'])->toArray();
+            $user->student()->update($studentData);
+            if (!empty($data['study_program'])) {
+                $studyProgram = StudyProgram::where('id', $data['study_program'])->first();
+                $user->student->studyPrograms()->syncWithoutDetaching([$studyProgram->id]);
+            }
+        }
+        if($isCompany){
+            $user->company()->update($data);
+        }
+        if($isSupervisor){
+            $user->supervisor()->update($data);
+        }
+
+        $user = User::with(['roles', 'student.studyPrograms', 'supervisor', 'company'])->find($user->id);
+
+        return response()->json([
+            'success' => true,
+            'statusCode' => 200,
+            'message' => __('auth.data_updated'),
+            'data' => new UserResource($user),
+        ]);
     }
 
     public function changePassword(ChangePasswordRequest $request)

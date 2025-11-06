@@ -15,6 +15,8 @@ enum PracticeStatusEnum: string
     case REPORT_CONFIRMED_BY_SUPERVISOR = 'report_confirmed_by_supervisor';
     case REPORT_REJECTED_BY_COMPANY = 'report_rejected_by_company';
     case REPORT_REJECTED_BY_SUPERVISOR = 'report_rejected_by_supervisor';
+    case DEFENSE = 'defense';
+    case DEFENDED = 'defended';
     case CANCELED = 'canceled';
 }
 

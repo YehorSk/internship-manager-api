@@ -14,4 +14,6 @@ return [
     'email_not_registered' => 'Tento e-mail nie je zaregistrovaný.',
     'password_mismatch' => 'Súčasné heslo, ktoré ste zadali, je nesprávne.',
     'password_changed' => 'Heslo bolo úspešne zmenené.',
+    'data_updated' => 'Údaje boli úspešne aktualizované.',
+    'data_empty' => 'Neboli poskytnuté žiadne údaje na aktualizáciu.'
 ];
