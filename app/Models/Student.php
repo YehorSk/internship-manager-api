@@ -31,6 +31,12 @@ class Student extends Model
         return $this->belongsToMany(StudyProgram::class, 'student_study_program', 'student_id', 'study_program_id');
     }
 
+    public function currentStudyProgram($id): bool
+    {
+        $lastProgram = $this->studyPrograms->last();
+        return $lastProgram?->id === $id;
+    }
+
     public function practices()
     {
         return $this->hasMany(Practice::class, 'student_id', 'user_id');

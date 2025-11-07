@@ -291,7 +291,22 @@ class PracticeController extends Controller
             ));
         }
 
-        return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('practice.updated_successfully')]);
+        $with = ['studyProgram', 'practiceStatusHistory', 'documents'];
+
+        if ($isStudent || $isSupervisor) {
+            $with[] = 'practiceCompany';
+        }
+
+        if ($isCompany || $isSupervisor) {
+            $with[] = 'student';
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => new PracticeResource($practice),
+            'statusCode' => 200,
+            'message' => __('practice.updated_successfully')
+        ]);
     }
 
     public function uploadDocument(UploadDocumentRequest $request)

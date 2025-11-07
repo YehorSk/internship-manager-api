@@ -175,9 +175,9 @@ class UserController extends Controller
         if($isStudent){
             $studentData = collect($data)->except(['study_program'])->toArray();
             $user->student()->update($studentData);
-            if (!empty($data['study_program'])) {
+            if (!empty($data['study_program']) && !$user->student->currentStudyProgram($data['study_program'])) {
                 $studyProgram = StudyProgram::where('id', $data['study_program'])->first();
-                $user->student->studyPrograms()->syncWithoutDetaching([$studyProgram->id]);
+                $user->student->studyPrograms()->attach($studyProgram->id);
             }
         }
         if($isCompany){

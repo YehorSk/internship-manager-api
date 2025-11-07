@@ -73,6 +73,7 @@ Route::middleware(['auth:api'])
     ->controller(StudentController::class)->group(function () {
     Route::middleware(['role:supervisor,company'])->group(function () {
         Route::get('/search/{value}', 'search');
+        Route::post('/list', 'list');
     });
 });
 
