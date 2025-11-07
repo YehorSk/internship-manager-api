@@ -42,22 +42,21 @@ class StudentController extends Controller
                 });
             })
             ->when($request->has('search.first_name'), function ($query) use ($request) {
-                $query->where('first_name', $request->input('search.first_name'));
+                $query->where('first_name', 'like', '%' . trim($request->input('search.first_name')) . '%');
             })
             ->when($request->has('search.last_name'), function ($query) use ($request) {
-                $query->where('last_name', $request->input('search.last_name'));
+                $query->where('last_name', 'like', '%' . trim($request->input('search.last_name')) . '%');
             })
             ->when($request->has('search.student_email'), function ($query) use ($request) {
-                $query->where('student_email', $request->input('search.student_email'));
+                $query->where('student_email', 'like', '%' . trim($request->input('search.student_email')) . '%');
             })
-            ->when($request->has('search.primary_email'), function ($query) use ($request) {
-                $query->where('primary_email', $request->input('search.primary_email'));
-            })
-            ->when($request->has('search.phone'), function ($query) use ($request) {
-                $query->where('phone', $request->input('search.phone'));
-            })
-            ->when($request->has('search.address'), function ($query) use ($request) {
-                $query->where('address', $request->input('search.address'));
+            ->when($request->filled('search.study_program_name'), function ($query) use ($request) {
+                $pname = trim($request->input('search.study_program_name'));
+                if ($pname === '') {
+                    return;
+                }
+                $query->whereRelation('studyPrograms', 'name', 'like', '%' . $pname . '%');
+
             })
             ->orderBy($request->input('sortBy', 'created_at'), $request->input('sortOrder', 'desc'))
             ->paginate($request->input('itemsPerPage', 10), ['*'], 'page', $request->input('page', 1));

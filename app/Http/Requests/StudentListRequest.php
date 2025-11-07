@@ -22,18 +22,14 @@ class StudentListRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'sortBy' => 'sometimes|string|in:id,first_name,last_name,student_email,primary_email,phone,address,created_at,updated_at',
+            'sortBy' => 'sometimes|string|in:id,first_name,last_name,student_email,created_at,updated_at',
             'sortOrder' => 'sometimes|string|in:asc,desc',
             'itemsPerPage' => 'sometimes|integer|min:1|max:100',
             'page' => 'sometimes|integer|min:1',
             'search.first_name' => 'sometimes|string',
             'search.last_name' => 'sometimes|string',
             'search.student_email' => 'sometimes|string',
-            'search.primary_email' => 'sometimes|string',
-            'search.phone' => 'sometimes|string',
-            'search.start_date' => 'sometimes|string',
-            'search.end_date' => 'sometimes|string',
-            'search.address' => 'sometimes|string',
+            'search.study_program_name' => 'sometimes|string',
         ];
     }
 }
