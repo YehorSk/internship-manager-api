@@ -25,7 +25,23 @@ class PracticeCompanyFactory extends Factory
             'contact_phone' => $this->faker->phoneNumber(),
             'contact_email' => $this->faker->unique()->safeEmail(),
             'contact_name' => $this->faker->name(),
-            'contact_position' => $this->faker->jobTitle(),
+            'contact_position' => $this->faker->randomElement([
+                'Generálny riaditeľ',
+                'Výkonný riaditeľ',
+                'Finančný riaditeľ',
+                'Technický riaditeľ',
+                'Manažér',
+                'Projektový manažér',
+                'Obchodný manažér',
+                'Účtovník',
+                'Personálny manažér',
+                'Vývojár',
+                'Dizajnér',
+                'Administrátor',
+                'Právnik',
+                'Marketingový špecialista',
+                'Asistent'
+            ]),
         ];
     }
 }
