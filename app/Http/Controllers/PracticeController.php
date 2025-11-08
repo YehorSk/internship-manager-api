@@ -21,6 +21,7 @@ use App\Models\Document;
 use App\Models\Practice;
 use App\Models\PracticeCompany;
 use App\Models\PracticeStatusHistory;
+use App\Models\Student;
 use App\Models\Supervisor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -99,6 +100,68 @@ class PracticeController extends Controller
             'statusCode' => 201,
             'message' => __('practice.practice_created_successfully'),
         ], 201);
+    }
+
+    public function statistics(Request $request){
+        $user = $request->user();
+        $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
+
+        $pending = Practice::query()
+            ->when($isCompany, function ($query) use ($user) {
+                $query->where('company_id', $user->id);
+            })
+            ->whereIn('status', [
+                PracticeStatusEnum::AGREEMENT_CONFIRM_REQUESTED->value,
+                PracticeStatusEnum::REPORT_CONFIRM_REQUESTED->value,
+            ])
+            ->get();
+
+        $statistics = Practice::query()
+            ->when($isCompany, function ($query) use ($user) {
+                $query->where('company_id', $user->id);
+            })
+            ->select('status', DB::raw('COUNT(*) as count'))
+            ->groupBy('status')
+            ->pluck('count', 'status');
+
+        $active = Practice::query()
+            ->when($isCompany, function ($query) use ($user) {
+                $query->where('company_id', $user->id);
+            })
+            ->whereNotIn('status', [PracticeStatusEnum::CANCELED->value, PracticeStatusEnum::DEFENDED->value])
+            ->count();
+
+        $finished = Practice::query()
+            ->when($isCompany, function ($query) use ($user) {
+                $query->where('company_id', $user->id);
+            })
+            ->whereIn('status', [PracticeStatusEnum::DEFENDED->value])
+            ->count();
+
+        $cancelled = Practice::query()
+            ->when($isCompany, function ($query) use ($user) {
+                $query->where('company_id', $user->id);
+            })
+            ->whereIn('status', [PracticeStatusEnum::CANCELED->value])
+            ->count();
+
+        $students = Student::orderBy('id')
+            ->when($isCompany, function ($query) use ($user) {
+                $query->whereHas('practices', function ($practiceQuery) use ($user) {
+                    $practiceQuery->where('company_id', $user->id);
+                });
+            })
+            ->distinct()
+            ->count();
+
+        return response()->json([
+            'pending' => PracticeResource::collection($pending),
+            'statistics' => $statistics,
+            'students' => $students,
+            'active' => $active,
+            'cancelled' => $cancelled,
+            'finished' => $finished,
+        ]);
     }
 
     function list(PracticeListRequest $request)

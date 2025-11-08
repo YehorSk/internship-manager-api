@@ -26,6 +26,10 @@ Route::controller(UserController::class)->group(function () {
 Route::middleware(['auth:api'])
     ->prefix('practices')
     ->controller(PracticeController::class)->group(function () {
+        Route::middleware(['role:supervisor,company'])->group(function () {
+            Route::get('/statistics', 'statistics');
+            Route::patch('/{id}/update-document-status', 'updateDocumentStatus');
+        });
         Route::middleware(['role:supervisor,company,student'])->group(function () {
             Route::post('/list', 'list');
             Route::get('/{id}', 'show');
@@ -38,9 +42,6 @@ Route::middleware(['auth:api'])
             Route::get('/{id}/agreement-confirmation-request', 'agreementConfirmationRequest');
             Route::get('/{id}/report-confirmation-request', 'reportConfirmationRequest');
             Route::get('/{id}/download-report', 'downloadReport');
-        });
-        Route::middleware(['role:supervisor,company'])->group(function () {
-            Route::patch('/{id}/update-document-status', 'updateDocumentStatus');
         });
         Route::middleware(['role:supervisor,student'])->group(function () {
             Route::delete('/{id}', 'destroy');
