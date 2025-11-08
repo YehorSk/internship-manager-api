@@ -842,9 +842,10 @@ class PracticeController extends Controller
 
         $with = ['studyProgram', 'practiceCompany', 'student'];
         $practice = Practice::query()
-            ->when($isStudent, function ($query) use ($user) {
-                $query->where('student_id', $user->id);
-            })
+//            ->when($isStudent, function ($query) use ($user) {
+//                $query->where('student_id', $user->id);
+//            })
+            ->where('student_id', $user->id)
             ->where('id', $id)
             ->with($with)
             ->first();
