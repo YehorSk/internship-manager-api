@@ -594,18 +594,16 @@ class PracticeController extends Controller
     {
         $practice = $this->getPracticeForStudentDocument($request, (int) $id);
 
-        $school_name = 'FPVaI UKF v Nitre';
-        $practice_hours = '150';
-
         $values = [
             'student_full_name' => $practice->student->user->name ?? trim(($practice->student->first_name ?? '') . ' ' . ($practice->student->last_name ?? '')),
             'student_study_program' => $practice->studyProgram->name ?? '',
-            'student_school_name' => $school_name,
+            'student_school_name' => 'FPVaI UKF v Nitre',
             'company_name' => $practice->practiceCompany->name ?? '',
+            'company_address' => $practice->practiceCompany->address ?? '',
             'company_contact_name' => $practice->practiceCompany->contact_name ?? '',
             'practice_start_date' => $practice->start_date?->format('d.m.Y') ?? '—',
             'practice_end_date' => $practice->end_date?->format('d.m.Y') ?? '—',
-            'practice_hours' => $practice_hours,
+            'practice_hours' => '150',
         ];
 
         return $this->returnPracticeDocumentsAsDocx(
