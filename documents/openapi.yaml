@@ -1403,9 +1403,9 @@ paths:
     get:
       tags:
         - Practices
-      summary: Download auto-filled standard practice agreement (PDF) — printable for the student owner
+      summary: Download editable auto-filled standard practice agreement (DOCX) — printable for the student owner
       description: |
-        Download an auto-filled standard practice agreement PDF for the specified practice. Only the student who owns the specified practice may download this agreement.
+        Download an editable auto-filled standard practice agreement DOCX for the specified practice. Only the student who owns the specified practice may download this agreement.
       security:
         - bearerAuth: []
       parameters:
