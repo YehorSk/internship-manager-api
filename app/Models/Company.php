@@ -17,6 +17,7 @@ class Company extends Model
         'name',
         'address',
         'contact_name',
+        'contact_position',
         'company_email',
         'contact_email',
         'contact_phone',

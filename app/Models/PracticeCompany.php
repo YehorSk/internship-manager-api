@@ -23,6 +23,7 @@ class PracticeCompany extends Model
         'contact_email',
         'contact_name',
         'company_email',
+        'contact_position',
     ];
 
     protected $hidden = [

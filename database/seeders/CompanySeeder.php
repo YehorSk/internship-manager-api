@@ -28,6 +28,7 @@ class CompanySeeder extends Seeder
                 'contact_phone' => '+421-2-5555-1234',
                 'contact_email' => 'michal.kral@slovenskeit.sk',
                 'contact_name' => 'Michal Kráľ',
+                'contact_position' => 'Vedúci IT oddelenia',
                 'status' => 1,
             ],
             [
@@ -41,6 +42,7 @@ class CompanySeeder extends Seeder
                 'contact_phone' => '+421-2-4444-5678',
                 'contact_email' => 'veronika.holubova@energosk.sk',
                 'contact_name' => 'Veronika Holubová',
+                'contact_position' => 'HR manažér',
                 'status' => 1,
             ],
             [
@@ -54,6 +56,7 @@ class CompanySeeder extends Seeder
                 'contact_phone' => '+421-55-123-4567',
                 'contact_email' => 'lucia.benesova@zdravieplus.sk',
                 'contact_name' => 'Lucia Benešová',
+                'contact_position' => 'Riaditeľka',
                 'status' => 0,
             ],
         ];
@@ -84,6 +87,7 @@ class CompanySeeder extends Seeder
                 'contact_phone' => $company['contact_phone'],
                 'contact_email' => $company['contact_email'],
                 'contact_name' => $company['contact_name'],
+                'contact_position' => $company['contact_position'],
                 'status' => $company['status'],
             ]);
         }

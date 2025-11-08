@@ -462,7 +462,7 @@ class PracticeController extends Controller
             return response()->json(['success' => false, 'statusCode' => 404, 'message' => __('practice.not_found')], 404);
         }
 
-        $data = [
+/*        $data = [
             'practice' => $practice,
         ];
 
@@ -485,7 +485,74 @@ class PracticeController extends Controller
 
         return response()->streamDownload(function () use ($pdfContent) {
             echo $pdfContent;
-        }, $filename, ['Content-Type' => 'application/pdf']);
+        }, $filename, ['Content-Type' => 'application/pdf']);*/
+
+        try {
+            $templateContent = Storage::disk('s3')->get('templates/Dohoda_o_odbornej_praxi_študenta-AI.docx');
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'statusCode' => 500, 'message' => __('practice.document_doesnt_exist')], 500);
+        }
+
+        try {
+            $tmpDir = sys_get_temp_dir();
+            $tmpTemplate = $tmpDir . DIRECTORY_SEPARATOR . 'tpl_' . bin2hex(random_bytes(12)) . '.docx';
+            file_put_contents($tmpTemplate, $templateContent, LOCK_EX);
+        } catch (\Exception $e) {
+            if (isset($tmpTemplate) && file_exists($tmpTemplate)) {
+                @unlink($tmpTemplate);
+            }
+
+            return response()->json(['success' => false, 'statusCode' => 500, 'message' => __('practice.document_processing_failed')], 500);
+        }
+
+        $school_name = 'FPVaI UKF v Nitre';
+        $practice_hours = '150';
+
+        $values = [
+            'student_full_name' => $practice->student->user->name ?? trim(($practice->student->first_name ?? '') . ' ' . ($practice->student->last_name ?? '')),
+            'student_address' => $practice->student->address ?? '',
+            'student_email' => $practice->student->student_email ?? '',
+            'student_phone' => $practice->student->phone ?? '',
+            'student_study_program' => $practice->studyProgram->name ?? '',
+
+            'student_school_name' => $school_name,
+            'company_name' => $practice->practiceCompany->name ?? '',
+            'company_address' => $practice->practiceCompany->address ?? '',
+            'company_contact_name' => $practice->practiceCompany->contact_name ?? '',
+            'company_contact_position' => $practice->practiceCompany->contact_position ?? '',
+
+            'practice_hours' => $practice_hours,
+            'practice_start_date' => $practice->start_date?->format('d.m.Y') ?? '—',
+            'practice_end_date' => $practice->end_date?->format('d.m.Y') ?? '—',
+        ];
+
+        try {
+            $templateProcessor = new TemplateProcessor($tmpTemplate);
+            foreach ($values as $key => $val) {
+                $templateProcessor->setValue($key, $val === null ? '' : $val);
+            }
+            $outPath = $tmpDir . DIRECTORY_SEPARATOR . 'agreement_practice_' . $practice->id . '_' . bin2hex(random_bytes(12)) . '.docx';
+            $templateProcessor->saveAs($outPath);
+        } catch (\Exception $e) {
+            if (isset($outPath) && file_exists($outPath)) {
+                @unlink($outPath);
+            }
+
+            if (isset($tmpTemplate) && file_exists($tmpTemplate)) {
+                @unlink($tmpTemplate);
+            }
+
+            return response()->json(['success' => false, 'statusCode' => 500, 'message' => __('practice.document_generation_failed')], 500);
+        }
+
+        $filename = 'report_practice_' . $practice->id . '.docx';
+
+        return response()->streamDownload(function () use ($outPath, $tmpTemplate) {
+            readfile($outPath);
+            @unlink($outPath);
+            @unlink($tmpTemplate);
+        }, $filename, ['Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']);
+
     }
 
     public function reportConfirmationRequest($id, Request $request)
@@ -632,9 +699,8 @@ class PracticeController extends Controller
             return response()->json(['success' => false, 'statusCode' => 404, 'message' => __('practice.not_found')], 404);
         }
 
-        $templateS3Path = 'templates/Priloha_Vykaz_o_vykonanej_odbornej_praxi-AI.docx';
         try {
-            $templateContent = Storage::disk('s3')->get($templateS3Path);
+            $templateContent = Storage::disk('s3')->get('templates/Priloha_Vykaz_o_vykonanej_odbornej_praxi-AI.docx');
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'statusCode' => 500, 'message' => __('practice.document_doesnt_exist')], 500);
         }
