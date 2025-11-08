@@ -16,11 +16,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         //
         $middleware->use([
+            Localization::class,
             HandleCors::class,
         ]);
-        $middleware->append(Localization::class);
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'language' => Localization::class
         ]);
     })
     ->withSchedule(function (Illuminate\Console\Scheduling\Schedule $schedule) {

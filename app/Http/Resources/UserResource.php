@@ -22,6 +22,7 @@ class UserResource extends JsonResource
             'student'    => new StudentResource($this->whenLoaded('student')),
             'supervisor' => new SupervisorResource($this->whenLoaded('supervisor')),
             'company'    => new CompanyResource($this->whenLoaded('company')),
+            'language' => $this->language
         ];
     }
 }

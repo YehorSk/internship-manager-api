@@ -15,5 +15,7 @@ return [
     'password_mismatch' => 'The current password you entered is incorrect.',
     'password_changed' => 'The password has been successfully changed.',
     'data_updated' => 'The data has been successfully updated.',
-    'data_empty' => 'No data was provided for updating.'
+    'data_empty' => 'No data was provided for updating.',
+    'forbidden_no_roles' => 'Forbidden. No roles assigned.',
+    'forbidden_roles_required' => 'Forbidden. Roles required: :roles',
 ];

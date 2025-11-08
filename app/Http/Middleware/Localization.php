@@ -16,8 +16,11 @@ class Localization
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $locale = $request->header('lang', 'sk');
-        App::setLocale($locale);
+        if ($user = $request->user()) {
+            App::setLocale($user->language ?? 'sk');
+        } else {
+            App::setLocale('sk');
+        }
         return $next($request);
     }
 }
