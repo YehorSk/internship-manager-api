@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ChangePasswordRequest;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\UpdateLanguageRequest;
 use App\Http\Requests\UpdatePasswordRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
@@ -146,6 +147,26 @@ class UserController extends Controller
                 'statusCode' => 200,
                 'message' => __('auth.authenticated'),
                 'data' => new UserResource($user),
+            ]);
+        }else{
+            return response()->json([
+                'success' => false,
+                'statusCode' => 401,
+                'message' => __('auth.unauthenticated'),
+            ], 401);
+        }
+    }
+
+    public function updateLanguage(UpdateLanguageRequest $request){
+        $user = $request->user();
+        if($user){
+            $user->language = $request->get('language');
+            app()->setLocale($user->language);
+            $user->save();
+            return response()->json([
+                'success' => true,
+                'statusCode' => 200,
+                'message' => __('auth.data_updated'),
             ]);
         }else{
             return response()->json([

@@ -19,6 +19,7 @@ Route::controller(UserController::class)->group(function () {
             Route::get('/user', 'user');
             Route::post('/logout', 'logout');
             Route::post('/update-profile', 'updateProfile');
+            Route::put('/update-language', 'updateLanguage');
         });
     });
 });

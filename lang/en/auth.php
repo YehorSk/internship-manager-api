@@ -1,0 +1,19 @@
+<?php
+return [
+    'user_registered' => 'The user has been successfully registered. Check your email to verify your account.',
+    'invalid_credentials' => 'Invalid login credentials.',
+    'company_inactive' => 'The company account is inactive.',
+    'login_success' => 'The user has successfully logged in.',
+    'logout_success' => 'The user has successfully logged out.',
+    'unauthenticated' => 'Unauthenticated.',
+    'authenticated' => 'Authenticated.',
+    'password_updated' => 'The password has been successfully updated.',
+    'password_update_failed' => 'Failed to update the password. The token is invalid or expired.',
+    'reset_link_sent' => 'The password reset link has been sent to your email.',
+    'reset_link_failed' => 'Failed to send the password reset link. Check your email and try again.',
+    'email_not_registered' => 'This email is not registered.',
+    'password_mismatch' => 'The current password you entered is incorrect.',
+    'password_changed' => 'The password has been successfully changed.',
+    'data_updated' => 'The data has been successfully updated.',
+    'data_empty' => 'No data was provided for updating.'
+];
