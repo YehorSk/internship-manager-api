@@ -505,7 +505,6 @@ class PracticeController extends Controller
             return response()->json(['success' => false, 'statusCode' => 500, 'message' => __('practice.document_processing_failed')], 500);
         }
 
-        $school_name = 'FPVaI UKF v Nitre';
         $practice_hours = '150';
 
         $values = [
@@ -515,7 +514,6 @@ class PracticeController extends Controller
             'student_phone' => $practice->student->phone ?? '',
             'student_study_program' => $practice->studyProgram->name ?? '',
 
-            'student_school_name' => $school_name,
             'company_name' => $practice->practiceCompany->name ?? '',
             'company_address' => $practice->practiceCompany->address ?? '',
             'company_contact_name' => $practice->practiceCompany->contact_name ?? '',
@@ -545,7 +543,7 @@ class PracticeController extends Controller
             return response()->json(['success' => false, 'statusCode' => 500, 'message' => __('practice.document_generation_failed')], 500);
         }
 
-        $filename = 'report_practice_' . $practice->id . '.docx';
+        $filename = 'agreement_practice_' . $practice->id . '.docx';
 
         return response()->streamDownload(function () use ($outPath, $tmpTemplate) {
             readfile($outPath);
