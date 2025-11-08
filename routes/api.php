@@ -61,6 +61,16 @@ Route::middleware(['auth:api'])
         });
 });
 
+Route::middleware(['auth:api'])
+    ->prefix('reports')
+    ->controller(Reportontroller::class)->group(function () {
+        Route::middleware(['role:supervisor'])->group(function () {
+            Route::post('/list', 'list');
+            Route::get('/{id}', 'show');
+            Route::post('/generate', 'generate');
+        });
+    });
+
 Route::controller(CompanyController::class)->prefix('company')->group(function () {
     Route::get('/activate/{token}', 'activate');
 
