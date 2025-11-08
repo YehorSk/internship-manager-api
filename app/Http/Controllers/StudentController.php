@@ -35,7 +35,7 @@ class StudentController extends Controller
 
         $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
 
-        $students = Student::query()
+        $students = Student::with('studyPrograms')
             ->when($isCompany, function ($query) use ($user) {
                 $query->whereHas('practices', function ($practiceQuery) use ($user) {
                     $practiceQuery->where('company_id', $user->id);
