@@ -15,5 +15,7 @@ return [
     'password_mismatch' => 'Súčasné heslo, ktoré ste zadali, je nesprávne.',
     'password_changed' => 'Heslo bolo úspešne zmenené.',
     'data_updated' => 'Údaje boli úspešne aktualizované.',
-    'data_empty' => 'Neboli poskytnuté žiadne údaje na aktualizáciu.'
+    'data_empty' => 'Neboli poskytnuté žiadne údaje na aktualizáciu.',
+    'forbidden_no_roles' => 'Zakázané. Neboli priradené žiadne roly.',
+    'forbidden_roles_required' => 'Zakázané. Požadované roly: :roles',
 ];
