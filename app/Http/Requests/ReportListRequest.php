@@ -13,14 +13,11 @@ class ReportListRequest extends FormRequest
             'sortOrder' => 'sometimes|string|in:asc,desc',
             'itemsPerPage' => 'sometimes|integer|min:1|max:100',
             'page' => 'sometimes|integer|min:1',
-            'search.user_id' => 'sometimes|integer|exists:users,id',
             'search.report_type' => 'sometimes|string',
             'search.status' => 'sometimes|string',
             'search.task_id' => 'sometimes|integer',
             'search.started_at' => 'sometimes|date',
             'search.ended_at' => 'sometimes|date',
-            'search.file_path' => 'sometimes|string',
-            'search.message' => 'sometimes|string',
         ];
     }
 

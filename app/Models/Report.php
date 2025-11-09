@@ -17,6 +17,7 @@ class Report extends Model
     protected $fillable = [
         'user_id',
         'report_type',
+        'params',
         'file_path',
         'started_at',
         'ended_at',
@@ -35,8 +36,8 @@ class Report extends Model
         'created_at' => 'datetime'
     ];
 
-    public function user()
+    public function supervisor()
     {
-        return $this->belongsTo(User::class, 'user_id', 'id');
+        return $this->belongsTo(Supervisor::class, 'user_id', 'user_id');
     }
 }
