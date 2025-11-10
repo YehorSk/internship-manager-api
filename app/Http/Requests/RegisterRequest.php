@@ -42,6 +42,7 @@ class RegisterRequest extends FormRequest
                     'name' => 'required|string|max:255',
                     'address' => 'required|string|max:255',
                     'contact_name' => 'required|string|max:255',
+                    'contact_position' => 'nullable|string|max:255',
                     'company_email' => 'required|email|unique:companies,company_email',
                     'contact_email' => 'required|email',
                     'contact_phone' => 'required|string|max:20',
