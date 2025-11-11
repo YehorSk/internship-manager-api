@@ -15,16 +15,17 @@ Route::controller(UserController::class)->group(function () {
         Route::post('/update-password', 'updatePassword');
         Route::post('/forgot-password','forgotPassword');
 
-        Route::group(['middleware' => ['auth:api']], function () {
+        Route::group(['middleware' => ['auth:api', 'language']], function () {
             Route::post('/change-password', 'changePassword');
             Route::get('/user', 'user');
             Route::post('/logout', 'logout');
             Route::post('/update-profile', 'updateProfile');
+            Route::put('/update-language', 'updateLanguage');
         });
     });
 });
 
-Route::middleware(['auth:api'])
+Route::middleware(['auth:api', 'language'])
     ->prefix('practices')
     ->controller(PracticeController::class)->group(function () {
         Route::middleware(['role:supervisor,company'])->group(function () {
@@ -51,7 +52,7 @@ Route::middleware(['auth:api'])
         });
 });
 
-Route::middleware(['auth:api'])
+Route::middleware(['auth:api', 'language'])
     ->prefix('companies')
     ->controller(CompanyController::class)->group(function () {
         Route::middleware(['role:supervisor'])->group(function () {
@@ -82,7 +83,7 @@ Route::controller(CompanyController::class)->prefix('company')->group(function (
     });
 });
 
-Route::middleware(['auth:api'])
+Route::middleware(['auth:api', 'language'])
     ->prefix('students')
     ->controller(StudentController::class)->group(function () {
     Route::middleware(['role:supervisor,company'])->group(function () {
@@ -95,7 +96,7 @@ Route::middleware(['auth:api'])
 
 Route::controller(StudyProgramController::class)->prefix('study-programs')->group(function () {
     Route::get('/index', 'index');
-    Route::group(['middleware' => ['auth:api']], function () {
+    Route::group(['middleware' => ['auth:api', 'language']], function () {
 
     });
 });

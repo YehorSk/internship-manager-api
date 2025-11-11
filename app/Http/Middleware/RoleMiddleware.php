@@ -19,7 +19,7 @@ class RoleMiddleware
         $hasRole = false;
         if (!$user || !$user->roles) {
             return response()->json([
-                'message' => 'Forbidden. No roles assigned.',
+                'message' => __('auth.forbidden_no_roles'),
             ], 403);
         }
 
@@ -31,7 +31,9 @@ class RoleMiddleware
         }
         if(!$hasRole) {
             return response()->json([
-                'message' => 'Forbidden. Roles required: ' . implode(', ', $roles)
+                'message' => __('auth.forbidden_roles_required', [
+                    'roles' => implode(', ', $roles),
+                ]),
             ], 403);
         }
         return $next($request);
