@@ -1974,79 +1974,79 @@ paths:
                         nullable: true
                       total:
                         type: integer
-            examples:
-              default:
-                summary: Example response
-                value:
-                  data:
-                    - id: 15
-                      report_type: 'companies_without_practices'
-                      params:
-                        filter:
-                          company_name: ''
-                          academic_year: '2025/2026'
-                          semester: 'winter'
-                          study_program_name: ''
-                          start_date: ''
-                          end_date: ''
-                          status: ''
-                        order_by:
-                      file_path: 'reports/15_1762875173.csv'
-                      started_at: '2025-11-11 15:32:53'
-                      ended_at: '2025-11-11 15:32:53'
-                      status: 'success'
-                      message: 'Rows: 2'
-                      task_id: '81d364b3-cdde-42cf-b41a-fa3281f4e06c'
-                      created_at: '2025-11-11 15:32:53'
-                      updated_at: '2025-11-11 15:32:53'
-                      user_id: 2
-                    - id: 16
-                      report_type: 'companies_without_practices'
-                      params:
-                        filter:
-                          company_name: ''
-                          academic_year: '2025/2026'
-                          semester: 'winter'
-                          study_program_name: ''
-                          start_date: ''
-                          end_date: ''
-                          status: ''
-                        order_by:
-                      file_path: 'reports/16_1762894212.csv'
-                      started_at: '2025-11-11 20:50:12'
-                      ended_at: '2025-11-11 20:50:12'
-                      status: 'success'
-                      message: 'Rows: 2'
-                      task_id: '25d49fb1-6cf1-436f-9fd6-7afe7969bd12'
-                      created_at: '2025-11-11 20:50:11'
-                      updated_at: '2025-11-11 20:50:12'
-                      user_id: 2
-                  links:
-                    first: "http://127.0.0.1:8000/api/reports/list?page=1"
-                    last: "http://127.0.0.1:8000/api/reports/list?page=1"
-                    prev: null
-                    next: null
-                  meta:
-                    current_page: 1
-                    from: 1
-                    last_page: 1
+              examples:
+                default:
+                  summary: Example response
+                  value:
+                    data:
+                      - id: 15
+                        report_type: 'companies_without_practices'
+                        params:
+                          filter:
+                            company_name: ''
+                            academic_year: '2025/2026'
+                            semester: 'winter'
+                            study_program_name: ''
+                            start_date: ''
+                            end_date: ''
+                            status: ''
+                          order_by:
+                        file_path: 'reports/15_1762875173.csv'
+                        started_at: '2025-11-11 15:32:53'
+                        ended_at: '2025-11-11 15:32:53'
+                        status: 'success'
+                        message: 'Rows: 2'
+                        task_id: '81d364b3-cdde-42cf-b41a-fa3281f4e06c'
+                        created_at: '2025-11-11 15:32:53'
+                        updated_at: '2025-11-11 15:32:53'
+                        user_id: 2
+                      - id: 16
+                        report_type: 'companies_without_practices'
+                        params:
+                          filter:
+                            company_name: ''
+                            academic_year: '2025/2026'
+                            semester: 'winter'
+                            study_program_name: ''
+                            start_date: ''
+                            end_date: ''
+                            status: ''
+                          order_by:
+                        file_path: 'reports/16_1762894212.csv'
+                        started_at: '2025-11-11 20:50:12'
+                        ended_at: '2025-11-11 20:50:12'
+                        status: 'success'
+                        message: 'Rows: 2'
+                        task_id: '25d49fb1-6cf1-436f-9fd6-7afe7969bd12'
+                        created_at: '2025-11-11 20:50:11'
+                        updated_at: '2025-11-11 20:50:12'
+                        user_id: 2
                     links:
-                      - url: null
-                        label: "&laquo; Previous"
-                        page: null
-                        active: false
-                      - url: "http://127.0.0.1:8000/api/reports/list?page=1"
-                        label: "1"
-                        page: 1
-                        active: true
-                      - url: null
-                        label: "Next &raquo;"
-                        page: null
-                        active: false
-                    path: "http://127.0.0.1:8000/api/reports/list"
-                    per_page: 10
-                    to: 3
-                    total: 3
+                      first: "http://127.0.0.1:8000/api/reports/list?page=1"
+                      last: "http://127.0.0.1:8000/api/reports/list?page=1"
+                      prev: null
+                      next: null
+                    meta:
+                      current_page: 1
+                      from: 1
+                      last_page: 1
+                      links:
+                        - url: null
+                          label: "&laquo; Previous"
+                          page: null
+                          active: false
+                        - url: "http://127.0.0.1:8000/api/reports/list?page=1"
+                          label: "1"
+                          page: 1
+                          active: true
+                        - url: null
+                          label: "Next &raquo;"
+                          page: null
+                          active: false
+                      path: "http://127.0.0.1:8000/api/reports/list"
+                      per_page: 10
+                      to: 3
+                      total: 3
                 without_data:
                   summary: No practices found
                   value:
