@@ -194,6 +194,35 @@ return [
     |
     */
 
-    'attributes' => [],
+    'attributes' => [
+        'type' => 'type',
+        'name' => 'name',
+        'email' => 'email',
+        'password' => 'password',
+        'role' => 'role',
+        'phone' => 'phone number',
+        'address' => 'address',
+        'language' => 'language',
+        'description' => 'description',
+        'picture' => 'picture',
+        'student_id' => 'student',
+        'company_id' => 'company',
+        'primary_email' => 'primary email',
+        'study_program' => 'study program',
+        'student_email' => 'student email',
+        'contact_name' => 'contact name',
+        'contact_email' => 'contact email',
+        'contact_phone' => 'contact phone',
+        'study_program_id' => 'study program',
+        'semester' => 'semester',
+        'academic_year' => 'academic year',
+        'start_date' => 'start date',
+        'end_date' => 'end date',
+        'job_title' => 'job title',
+        'job_description' => 'job description',
+        'company_name' => 'company name',
+        'company_address' => 'company address',
+        'company_email' => 'company email',
+    ],
 
 ];
