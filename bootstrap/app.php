@@ -5,7 +5,9 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\HandleCors;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Illuminate\Auth\AuthenticationException;
+use Laravel\Passport\Http\Middleware\EnsureClientIsResourceOwner;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -22,7 +24,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
-            'language' => Localization::class
+            'language' => Localization::class,
+            'client' => EnsureClientIsResourceOwner::class
         ]);
     })
     ->withSchedule(function (Illuminate\Console\Scheduling\Schedule $schedule) {
@@ -34,6 +37,13 @@ return Application::configure(basePath: dirname(__DIR__))
                 return response()->json([
                     'message' => __('auth.unauthenticated'),
                 ], 401);
+            }
+        });
+        $exceptions->render(function (HttpException $e, $request) {
+            if ($e->getStatusCode() === 403 && ($request->expectsJson() || $request->is('api/*'))) {
+                return response()->json([
+                    'message' => __('auth.forbidden'),
+                ], 403);
             }
         });
     })->create();

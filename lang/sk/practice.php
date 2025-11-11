@@ -27,4 +27,8 @@
         'document_generation_failed' => 'Generovanie dokumentu zlyhalo.',
         'document_download_not_allowed' => 'Nie je povolené sťahovať tento dokument.',
         'document_processing_failed' => 'Spracovanie vstupnej šablóny zlyhalo.',
+        'scope_missing' => 'Na vykonanie tejto akcie nemáte oprávnenie.',
+        'defended' => 'obhájené',
+        'defense_rejected' => 'obrana zamietnutá',
+        'status_error' => 'Nie je možné zmeniť stav praxe',
     ];

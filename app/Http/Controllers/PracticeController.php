@@ -8,6 +8,7 @@ use App\Enums\PracticeStatusEnum;
 use App\Http\Requests\DownloadDocumentRequest;
 use App\Http\Requests\PracticeListRequest;
 use App\Http\Requests\StorePracticeRequest;
+use App\Http\Requests\UpdateDefenseStatusRequest;
 use App\Http\Requests\UpdateDocumentStatusRequest;
 use App\Http\Requests\UploadDocumentRequest;
 use App\Http\Resources\PracticeResource;
@@ -23,6 +24,7 @@ use App\Models\PracticeCompany;
 use App\Models\PracticeStatusHistory;
 use App\Models\Student;
 use App\Models\Supervisor;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -30,6 +32,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use Laravel\Passport\Passport;
 use PhpOffice\PhpWord\TemplateProcessor;
 
 class PracticeController extends Controller
@@ -723,10 +726,10 @@ class PracticeController extends Controller
                 $mailStatus = __('practice.document_rejected');
             }
         }
-
+        $student = User::where('id', $practice->student->user_id)->first();
         PracticeStatusHistory::create([
             'practice_id' => $practice->id,
-            'user_id' => $user->id,
+            'user_id' => $student->id,
             'status' => $status,
             'comment' => $request->input('comment') ?: null,
         ]);
@@ -734,15 +737,67 @@ class PracticeController extends Controller
         $practice->status = $status;
         $practice->save();
 
-        Mail::to($practice->student->student_email)->send(new NotifyStudentAgreementStatusMail($practice, $mailStatus, $user));
+        Mail::to($practice->student->student_email)->send(new NotifyStudentAgreementStatusMail($practice, $mailStatus, $student));
 
         $supervisors = Supervisor::all();
         foreach ($supervisors as $supervisor) {
-            Mail::to($supervisor->email)->send(new NotifySupervisorAgreementStatusMail($practice, $mailStatus, $user));
+            Mail::to($supervisor->email)->send(new NotifySupervisorAgreementStatusMail($practice, $mailStatus, $student));
         }
 
         return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('practice.updated_successfully')]);
 
+    }
+
+    public function updateDefenseStatus($id, UpdateDefenseStatusRequest $request){
+        if (!Passport::hasScope('client:practice_list')) {
+            return response()->json([
+                'success' => false,
+                'statusCode' => 403,
+                'message' => __('practice.scope_missing'),
+            ]);
+        }
+        $practice = Practice::where('id', $id)->first();
+        $statusAction = $request->input('status');
+        if (!$practice) {
+            return response()->json(['success' => false, 'statusCode' => 404, 'message' => __('practice.not_found')], 404);
+        }
+
+        if(!$practice->lastStatusIs(PracticeStatusEnum::DEFENSE)){
+            return response()->json([
+                'success' => false,
+                'statusCode' => 403,
+                'message' => __('practice.status_error'),
+            ], 403);
+        }
+
+        $student = User::where('id', $practice->student->user_id)->first();
+        if ($statusAction === 'agree') {
+            $status = PracticeStatusEnum::DEFENDED->value;
+            $mailStatus = __('practice.document_confirmed', locale: $student->language);
+        } elseif ($statusAction === 'reject') {
+            $status = PracticeStatusEnum::DEFENSE_REJECTED->value;
+            $mailStatus = __('practice.document_rejected', locale: $student->language);
+        }
+
+        PracticeStatusHistory::create([
+            'practice_id' => $practice->id,
+            'user_id' => $student->id,
+            'status' => $status,
+            'comment' => $request->input('comment') ?: null,
+        ]);
+
+        $practice->status = $status;
+        $practice->save();
+
+        Mail::to($practice->student->student_email)->locale($student->language)->send(new NotifyStudentAgreementStatusMail($practice, $mailStatus, $student));
+
+        $supervisors = Supervisor::all();
+        foreach ($supervisors as $supervisor) {
+            $user = User::where('id', $supervisor->user_id)->first();
+            Mail::to($supervisor->email)->locale($user->language)->send(new NotifySupervisorAgreementStatusMail($practice, $mailStatus, $student));
+        }
+
+        return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('practice.updated_successfully')]);
     }
 
     public function downloadDocument($practice_id, DownloadDocumentRequest $request){

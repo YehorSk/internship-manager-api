@@ -28,8 +28,14 @@ class AppServiceProvider extends ServiceProvider
         Passport::personalAccessTokensExpireIn(CarbonInterval::months(6));
         Passport::enablePasswordGrant();
 
+        Passport::tokensCan([
+            'client:practice_list' => 'Access list of practices',
+            'client:practice_update_status' => 'Update status of practices',
+        ]);
+
         ResetPassword::createUrlUsing(function (User $user, string $token) {
             return config('app.frontend_url') . '/reset-password?token=' . $token . '&email=' . urlencode($user->email);
         });
     }
+
 }

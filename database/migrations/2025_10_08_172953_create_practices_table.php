@@ -32,6 +32,9 @@ return new class extends Migration
                 'report_rejected_by_company',
                 'report_rejected_by_supervisor',
                 'canceled',
+                'defense',
+                'defended',
+                'defense_rejected'
             ])->default('created');
             $table->string('job_title')->nullable();
             $table->string('job_description')->nullable();

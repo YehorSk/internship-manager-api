@@ -28,6 +28,9 @@ return new class extends Migration
                 'report_rejected_by_company',
                 'report_rejected_by_supervisor',
                 'canceled',
+                'defense',
+                'defended',
+                'defense_rejected'
             ])->nullable();
             $table->text('comment')->nullable();
             $table->foreign('practice_id')->references('id')->on('practices')->onDelete('cascade');

@@ -18,4 +18,5 @@ return [
     'data_empty' => 'Neboli poskytnuté žiadne údaje na aktualizáciu.',
     'forbidden_no_roles' => 'Zakázané. Neboli priradené žiadne roly.',
     'forbidden_roles_required' => 'Zakázané. Požadované roly: :roles',
+    'forbidden' => 'Nemáte oprávnenie vykonať túto akciu.',
 ];
