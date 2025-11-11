@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\ReportTypeEnum;
+use App\Enums\ReportStatusEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -9,14 +9,14 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('reports', function (Blueprint $table) {
-            $table->enum('report_type', array_map(fn($case) => $case->value, ReportTypeEnum::cases()))->change();
+            $table->enum('status', array_map(fn($case) => $case->value, ReportStatusEnum::cases()))->default(ReportStatusEnum::PENDING->value)->nullable()->change();
         });
     }
 
     public function down(): void
     {
         Schema::table('reports', function (Blueprint $table) {
-            $table->string('report_type')->change();
+            $table->string('status')->nullable()->change();
         });
     }
 };

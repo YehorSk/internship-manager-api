@@ -25,11 +25,8 @@ use App\Models\Student;
 use App\Models\Supervisor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
-use Dompdf\Dompdf;
-use Dompdf\Options;
 use PhpOffice\PhpWord\TemplateProcessor;
 
 class PracticeController extends Controller
@@ -905,9 +902,6 @@ class PracticeController extends Controller
 
         $with = ['studyProgram', 'practiceCompany', 'student'];
         $practice = Practice::query()
-//            ->when($isStudent, function ($query) use ($user) {
-//                $query->where('student_id', $user->id);
-//            })
             ->where('student_id', $user->id)
             ->where('id', $id)
             ->with($with)

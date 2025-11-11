@@ -33,7 +33,8 @@ class Report extends Model
     protected $casts = [
         'started_at' => 'datetime',
         'ended_at' => 'datetime',
-        'created_at' => 'datetime'
+        'created_at' => 'datetime',
+        'params' => 'array',
     ];
 
     public function supervisor()

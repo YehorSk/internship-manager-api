@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\PracticeStatusEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -19,21 +20,7 @@ return new class extends Migration
             $table->string('academic_year', 9);
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
-            $table->enum('status', [
-                'created',
-                'agreement_confirm_requested',
-                'agreement_confirmed_by_company',
-                'agreement_confirmed_by_supervisor',
-                'agreement_rejected_by_company',
-                'agreement_rejected_by_supervisor',
-                'report_confirm_requested',
-                'report_confirmed_by_company',
-                'report_confirmed_by_supervisor',
-                'report_rejected_by_company',
-                'report_rejected_by_supervisor',
-                'canceled',
-            ])->default('created');
-            $table->string('job_title')->nullable();
+            $table->enum('status', array_map(fn($case) => $case->value, PracticeStatusEnum::cases()))->default(PracticeStatusEnum::CREATED->value);            $table->string('job_title')->nullable();
             $table->string('job_description')->nullable();
             $table->unsignedBigInteger('study_program_id');
             $table->foreign('student_id')->references('id')->on('users')->onDelete('cascade');

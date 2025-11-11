@@ -6,6 +6,7 @@ use App\Http\Controllers\StudyProgramController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\ReportController;
 
 Route::controller(UserController::class)->group(function () {
     Route::prefix('auth')->group(function () {
@@ -63,11 +64,14 @@ Route::middleware(['auth:api'])
 
 Route::middleware(['auth:api'])
     ->prefix('reports')
-    ->controller(Reportontroller::class)->group(function () {
+    ->controller(ReportController::class)->group(function () {
         Route::middleware(['role:supervisor'])->group(function () {
             Route::post('/list', 'list');
             Route::get('/{id}', 'show');
             Route::post('/generate', 'generate');
+            Route::get('/{id}/download', 'download');
+            Route::get('/academic-years', 'academicYears');
+            Route::get('/document-types', 'documentTypes');
         });
     });
 

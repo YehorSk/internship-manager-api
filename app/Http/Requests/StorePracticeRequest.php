@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\SemesterEnum;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -25,7 +26,7 @@ class StorePracticeRequest extends FormRequest
         $rules = [
             'company_id' => 'nullable|exists:companies,user_id',
             'study_program_id' => 'required|exists:study_programs,id',
-            'semester' => ['required', 'string', Rule::in(['summer', 'winter'])],
+            'semester' => ['required', 'string', Rule::in(array_map(fn($case) => $case->value, SemesterEnum::cases()))],
             'academic_year' => ['required', 'string', 'max:9'],
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date',
