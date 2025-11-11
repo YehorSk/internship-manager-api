@@ -16,13 +16,13 @@ class ReportResource extends JsonResource
             'report_type' => $this->report_type,
             'params' => $this->params,
             'file_path' => $this->file_path,
-            'started_at' => $this->started_at,
-            'ended_at' => $this->ended_at,
+            'started_at' => $this->started_at ? $this->started_at->toDateTimeString() : null,
+            'ended_at' => $this->ended_at ? $this->ended_at->toDateTimeString() : null,
             'status' => $this->status,
             'message' => $this->message,
             'task_id' => $this->task_id,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'created_at' => $this->created_at ? $this->created_at->toDateTimeString() : null,
+            'updated_at' => $this->updated_at ? $this->updated_at->toDateTimeString() : null,
             'user_id' => $this->user_id,
         ];
     }

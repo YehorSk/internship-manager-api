@@ -16,7 +16,7 @@ class GenerateReportRequest extends FormRequest
             "report_type" => ['sometimes', 'string', Rule::in(array_map(fn($case) => $case->value, ReportTypeEnum::cases()))],
             'study_program_name' => 'sometimes|string',
             'semester' => ['sometimes', 'string', Rule::in(array_map(fn($case) => $case->value, SemesterEnum::cases()))],
-            'academic_year' => 'sometimes|integer|min:2000|max:2100',
+            'academic_year' => 'sometimes|string',
             'company_name' => 'sometimes|string|max:255',
             'start_date' => 'sometimes|date',
             'end_date' => 'sometimes|date|after_or_equal:start_date',

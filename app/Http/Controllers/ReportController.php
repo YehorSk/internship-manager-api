@@ -24,7 +24,7 @@ class ReportController extends Controller
 
         $reports = Report::query()
             ->where('user_id', $user->id)
-            ->when($request->has('search.status'), function ($query) use ($request) {
+            ->when($request->filled('search.status'), function ($query) use ($request) {
                 $query->where('status', $request->input('search.status'));
             })
             ->when($request->filled('search.report_type'), function ($query) use ($request) {
@@ -53,7 +53,7 @@ class ReportController extends Controller
             return response()->json(['success' => false, 'statusCode' => 404, 'message' => __('report.not_found')], 404);
         }
 
-        return response()->json($report);
+        return new ReportResource($report);
     }
 
     public function generate(GenerateReportRequest $request)
@@ -61,13 +61,16 @@ class ReportController extends Controller
         $validated = $request->validated();
 
         $params = [
-            'company_name' => $validated['company_name'] ?? null,
-            'academic_year' => $validated['academic_year'],
-            'semester' => $validated['semester'],
-            'study_program_name' => $validated['study_program_name'],
-            'start_date' => $validated['start_date'] ?? null,
-            'end_date' => $validated['end_date'] ?? null,
-            'status' => $validated['status'] ?? null,
+            'filter' => [
+                'company_name' => $validated['company_name'] ?? null,
+                'academic_year' => $validated['academic_year'] ?? null,
+                'semester' => $validated['semester'],
+                'study_program_name' => $validated['study_program_name'],
+                'start_date' => $validated['start_date'] ?? null,
+                'end_date' => $validated['end_date'] ?? null,
+                'status' => $validated['status'] ?? null,
+            ],
+            'order_by' => null,
         ];
 
         $user = $request->user();
@@ -76,16 +79,16 @@ class ReportController extends Controller
             'user_id' => $user->id,
             'report_type' => $validated['report_type'],
             'params' => $params,
-                        'status' => ReportStatusEnum::PENDING->value,
+            'status' => ReportStatusEnum::PENDING->value,
         ]);
 
-        $taskId = (string) Str::uuid();
+        $taskId = (string)Str::uuid();
         $report->task_id = $taskId;
         $report->save();
 
         GenerateReportJob::dispatch($report)->onQueue('reports');
 
-        return response()->json(['success' => true, 'data' => $report], 201);
+        return (new ReportResource($report))->response()->setStatusCode(201);
     }
 
     public function download(Request $request, $id)
@@ -111,13 +114,15 @@ class ReportController extends Controller
             $out = fopen('php://output', 'w');
 
             if ($out === false) {
-                if (is_resource($s3Stream)) { fclose($s3Stream); }
+                if (is_resource($s3Stream)) {
+                    fclose($s3Stream);
+                }
                 return;
             }
 
             stream_copy_to_stream($s3Stream, $out);
 
-                        if (is_resource($out)) {
+            if (is_resource($out)) {
                 fclose($out);
             }
 
@@ -131,11 +136,5 @@ class ReportController extends Controller
     {
         $years = Practice::query()->distinct()->orderBy('academic_year', 'desc')->pluck('academic_year');
         return response()->json($years);
-    }
-
-    public function documentTypes(Request $request)
-    {
-        $types = Document::query()->distinct()->pluck('type');
-        return response()->json($types);
     }
 }

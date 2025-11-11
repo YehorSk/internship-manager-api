@@ -30,8 +30,6 @@ class GenerateReportJob implements ShouldQueue
 
     public function handle(): void
     {
-        $startedAt = microtime(true);
-
         $report = $this->report->fresh();
         $report->started_at = now();
         $report->status = ReportStatusEnum::RUNNING->value;
@@ -40,7 +38,7 @@ class GenerateReportJob implements ShouldQueue
 
         try {
             $params = $report->params ?? [];
-            $filters = $params['filters'] ?? [];
+            $filter = $params['filter'] ?? [];
 
             $s3Filename = 'reports/' . $report->id . '_' . now()->timestamp . '.csv';
 
@@ -58,7 +56,7 @@ class GenerateReportJob implements ShouldQueue
                     fputcsv($stream, ['practice_id', 'student_name', 'student_email', 'company_name', 'academic_year', 'semester', 'study_program', 'start_date', 'end_date', 'status']);
                     $rowsCount++;
 
-                    $practicesQuery = $this->buildPracticesQuery($filters, true);
+                    $practicesQuery = $this->buildPracticesQuery($filter, true);
                     $practicesQuery->orderBy('id');
 
                     foreach ($practicesQuery->cursor() as $practice) {
@@ -68,7 +66,7 @@ class GenerateReportJob implements ShouldQueue
                         $studyProgram = $practice->studyProgram?->name ?? '';
                         $start_date = $practice->start_date?->format('Y-m-d') ?? '';
                         $end_date = $practice->end_date?->format('Y-m-d') ?? '';
-                        fputcsv($stream, [$practice->id, $studentName, $studentEmail, $companyName, $practice->academic_year, $start_date, $end_date, $studyProgram, $practice->status]);
+                        fputcsv($stream, [$practice->id, $studentName, $studentEmail, $companyName, $practice->academic_year, $practice->semester, $studyProgram, $start_date, $end_date, $practice->status]);
                         $rowsCount++;
                     }
                     break;
@@ -77,7 +75,7 @@ class GenerateReportJob implements ShouldQueue
                     fputcsv($stream, ['status', 'count']);
                     $rowsCount++;
 
-                    $practicesQuery = $this->buildPracticesQuery($filters, false)
+                    $practicesQuery = $this->buildPracticesQuery($filter, false)
                         ->select('status', DB::raw('count(*) as cnt'))
                         ->groupBy('status')
                         ->orderBy('cnt', 'desc');
@@ -89,14 +87,14 @@ class GenerateReportJob implements ShouldQueue
                     break;
 
                 case ReportTypeEnum::COMPANIES_WITHOUT_ACTIVATION->value:
-                    $rowsCount += $this->writeCompaniesCsv($stream, $filters, function ($q) {
+                    $rowsCount += $this->writeCompaniesCsv($stream, $filter, function ($q) {
                         $q->where('status', false);
                     });
 
                     break;
 
                 case ReportTypeEnum::COMPANIES_WITHOUT_PRACTICES->value:
-                    $rowsCount += $this->writeCompaniesCsv($stream, $filters, function ($q) {
+                    $rowsCount += $this->writeCompaniesCsv($stream, $filter, function ($q) {
                         $q->whereDoesntHave('practices');
                     });
 
@@ -107,32 +105,30 @@ class GenerateReportJob implements ShouldQueue
             }
 
             rewind($stream);
-            /** @var \Illuminate\Filesystem\FilesystemAdapter $s3 */
-            $s3 = Storage::disk('s3');
-            $uploaded = $s3->putStream($s3Filename, $stream);
-            if (is_resource($stream)) {
-                fclose($stream);
+
+            $s3Disk = Storage::disk('s3');
+            $operator = $s3Disk->getDriver();
+
+            $uploaded = false;
+
+            try {
+                $operator->writeStream($s3Filename, $stream);
+                $uploaded = true;
+            } finally {
+                if (is_resource($stream)) {
+                    fclose($stream);
+                }
             }
 
-            if ($uploaded === false) {
+            if (!$uploaded) {
                 throw new \RuntimeException('Failed to upload report to S3');
             }
 
             $report->file_path = $s3Filename;
             $report->ended_at = now();
             $report->status = ReportStatusEnum::SUCCESS->value;
-            $report->message = null;
+            $report->message = 'Rows: ' . $rowsCount;
             $report->save();
-
-            $duration = microtime(true) - $startedAt;
-            $size = $s3->size($s3Filename);
-            Log::info('GenerateReportJob completed', [
-                'report_id' => $report->id,
-                'rows' => $rowsCount,
-                'size' => $size,
-                'duration_seconds' => $duration,
-            ]);
-
         } catch (\Throwable $e) {
             $report->ended_at = now();
             $report->status = ReportStatusEnum::FAILED->value;
@@ -177,7 +173,7 @@ class GenerateReportJob implements ShouldQueue
         return $practicesQuery;
     }
 
-    private function writeCompaniesCsv($stream, array $filters, ?callable $modifier = null): int
+    private function writeCompaniesCsv($stream, array $filter, ?callable $modifier = null): int
     {
         $rows = 0;
         fputcsv($stream, ['user_id', 'name', 'address', 'contact_name', 'contact_position', 'company_email', 'contact_email', 'contact_phone', 'created_at']);
@@ -188,8 +184,8 @@ class GenerateReportJob implements ShouldQueue
             $modifier($query);
         }
 
-        $query->when(!empty($filters['company_name']), function ($q) use ($filters) {
-            $cname = trim($filters['company_name']);
+        $query->when(!empty($filter['company_name']), function ($q) use ($filter) {
+            $cname = trim($filter['company_name']);
             if ($cname !== '') {
                 $q->where('name', 'like', '%' . $cname . '%');
             }

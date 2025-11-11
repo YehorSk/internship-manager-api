@@ -67,11 +67,10 @@ Route::middleware(['auth:api'])
     ->controller(ReportController::class)->group(function () {
         Route::middleware(['role:supervisor'])->group(function () {
             Route::post('/list', 'list');
-            Route::get('/{id}', 'show');
             Route::post('/generate', 'generate');
-            Route::get('/{id}/download', 'download');
             Route::get('/academic-years', 'academicYears');
-            Route::get('/document-types', 'documentTypes');
+            Route::get('/{id}/download', 'download');
+            Route::get('/{id}', 'show');
         });
     });
 
