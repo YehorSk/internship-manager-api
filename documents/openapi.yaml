@@ -21,10 +21,14 @@ tags:
     description: Endpoints for user authentication and registration
   - name: Companies
     description: Endpoints for managing companies
+  - name: Students
+    description: Endpoints for managing students
   - name: Practices
     description: Endpoints for managing practices
   - name: Reports
     description: Endpoints for generating and retrieving CSV reports
+  - name: Miscellaneous
+    description: Miscellaneous endpoints
 paths:
   /api/auth/login:
     post:
@@ -731,6 +735,156 @@ paths:
             application/json:
               example:
                 message: 'Unauthenticated.'
+  /api/company/search/{value}:
+    get:
+      summary: Search registered companies by name (autocomplete)
+      tags:
+        - Companies
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: value
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AcceptHeader'
+      responses:
+        '200':
+          description: Array of matching companies
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        user_id:
+                          type: integer
+                        name:
+                          type: string
+                        address:
+                          type: string
+                        contact_position:
+                          type: string
+                        contact_name:
+                          type: string
+                        company_email:
+                          type: string
+                        contact_email:
+                          type: string
+                        contact_phone:
+                          type: string
+              examples:
+                default:
+                  value:
+                    data:
+                      - id: 2
+                        user_id: 6
+                        name: "Energo Slovensko a.s."
+                        address: "Štefánikova 24, 811 05 Bratislava"
+                        contact_position: "HR manažér"
+                        contact_name: "Veronika Holubová"
+                        company_email: "energo@gmail.com"
+                        contact_email: "veronika.holubova@energosk.sk"
+                        contact_phone: "+421-2-4444-5678"
+                      - id: 1
+                        user_id: 5
+                        name: "Slovenské IT s.r.o."
+                        address: "Mlynské nivy 16, 821 09 Bratislava"
+                        contact_position: "Vedúci IT oddelenia"
+                        contact_name: "Michal Kráľ"
+                        company_email: "slovenske@gmail.com"
+                        contact_email: "michal.kral@slovenskeit.sk"
+                        contact_phone: "+421-2-5555-1234"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: 'Unauthenticated.'
+  /api/students/search/{value}:
+    get:
+      summary: Search students by name (autocomplete)
+      tags:
+        - Students
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: value
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AcceptHeader'
+      responses:
+        '200':
+          description: Array of matching students
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        user_id:
+                          type: integer
+                        first_name:
+                          type: string
+                        last_name:
+                          type: string
+                        student_email:
+                          type: string
+                        primary_email:
+                          type: string
+                        phone:
+                          type: string
+                        address:
+                          type: string
+                        study_program:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: integer
+                              code:
+                                type: string
+                              name:
+                                type: string
+              examples:
+                default:
+                  value:
+                    data:
+                      - id: 1
+                        user_id: 1
+                        first_name: "John"
+                        last_name: "Doe"
+                        student_email: "john.student@example.com"
+                        primary_email: "john.alt@example.com"
+                        phone: "123456789"
+                        address: "123 Main St, Cityville"
+                        study_program:
+                          - id: 1
+                            code: "INF-B"
+                            name: "Bachelor in Informatics"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: 'Unauthenticated.'
+
   /api/practices/list:
     post:
       tags:
@@ -2381,6 +2535,42 @@ paths:
             application/json:
               example:
                 message: 'Unauthenticated.'
+  /api/study-programs/index:
+    get:
+      summary: List of study programs
+      tags:
+        - Miscellaneous
+      parameters:
+        - $ref: '#/components/parameters/AcceptHeader'
+      responses:
+        '200':
+          description: Array of study programs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        code:
+                          type: string
+                        name:
+                          type: string
+              examples:
+                default:
+                  value:
+                    data:
+                      - id: 1
+                        code: "B-INF"
+                        name: "Bachelor in Informatics"
+                      - id: 3
+                        code: "MAT-B"
+                        name: "Bachelor in Mathematics"
 components:
   securitySchemes:
     bearerAuth:

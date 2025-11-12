@@ -20,7 +20,7 @@ class UserSeeder extends Seeder
             'password' => Hash::make('password123'),
         ]);
 
-        Student::create([
+        $student = Student::create([
             'first_name' => 'John',
             'last_name' => 'Doe',
             'student_email' => 'john.student@example.com',
@@ -29,6 +29,8 @@ class UserSeeder extends Seeder
             'address' => '123 Main St, Cityville',
             'user_id' => $studentUser->id,
         ]);
+
+        $student->studyPrograms()->sync([1]);
 
         $studentUser->roles()->attach(1);
     }
