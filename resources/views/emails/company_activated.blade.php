@@ -1,8 +1,7 @@
 <x-mail::message>
-# Dobrý deň,
+# {{ __('mail.company_activated_greeting') }}
 
-Vaša spoločnosť úspešne aktivovala účet v systéme. Pre ďalšie kroky je potrebné počkať na potvrdenie zo strany garanta odbornej praxe. O ďalšom postupe Vás budeme informovať emailom.
+{{ __('mail.company_activated_body') }}
 
-S pozdravom,<br>
-Internship Manager Team
+{{ __('mail.regards') }}
 </x-mail::message>

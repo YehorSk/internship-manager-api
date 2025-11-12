@@ -27,7 +27,7 @@ class CompanyRejectedMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Spoločnosť bola zamietnutá',
+            subject: __('mail.company_rejected'),
         );
     }
 

@@ -1,16 +1,16 @@
 <x-mail::message>
-# Gratulujeme!
+    # {{ __('emails.company_approved_title') }}
 
-Váš profil spoločnosti bol úspešne schválený garantom praxe.
+    {{ __('emails.company_approved_message') }}
 
-Teraz môžete naplno využívať všetky možnosti systému na prácu so stážistami a správu profilu spoločnosti.
+    {{ __('emails.company_approved_description') }}
 
-@if(!empty($url))
-<x-mail::button :url="$url">
-Prejsť do osobného účtu
-</x-mail::button>
-@endif
+    @if(!empty($url))
+        <x-mail::button :url="$url">
+            {{ __('emails.company_approved_button') }}
+        </x-mail::button>
+    @endif
 
-Ďakujeme za spoluprácu!<br>
-{{ config('app.name') }}
+    {{ __('emails.company_approved_thanks') }}<br>
+    {{ config('app.name') }}
 </x-mail::message>

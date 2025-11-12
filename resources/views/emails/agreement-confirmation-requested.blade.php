@@ -1,35 +1,35 @@
 <x-mail::message>
-# Dobrý deň,
+# {{ __('mail.approval_greeting') }}
+
 @if($options['isReconfirm'])
-Máme pre Vás žiadosť o opätovné schválenie{{ $options['actionType'] == 'report' ? ' správy' : ' zmluvy' }} týkajúcej sa stáže.
+{{ $options['actionType'] == 'report'
+? __('mail.approval_request_reconfirm_report')
+: __('mail.approval_request_reconfirm_agreement') }}
 @else
-Máme pre Vás žiadosť o schválenie{{ $options['actionType'] == 'report' ? ' správy' : ' zmluvy' }} týkajúcej sa stáže.
+{{ $options['actionType'] == 'report'
+? __('mail.approval_request_report')
+: __('mail.approval_request_agreement') }}
 @endif
 
-Prosím, skontrolujte detaily nižšie a potvrďte alebo odmietnite {{ $options['actionType'] == 'report' ? 'správu' : 'zmluvu' }}.
+{{ __('mail.approval_check_details', ['type' => $options['actionType'] == 'report' ? 'správu' : 'zmluvu']) }}
 
-**Študent:** {{ $options['printName'] }}
-
-**E-mail študenta:** {{ $practice->student->student_email }}
-
-**Študijný program:** {{ $practice->studyProgram->name }}
-
-**Obdobie stáže:** {{ $practice->start_date?->format('d.m.Y') ?? '—' }} - {{ $practice->end_date?->format('d.m.Y') ?? '—' }}
-
-**Spoločnosť:** {{ $practice->practiceCompany->name }}
-
-**ID praxe:** {{ $practice->id }}
+**{{ __('mail.approval_student') }}** {{ $options['printName'] }} <br>
+**{{ __('mail.approval_student_email') }}** {{ $practice->student->student_email }} <br>
+**{{ __('mail.approval_study_program') }}** {{ $practice->studyProgram->name }} <br>
+**{{ __('mail.approval_internship_period') }}** {{ $practice->start_date?->format('d.m.Y') ?? '—' }} - {{ $practice->end_date?->format('d.m.Y') ?? '—' }} <br>
+**{{ __('mail.approval_company') }}** {{ $practice->practiceCompany->name }} <br>
+**{{ __('mail.approval_practice_id') }}** {{ $practice->id }} <br>
 
 @isset($options['updateLink'])
 <x-mail::button :url="$options['updateLink']">
-Skontrolovať a potvrdiť
+{{__('mail.approval_check_button')}}
 </x-mail::button>
 @endisset
 
-Ak máte otázky k {{ $options['actionType'] == 'report' ? 'správe' : 'zmluve' }}, prosím, kontaktujte nás na tomto e-maile: {{ config('mail.from.address') ?? '—' }}.
+{{ __('mail.approval_contact_us', ['type' => $options['actionType'] == 'report' ? 'správe' : 'zmluve']) }} {{ config('mail.from.address') ?? '—' }}
 
-Poznámka: Toto oznámenie bolo vytvorené automaticky. Ak už bol dokument spracovaný, ignorujte, prosím, tento e-mail.
+{{ __('mail.approval_auto_note') }}
 
-Ďakujeme za spoluprácu,
+{{ __('mail.approval_thanks') }}
 {{ config('app.name') }}
 </x-mail::message>

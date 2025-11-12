@@ -1,9 +1,12 @@
 <x-mail::message>
-    # Dobrý deň {{ $user->name }},
+# {{ __('mail.greeting', ['name' => $user->name]) }}
 
-    Stav práce študenta **{{ $practice->student->first_name }} {{ $practice->student->last_name }}**
-    pre prax **{{ $practice->job_title }}** bol zmenený na **{{ $status }}**.
+{{ __('mail.practice_status', [
+'student_first' => $practice->student->first_name,
+'student_last' => $practice->student->last_name,
+'job_title' => $practice->job_title,
+'status' => $status
+]) }}
 
-    S pozdravom,
-    Tím Internship Manager
+{{ __('mail.regards') }}
 </x-mail::message>

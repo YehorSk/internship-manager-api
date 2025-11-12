@@ -1,22 +1,25 @@
 @php
-    use App\Enums\RoleEnum;
+use App\Enums\RoleEnum;
 @endphp
 
 <x-mail::message>
 
-    @if($student)
-    # Dobrý deň {{ $student->first_name }},
+@if($student)
+# {{ __('emails.greeting_student', ['name' => $student->first_name]) }}
 
-    Údaje o vašej praxi **{{ $practice->job_title }}** boli odstránené.
-    @endif
-    @if($company)
-    # Dobrý deň {{ $company->contact_name }},
+{{ __('emails.practice_removed_student', ['job_title' => $practice->job_title]) }}
+@endif
 
-    Údaje práce študenta **{{ $practice->student->first_name }} {{ $practice->student->last_name }}**
-    pre prax **{{ $practice->job_title }}** boli odstránené.
-    @endif
+@if($company)
+# {{ __('emails.greeting_student', ['name' => $company->contact_name]) }}
 
-    S pozdravom,
-    Tím Internship Manager
+{{ __('emails.practice_removed_company', [
+'student_first' => $practice->student->first_name,
+'student_last' => $practice->student->last_name,
+'job_title' => $practice->job_title
+]) }}
+@endif
+
+{{ __('emails.regards') }}
 
 </x-mail::message>

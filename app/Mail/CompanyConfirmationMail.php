@@ -29,7 +29,7 @@ class CompanyConfirmationMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Aktivácia účtu spoločnosti',
+            subject: __('mail.company_activation_subject'),
         );
     }
 

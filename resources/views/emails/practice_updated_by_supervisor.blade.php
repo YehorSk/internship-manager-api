@@ -3,18 +3,21 @@
 @endphp
 <x-mail::message>
 
-    @if($student)
-    # Dobrý deň {{ $student->first_name }},
+@if($student)
+# {{ __('emails.greeting_student', ['name' => $student->first_name]) }}
 
-    Údaje o vašej praxi {{ $practice->job_title }} boli zmenené.
-    @endif
-    @if($company)
-    # Dobrý deň {{ $company->contact_name }},
+{{ __('emails.practice_updated_student', ['job_title' => $practice->job_title]) }}
+@endif
+@if($company)
+# {{ __('emails.greeting_student', ['name' => $student->first_name]) }}
 
-    Udaje práce študenta {{ $practice->student->first_name }} {{ $practice->student->last_name }}
-    pre prax {{ $practice->job_title }} boli zmenený.
-    @endif
+{{ __('emails.practice_updated_company', [
+'student_first' => $practice->student->first_name,
+'student_last' => $practice->student->last_name,
+'job_title' => $practice->job_title
+]) }}
+@endif
 
-    S pozdravom,
-    Tím Internship Manager
+{{ __('emails.regards') }}
+
 </x-mail::message>

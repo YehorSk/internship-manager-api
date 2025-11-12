@@ -1,14 +1,12 @@
 <x-mail::message>
-# Upozornenie
+# {{ __('translations.company_profile_canceled_title') }}
 
-Potvrdenie profilu vašej spoločnosti bolo zrušené garantom praxe.
-
-Momentálne nemôžete naplno využívať všetky možnosti systému. Pre viac informácií kontaktujte, prosím, garanta praxe alebo podporu.
+{{ __('translations.company_profile_canceled_message') }}
 
 <x-mail::button :url="$url ?? ''">
-Prejsť do osobného účtu
+{{ __('translations.company_profile_canceled_button') }}
 </x-mail::button>
 
-Ďakujeme za pochopenie!<br>
+{{ __('translations.company_profile_canceled_thanks') }}<br>
 {{ config('app.name') }}
 </x-mail::message>

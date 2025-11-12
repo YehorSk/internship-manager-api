@@ -1,17 +1,17 @@
 <x-mail::message>
-# Dobrý deň,
+#{{ __('emails.company_registered_greeting') }}
 
-Vaša spoločnosť **{{ $company->name }}** bola zaregistrovaná v systéme. Pre aktiváciu účtu kliknite na nasledujúci odkaz:
+{{ __('emails.company_registered_body', ['company_name' => $company->name]) }}
 
 <x-mail::button :url="$activationUrl">
-Aktivovať účet
+{{ __('emails.company_register_button') }}
 </x-mail::button>
 
-Ak tlačidlo nefunguje, skopírujte a vložte nasledujúci odkaz do adresného riadku prehliadača:
+{{ __('emails.company_register_link_info') }}
 {{ $activationUrl }}
 
-Ak ste sa neregistrovali, ignorujte tento email.
+{{ __('emails.company_register_ignore') }}
 
-S pozdravom,<br>
-Internship Manager Team
+{{ __('emails.regards') }}<br>
+{{ config('app.name') }}
 </x-mail::message>

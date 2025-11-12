@@ -1,7 +1,9 @@
-<p>Hello {{ $user->name }},</p>
+<x-mail::message>
+    # {{ __('emails.account_created_greeting', ['name' => $user->name]) }}
 
-<p>Your account has been created successfully.</p>
+    {{ __('emails.account_created_message') }}
 
-<p>Your temporary password is: <strong>{{ $password }}</strong></p>
+    **{{ __('emails.temporary_password', ['password' => $password]) }}**
 
-<p>Please log in and change your password as soon as possible.</p>
+    {{ __('emails.account_created_instruction') }}
+</x-mail::message>

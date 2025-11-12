@@ -27,7 +27,7 @@ class CompanyActivatedMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Účet spoločnosti bol aktivovaný',
+            subject: __('mail.company_activated_subject'),
         );
     }
 

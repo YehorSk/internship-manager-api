@@ -26,7 +26,7 @@ class CompanyApprovedMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Spoločnosť bola schválená'    ,
+            subject: __('mail.company_approved_subject')   ,
         );
     }
 

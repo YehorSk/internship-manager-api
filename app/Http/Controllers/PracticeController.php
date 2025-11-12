@@ -23,6 +23,7 @@ use App\Models\PracticeCompany;
 use App\Models\PracticeStatusHistory;
 use App\Models\Student;
 use App\Models\Supervisor;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -577,7 +578,6 @@ class PracticeController extends Controller
                 'printName' => $printName,
                 'actionType' => 'report',
             ];
-
             Mail::to($practice->practiceCompany->contact_email)->send(new AgreementConfirmationRequestedMail($practice, $options));
         }
         return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('practice.report_approval_requested_successfully')]);
@@ -694,30 +694,26 @@ class PracticeController extends Controller
                 'message' => __('practice.cannot_upload_document_in_this_status'),
             ]);
         }
-
+        $student = User::where('id', $practice->student->user_id)->first();
         if ($documentType === 'agreement') {
             if ($statusAction === 'agree') {
                 $status = $isCompany
                     ? PracticeStatusEnum::AGREEMENT_CONFIRMED_BY_COMPANY->value
                     : PracticeStatusEnum::AGREEMENT_CONFIRMED_BY_SUPERVISOR->value;
-                $mailStatus = __('practice.document_confirmed');
             } elseif ($statusAction === 'reject') {
                 $status = $isCompany
                     ? PracticeStatusEnum::AGREEMENT_REJECTED_BY_COMPANY->value
                     : PracticeStatusEnum::AGREEMENT_REJECTED_BY_SUPERVISOR->value;
-                $mailStatus = __('practice.document_rejected');
             }
         } elseif ($documentType === 'report') {
             if ($statusAction === 'agree') {
                 $status = $isCompany
                     ? PracticeStatusEnum::REPORT_CONFIRMED_BY_COMPANY->value
                     : PracticeStatusEnum::REPORT_CONFIRMED_BY_SUPERVISOR->value;
-                $mailStatus = __('practice.document_confirmed');
             } elseif ($statusAction === 'reject') {
                 $status = $isCompany
                     ? PracticeStatusEnum::REPORT_REJECTED_BY_COMPANY->value
                     : PracticeStatusEnum::REPORT_REJECTED_BY_SUPERVISOR->value;
-                $mailStatus = __('practice.document_rejected');
             }
         }
 
@@ -731,11 +727,14 @@ class PracticeController extends Controller
         $practice->status = $status;
         $practice->save();
 
-        Mail::to($practice->student->student_email)->send(new NotifyStudentAgreementStatusMail($practice, $mailStatus, $user));
+        $mailStatus = ($statusAction === 'agree') ? __('practice.document_confirmed', locale: $student->language) : __('practice.document_rejected', locale: $student->language);
+        Mail::to($student)->send(new NotifyStudentAgreementStatusMail($practice, $mailStatus, $user));
 
         $supervisors = Supervisor::all();
         foreach ($supervisors as $supervisor) {
-            Mail::to($supervisor->email)->send(new NotifySupervisorAgreementStatusMail($practice, $mailStatus, $user));
+            $to = User::where('id', $supervisor->user_id)->first();
+            $mailStatus = ($statusAction === 'agree') ? __('practice.document_confirmed', locale: $to->language) : __('practice.document_rejected', locale: $to->language);
+            Mail::to($to)->send(new NotifySupervisorAgreementStatusMail($practice, $mailStatus, $user));
         }
 
         return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('practice.updated_successfully')]);

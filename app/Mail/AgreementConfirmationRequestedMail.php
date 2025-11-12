@@ -25,7 +25,7 @@ class AgreementConfirmationRequestedMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Agreement Confirmation Requested',
+            subject: __('mail.agreement_confirmation_requested'),
         );
     }
 

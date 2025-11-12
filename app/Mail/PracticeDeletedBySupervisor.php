@@ -34,7 +34,7 @@ class PracticeDeletedBySupervisor extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Prax odstránená garantom',
+            subject: __('mail.practice_deleted_by_supervisor'),
         );
     }
 

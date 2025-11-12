@@ -34,7 +34,7 @@ class PracticeUpdatedBySupervisor extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Prax aktualizovaná garantom',
+            subject: __('mail.practice_updated_by_supervisor'),
         );
     }
 

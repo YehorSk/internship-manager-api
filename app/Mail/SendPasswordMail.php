@@ -31,7 +31,7 @@ class SendPasswordMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Your Account Password',
+            subject: __('mail.account_password_subject'),
         );
     }
 
@@ -41,7 +41,7 @@ class SendPasswordMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.send_password',
+            markdown: 'emails.send_password',
             with: [
                 'password' => $this->password,
                 'user' => $this->user,

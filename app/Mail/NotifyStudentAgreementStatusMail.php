@@ -34,7 +34,7 @@ class NotifyStudentAgreementStatusMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Stav Vašej praxe bol aktualizovaný',
+            subject: __('mail.practice_status_updated_student'),
         );
     }
 
