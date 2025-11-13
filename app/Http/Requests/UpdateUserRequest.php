@@ -45,6 +45,7 @@ class UpdateUserRequest extends FormRequest
                 'name' => 'sometimes|required|string|max:255',
                 'address' => 'sometimes|required|string|max:255',
                 'contact_name' => 'sometimes|required|string|max:255',
+                'contact_position' => 'sometimes|required|string|max:255',
                 'contact_email' => 'sometimes|required|email',
                 'contact_phone' => 'sometimes|required|string|max:20',
             ]);
