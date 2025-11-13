@@ -64,8 +64,8 @@ class ReportController extends Controller
             'filter' => [
                 'company_name' => $validated['company_name'] ?? null,
                 'academic_year' => $validated['academic_year'] ?? null,
-                'semester' => $validated['semester'],
-                'study_program_name' => $validated['study_program_name'],
+                'semester' => $validated['semester'] ?? null,
+                'study_program_name' => $validated['study_program_name'] ?? null,
                 'start_date' => $validated['start_date'] ?? null,
                 'end_date' => $validated['end_date'] ?? null,
                 'status' => $validated['status'] ?? null,
