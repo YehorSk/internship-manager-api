@@ -17,6 +17,11 @@ class CompanyController extends Controller
 
     public function search(Request $request){
         $value = $request->query('value');
+        if (!$value) {
+            return response()->json([
+                'data' => []
+            ]);
+        }
         $companies = Company::query()
             ->when($value, fn($query) => $query->where('name', 'like', "%{$value}%"))
             ->where('status', 1)

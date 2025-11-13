@@ -15,7 +15,11 @@ class StudentController extends Controller
 
         $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
         $value = $request->query('value');
-
+        if (!$value) {
+            return response()->json([
+                'data' => []
+            ]);
+        }
         $students = Student::query()
             ->when($isCompany, function ($query) use ($user) {
                 $query->whereHas('practices', function ($practiceQuery) use ($user) {
