@@ -450,6 +450,7 @@ paths:
                         last_name: Novák
                         email: jan.novak@ukf.sk
                       company: null
+                      language: sk
                 student:
                   summary: Student info
                   value:
@@ -471,8 +472,13 @@ paths:
                         primary_email: john.alt@example.com
                         phone: '123456789'
                         address: 123 Main St, Cityville
+                        study_program:
+                          - id: 1
+                            code: "INF-B"
+                            name: "Bachelor in Informatics"
                       supervisor: null
                       company: null
+                      language: sk
                 company:
                   summary: Company info
                   value:
@@ -496,12 +502,279 @@ paths:
                       company_email: null
                       contact_email: michal.kral@slovenskeit.sk
                       contact_phone: '+421-2-5555-1234'
+                    language: sk
         '401':
           description: Unauthorized
           content:
             application/json:
               example:
                 message: 'Unauthenticated.'
+  /api/auth/update-profile:
+    post:
+      tags:
+        - Authentication
+      summary: Update current user profile
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - title: Update student profile
+                  type: object
+                  properties:
+                    first_name:
+                      type: string
+                    last_name:
+                      type: string
+                    primary_email:
+                      type: string
+                      format: email
+                    phone:
+                      type: string
+                    address:
+                      type: string
+                    study_program:
+                      type: integer
+                - title: Update supervisor profile
+                  type: object
+                  properties:
+                    title:
+                      type: string
+                    first_name:
+                      type: string
+                    last_name:
+                      type: string
+                - title: Update company profile
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    address:
+                      type: string
+                    contact_name:
+                      type: string
+                    contact_position:
+                      type: string
+                    contact_email:
+                      type: string
+                      format: email
+                    contact_phone:
+                      type: string
+            examples:
+              student:
+                summary: Update student profile
+                value:
+                  first_name: John
+                  last_name: Doe
+                  primary_email: 'john.alt@example.com'
+                  phone: '123456789'
+                  address: '123 Main St, Cityville'
+                  study_program: 1
+              supervisor:
+                summary: Update supervisor profile
+                value:
+                  title: Ing.
+                  first_name: Ján
+                  last_name: Novák
+              company:
+                summary: Update company profile
+                value:
+                  name: Slovenské IT s.r.o.
+                  address: Mlynské nivy 16, 821 09 Bratislava
+                  contact_name: Michal Kráľ
+                  contact_position: Vedúci IT oddelenia
+                  contact_email: 'michal.kral@slovenskeit.sk'
+                  contact_phone: '+421-2-5555-1234'
+      responses:
+        '200':
+          description: Profile updated
+          content:
+            application/json:
+              examples:
+                supervisor:
+                  summary: Supervisor profile updated
+                  value:
+                    success: true
+                    statusCode: 200
+                    message: Údaje boli úspešne aktualizované.
+                    data:
+                      id: 2
+                      name: Ing.Ján Novák
+                      email: jan.novak@ukf.sk
+                      roles:
+                        - id: 2
+                          name: supervisor
+                      student: null
+                      supervisor:
+                        id: 1
+                        title: Ing.
+                        first_name: Ján
+                        last_name: Novák
+                        email: jan.novak@ukf.sk
+                      company: null
+                      language: sk
+                student:
+                  summary: Student profile updated
+                  value:
+                    success: true
+                    statusCode: 200
+                    message: Údaje boli úspešne aktualizované.
+                    data:
+                      id: 1
+                      name: John Doe
+                      email: john.student@example.com
+                      roles:
+                        - id: 1
+                          name: student
+                      student:
+                        id: 1
+                        first_name: John
+                        last_name: Doe
+                        student_email: john.student@example.com
+                        primary_email: john.alt@example.com
+                        phone: '123456789'
+                        address: 123 Main St, Cityville
+                        study_program:
+                          - id: 1
+                            code: "INF-B"
+                            name: "Bachelor in Informatics"
+                      supervisor: null
+                      company: null
+                      language: sk
+                company:
+                  summary: Company info
+                  value:
+                    success: true
+                    statusCode: 200
+                    message: Údaje boli úspešne aktualizované.
+                    data:
+                      id: 5
+                      name: Slovenské IT s.r.o.
+                      email: michal.kral@slovenskeit.sk
+                      roles:
+                        - id: 3
+                          name: company
+                      student: null
+                      supervisor: null
+                      company:
+                        id: 1
+                        name: Slovenské IT s.r.o.
+                        address: Mlynské nivy 16, 821 09 Bratislava
+                        contact_name: Michal Kráľ
+                        company_email: null
+                        contact_email: michal.kral@slovenskeit.sk
+                        contact_phone: '+421-2-5555-1234'
+                      language: sk
+        '422':
+            description: Unprocessable Content
+            content:
+              application/json:
+                examples:
+                  no_data:
+                    summary: No data provided
+                    value:
+                      success: false
+                      statusCode: 422
+                      message: 'Neboli poskytnuté žiadne údaje na aktualizáciu.'
+                  not_valid_data:
+                    summary: Not valid data
+                    value:
+                      message: 'Pole primárny e-mail musí byť platná emailová adresa..'
+                      errors:
+                        primary_email:
+                          - Pole primárny e-mail musí byť platná emailová adresa.
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: 'Unauthenticated.'
+  /api/auth/change-password:
+    post:
+      tags:
+        - Authentication
+      summary: Change current user password
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                current_password:
+                  type: string
+                new_password:
+                  type: string
+                new_password_confirmation:
+                  type: string
+      responses:
+        '200':
+          description: Password changed
+          content:
+            application/json:
+              example:
+                success: true
+                statusCode: 200
+                message: Heslo bolo úspešne zmenené.
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                success: false
+                statusCode: 400
+                message: 'Súčasné heslo, ktoré ste zadali, je nesprávne.'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: 'Unauthenticated.'
+  /api/auth/update-language:
+    put:
+      tags:
+        - Authentication
+      summary: Update current user language preference
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                language:
+                  type: string
+      responses:
+        '200':
+          description: Language updated
+          content:
+            application/json:
+              example:
+                success: true
+                statusCode: 200
+                message: 'Údaje boli úspešne aktualizované.'
+        '422':
+          description: Unprocessable Content
+          content:
+            application/json:
+              example:
+                message: 'Vybraná hodnota pre jazyk je neplatná.'
+                errors:
+                  language:
+                    - 'Vybraná hodnota pre jazyk je neplatná.'
   /api/companies/list:
     post:
       tags:
@@ -599,7 +872,7 @@ paths:
                   last_page_url: 'http://127.0.0.1:8000/api/companies?page=1'
                   links:
                     - url: null
-                      label: 'pagination.previous'
+                      label: '&laquo; Previous'
                       page: null
                       active: false
                     - url: 'http://127.0.0.1:8000/api/companies?page=1'
@@ -607,7 +880,7 @@ paths:
                       page: 1
                       active: true
                     - url: null
-                      label: 'pagination.next'
+                      label: 'Next &raquo;'
                       page: null
                       active: false
                   next_page_url: null
@@ -735,7 +1008,7 @@ paths:
             application/json:
               example:
                 message: 'Unauthenticated.'
-  /api/company/search/{value}:
+  /api/company/search:
     get:
       summary: Search registered companies by name (autocomplete)
       tags:
@@ -743,7 +1016,7 @@ paths:
       security:
         - bearerAuth: []
       parameters:
-        - in: path
+        - in: query
           name: value
           required: true
           schema:
@@ -808,7 +1081,187 @@ paths:
             application/json:
               example:
                 message: 'Unauthenticated.'
-  /api/students/search/{value}:
+  /api/students/list:
+    post:
+      tags:
+        - Students
+      summary: Get list of students
+      description: |
+        Returns a paginated list of students. The endpoint requires a Bearer token.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptHeader'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                search:
+                  type: object
+                  properties:
+                    first_name:
+                      type: string
+                    last_name:
+                      type: string
+                    student_email:
+                      type: string
+                    study_program_name:
+                      type: string
+                sortBy:
+                  type: string
+                  description: Field to sort by
+                sortOrder:
+                  type: string
+                  enum: [asc, desc]
+                  description: Sort order
+                itemsPerPage:
+                  type: integer
+                  description: Items per page
+                page:
+                  type: integer
+                  description: Page number
+            example:
+              search:
+                first_name: John
+              sortBy: id
+              sortOrder: asc
+              itemsPerPage: 10
+              page: 1
+      responses:
+        '200':
+          description: Array of matching students
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        user_id:
+                          type: integer
+                        first_name:
+                          type: string
+                        last_name:
+                          type: string
+                        student_email:
+                          type: string
+                        primary_email:
+                          type: string
+                        phone:
+                          type: string
+                        address:
+                          type: string
+                        study_program:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: integer
+                              code:
+                                type: string
+                              name:
+                                type: string
+                  links:
+                    type: object
+                    properties:
+                      first_page_url:
+                        type: string
+                      from:
+                        type: integer
+                      last_page:
+                        type: integer
+                      last_page_url:
+                        type: string
+                  meta:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                      from:
+                        type: integer
+                      last_page:
+                        type: integer
+                      links:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            url:
+                              type: string
+                              nullable: true
+                            label:
+                              type: string
+                            page:
+                              type: integer
+                              nullable: true
+                            active:
+                              type: boolean
+                  path:
+                    type: string
+                  per_page:
+                    type: integer
+                  to:
+                    type: integer
+                  total:
+                    type: integer
+              examples:
+                default:
+                  value:
+                    data:
+                      - id: 1
+                        user_id: 1
+                        first_name: "John"
+                        last_name: "Doe"
+                        student_email: "john.student@example.com"
+                        primary_email: "john.alt@example.com"
+                        phone: "123456789"
+                        address: "123 Main St, Cityville"
+                        study_program:
+                          - id: 1
+                            code: "INF-B"
+                            name: "Bachelor in Informatics"
+                    links:
+                      first_page_url: 'http://127.0.0.1:8000/api/students/list?page=1'
+                      from: 1
+                      last_page: 1
+                      last_page_url: 'http://127.0.0.1:8000/api/students/list?page=1'
+                    meta:
+                      current_page: 1
+                      from: 1
+                      last_page: 1
+                      links:
+                        - url: null
+                          label: '&laquo; Previous'
+                          page: null
+                          active: false
+                        - url: '"http://127.0.0.1:8000/api/students/list?page=1'
+                          label: '1'
+                          page: 1
+                          active: true
+                        - url: null
+                          label: 'Next &raquo;'
+                          page: null
+                          active: false
+                    path: 'http://127.0.0.1:8000/api/students/list'
+                    per_page: 10
+                    to: 1
+                    total: 1
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: 'Unauthenticated.'
+  /api/students/search:
     get:
       summary: Search students by name (autocomplete)
       tags:
@@ -816,7 +1269,7 @@ paths:
       security:
         - bearerAuth: []
       parameters:
-        - in: path
+        - in: query
           name: value
           required: true
           schema:
@@ -884,7 +1337,6 @@ paths:
             application/json:
               example:
                 message: 'Unauthenticated.'
-
   /api/practices/list:
     post:
       tags:
@@ -981,7 +1433,7 @@ paths:
                           nullable: true
                         status:
                           type: string
-                          enum: [created, agreement_confirm_requested, agreement_confirmed_by_company, agreement_confirmed_by_supervisor, agreement_rejected_by_company, agreement_rejected_by_supervisor, report_confirm_requested, report_confirmed_by_company, report_confirmed_by_supervisor, report_rejected_by_company, report_rejected_by_supervisor, canceled]
+                          enum: [created, agreement_confirm_requested, agreement_confirmed_by_company, agreement_confirmed_by_supervisor, agreement_rejected_by_company, agreement_rejected_by_supervisor, report_confirm_requested, report_confirmed_by_company, report_confirmed_by_supervisor, report_rejected_by_company, report_rejected_by_supervisor, defense, defense_rejected, defended, canceled]
                         job_title:
                           type: string
                         job_description:
@@ -1278,7 +1730,7 @@ paths:
                           type: integer
                         status:
                           type: string
-                          enum: [created, agreement_confirm_requested, agreement_confirmed_by_company, agreement_confirmed_by_supervisor, agreement_rejected_by_company, agreement_rejected_by_supervisor, report_confirm_requested, report_confirmed_by_company, report_confirmed_by_supervisor, report_rejected_by_company, report_rejected_by_supervisor, canceled]
+                          enum: [created, agreement_confirm_requested, agreement_confirmed_by_company, agreement_confirmed_by_supervisor, agreement_rejected_by_company, agreement_rejected_by_supervisor, report_confirm_requested, report_confirmed_by_company, report_confirmed_by_supervisor, report_rejected_by_company, report_rejected_by_supervisor, defense, defense_rejected, defended, canceled]
                         comment:
                           type: string
                         created_at:
@@ -1668,6 +2120,236 @@ paths:
                   success: false
                   statusCode: 404
                   message: 'Praxa nebola nájdená.'
+  /api/practices/upload-document:
+    post:
+      tags:
+        - Practices
+      summary: Upload practice document - agreement or report
+      description: |
+        Upload a practice document (agreement or report) as a PDF file. Only the student who owns the practice may upload documents.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptHeader'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                practice_id:
+                  type: integer
+                document_type:
+                  type: string
+                  enum: [agreement, report]
+                document:
+                  type: string
+                  format: multipart/form-data
+                  description: PDF file (application/pdf)
+            examples:
+              upload_agreement_example:
+                summary: Upload practice agreement
+                value:
+                  practice_id: 1
+                  document_type: "agreement"
+                  document: (binary PDF file)
+              upload_report_example:
+                summary: Upload practice report
+                value:
+                  practice_id: 1
+                  document_type: "report"
+                  document: (binary PDF file)
+      responses:
+        '200':
+          description: Document uploaded
+          content:
+            application/json:
+              example:
+                success: true
+                statusCode: 200
+                message: 'Praxa bola úspešne aktualizovaná.'
+        '404':
+          description: Practice not found
+          content:
+            application/json:
+              example:
+                success: false
+                statusCode: 404
+                message: 'Praxa nebola nájdená.'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: 'Forbidden. Insufficient permissions.'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: 'Unauthenticated.'
+  /api/practices/{id}/download-document:
+    get:
+      tags:
+        - Practices
+      summary: Download practice document - agreement or report
+      description: |
+        Download the specified practice document (agreement or report) as a PDF file. Access is limited based on the
+        current user's role and ownership of the practice.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: file_path
+          required: false
+          schema:
+            type: string
+          description: Path to the stored document (optional). Sent as query parameter by the frontend.
+        - $ref: '#/components/parameters/AcceptHeader'
+      responses:
+        '200':
+          description: PDF file
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Practice or document not found
+          content:
+            application/json:
+              example:
+                success: false
+                statusCode: 404
+                message: 'Praxa nebola nájdená.'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: 'Forbidden. Insufficient permissions.'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: 'Unauthenticated.'
+  /api/practices/{id}/update-document-status:
+    patch:
+      tags:
+        - Practices
+      summary: Update practice document status - agreement or report
+      description: |
+        Update the status of the specified practice document (agreement or report). Only authorized roles (company, supervisor)
+        may update the document status.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/AcceptHeader'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                file_path:
+                  type: string
+                document_type:
+                  type: string
+                  enum: [agreement, report]
+                status:
+                  type: string
+                  enum: [agree, reject]
+      responses:
+        '200':
+          description: Document status updated
+          content:
+            application/json:
+              example:
+                success: true
+                statusCode: 200
+                message: 'Praxa bola úspešne aktualizovaná.'
+        '404':
+          description: Practice or document not found
+          content:
+            application/json:
+              example:
+                success: false
+                statusCode: 404
+                message: 'Praxa nebola nájdená.'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: 'Forbidden. Insufficient permissions.'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: 'Unauthenticated.'
+  /api/practices/{id}/delete-document:
+    delete:
+      tags:
+        - Practices
+      summary: Delete practice document - agreement or report
+      description: |
+        Delete the specified practice document (agreement or report). Only the student who owns the practice may delete documents.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: file_path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AcceptHeader'
+      responses:
+        '200':
+          description: Document deleted
+          content:
+            application/json:
+              example:
+                success: true
+                statusCode: 200
+                message: 'Dokument bol úspešne odstránený.'
+        '404':
+          description: Practice or document not found
+          content:
+            application/json:
+              example:
+                success: false
+                statusCode: 404
+                message: 'Praxa nebola nájdená.'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: 'Forbidden. Insufficient permissions.'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: 'Unauthenticated.'
   /api/practices/{id}/download-agreement:
     get:
       tags:
@@ -1686,9 +2368,9 @@ paths:
         - $ref: '#/components/parameters/AcceptHeader'
       responses:
         '200':
-          description: PDF file
+          description: DOCX file
           content:
-            application/pdf:
+            application/vnd.openxmlformats-officedocument.wordprocessingml.document:
               schema:
                 type: string
                 format: binary
@@ -1784,6 +2466,55 @@ paths:
                 success: true
                 statusCode: 200
                 message: Žiadosť o schválenie dohody o praxi bola úspešne odoslaná.
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: 'Unauthenticated.'
+        '403':
+          description: Forbidden - role or ownership check failed
+          content:
+            application/json:
+              examples:
+                wrong_role:
+                  summary: Wrong role
+                  value:
+                    message: 'Forbidden. Roles required: student'
+        '404':
+          description: Practice not found
+          content:
+            application/json:
+              example:
+                success: false
+                statusCode: 404
+                message: 'Praxa nebola nájdená.'
+  /api/practices/{id}/report-confirmation-request:
+    get:
+      tags:
+        - Practices
+      summary: Send request for practice report confirmation to supervisor and company
+      description: |
+        Send a request for practice report confirmation to the supervisor and company. Only the student who owns the
+        practice (student role) may send the request.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/AcceptHeader'
+      responses:
+        '200':
+          description: Request sent
+          content:
+            application/json:
+              example:
+                success: true
+                statusCode: 200
+                message: 'Žiadosť o potvrdenie správy o praxi bola úspešne odoslaná.'
         '401':
           description: Unauthorized
           content:
@@ -1953,6 +2684,281 @@ paths:
                         - "Pole e-mail firmy musí byť platná emailová adresa."
                       contact_email:
                         - "Pole e-mail kontaktnej osoby musí byť platná emailová adresa."
+  /api/practices/statistics:
+    get:
+      tags:
+        - Practices
+      summary: Get practice statistics
+      description: |
+        Retrieve various statistics about practices, such as total count, counts by status, and counts by study program.
+        Accessible to authenticated users with appropriate roles.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptHeader'
+      responses:
+        '200':
+          description: Practice statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pending:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        student_id:
+                          type: integer
+                        company_id:
+                          type: integer
+                          nullable: true
+                        semester:
+                          type: string
+                        academic_year:
+                          type: string
+                        start_date:
+                          type: string
+                          format: date
+                          nullable: true
+                        end_date:
+                          type: string
+                          format: date
+                          nullable: true
+                        status:
+                          type: string
+                          enum: [created, agreement_confirm_requested, agreement_confirmed_by_company, agreement_confirmed_by_supervisor, agreement_rejected_by_company, agreement_rejected_by_supervisor, report_confirm_requested, report_confirmed_by_company, report_confirmed_by_supervisor, report_rejected_by_company, report_rejected_by_supervisor, defense, defense_rejected, defended, canceled]
+                        job_title:
+                          type: string
+                        job_description:
+                          type: string
+                        created_at:
+                          type: string
+                          format: date-time
+                        updated_at:
+                          type: string
+                          format: date-time
+                  statistics:
+                    type: object
+                    properties:
+                      created:
+                        type: integer
+                      agreement_confirm_requested:
+                        type: integer
+                      agreement_confirmed_by_company:
+                        type: integer
+                      agreement_confirmed_by_supervisor:
+                        type: integer
+                      agreement_rejected_by_company:
+                        type: integer
+                      agreement_rejected_by_supervisor:
+                        type: integer
+                      report_confirm_requested:
+                        type: integer
+                      report_confirmed_by_company:
+                        type: integer
+                      report_confirmed_by_supervisor:
+                        type: integer
+                      report_rejected_by_company:
+                        type: integer
+                      report_rejected_by_supervisor:
+                        type: integer
+                      defense:
+                        type: integer
+                      defense_rejected:
+                        type: integer
+                      defended:
+                        type: integer
+                      canceled:
+                        type: integer
+                  students:
+                    type: integer
+                  active:
+                    type: integer
+                  cancelled:
+                    type: integer
+                  finished:
+                    type: integer
+              example:
+                pending:
+                  - id: 1
+                    student_id: 1
+                    company_id: 5
+                    semester: "winter"
+                    academic_year: "2025/2026"
+                    start_date: "2025-10-22"
+                    end_date: "2025-12-23"
+                    status: "agreement_confirm_requested"
+                    job_title: "Software Developer Intern"
+                    job_description: "Assist in developing web applications."
+                    created_at: "2025-11-13 13:51:32"
+                    updated_at: "2025-11-13 17:50:05"
+                  - id: 5
+                    student_id: 8
+                    company_id: 5
+                    semester: "summer"
+                    academic_year: "2025/2026"
+                    start_date: "2025-11-10"
+                    end_date: "2025-12-22"
+                    status: "agreement_confirm_requested"
+                    job_title: "Business Analyst Intern"
+                    job_description: "Analyze business processes and suggest improvements."
+                    created_at: "2025-11-13 17:53:25"
+                    updated_at: "2025-11-13 17:56:46"
+                statistics:
+                  created: 3
+                  agreement_confirm_requested: 2
+                students: 2
+                active: 5
+                cancelled: 0
+                finished: 0
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: 'Forbidden. Insufficient permissions.'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: 'Unauthenticated.'
+  /api/practices/list-for-client:
+    post:
+      summary: List of practices for external server (oAuth2 client)
+      tags:
+        - Practices
+      security:
+        - oauth2ClientAuth: ["client:practice_list"]
+      parameters:
+        - $ref: '#/components/parameters/AcceptHeader'
+      responses:
+        '200':
+          description: List of practices
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        student_id:
+                          type: integer
+                        company_id:
+                          type: integer
+                          nullable: true
+                        semester:
+                          type: string
+                        academic_year:
+                          type: string
+                        start_date:
+                          type: string
+                          format: date
+                          nullable: true
+                        end_date:
+                          type: string
+                          format: date
+                          nullable: true
+                        status:
+                          type: string
+                          enum: [created, agreement_confirm_requested, agreement_confirmed_by_company, agreement_confirmed_by_supervisor, agreement_rejected_by_company, agreement_rejected_by_supervisor, report_confirm_requested, report_confirmed_by_company, report_confirmed_by_supervisor, report_rejected_by_company, report_rejected_by_supervisor, defense, defense_rejected, defended, canceled]
+                        job_title:
+                          type: string
+                        job_description:
+                          type: string
+                        created_at:
+                          type: string
+                          format: date-time
+                        updated_at:
+                          type: string
+                          format: date-time
+              examples:
+                default:
+                  summary: Example response
+                  value:
+                    data:
+                      - id: 1
+                        student_id: 1
+                        company_id: 5
+                        semester: "winter"
+                        academic_year: "2025/2026"
+                        start_date: "2025-10-22"
+                        end_date: "2025-12-23"
+                        status: "agreement_confirm_requested"
+                        job_title: "Software Developer Intern"
+                        job_description: "Assist in developing web applications."
+                        created_at: "2025-11-13 13:51:32"
+                        updated_at: "2025-11-13 17:50:05"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: 'Forbidden. Insufficient permissions.'
+  /api/practices/{id}/update-defense-status:
+    patch:
+      tags:
+        - Practices
+      summary: Update practice defense status.
+      description: |
+        Update the defense status for practices. Only external server (oAuth2 client) with secrete key may update the defense status.
+      security:
+        - oauth2ClientAuth: ["client:practice_update_status"]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/AcceptHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                comment:
+                  type: string
+                status:
+                  type: string
+                  enum: [agree, reject]
+            examples:
+              default:
+                summary: Example request
+                value:
+                  comment: "Praxe boli úspešne obhájené."
+                  status: "agree"
+      responses:
+        '200':
+          description: Defense status updated
+          content:
+            application/json:
+              example:
+                success: true
+                statusCode: 200
+                message: 'Praxa bola úspešne aktualizovaná.'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: 'Forbidden. Roles required: supervisor'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: 'Unauthenticated.'
   /api/reports/list:
     post:
       summary: List of reports
@@ -2035,7 +3041,7 @@ paths:
                           nullable: true
                         status:
                           type: string
-                          enum: [created, agreement_confirm_requested, agreement_confirmed_by_company, agreement_confirmed_by_supervisor, agreement_rejected_by_company, agreement_rejected_by_supervisor, report_confirm_requested, report_confirmed_by_company, report_confirmed_by_supervisor, report_rejected_by_company, report_rejected_by_supervisor, canceled]
+                          enum: [created, agreement_confirm_requested, agreement_confirmed_by_company, agreement_confirmed_by_supervisor, agreement_rejected_by_company, agreement_rejected_by_supervisor, report_confirm_requested, report_confirmed_by_company, report_confirmed_by_supervisor, report_rejected_by_company, report_rejected_by_supervisor, defense, defense_rejected, defended, canceled]
                         job_title:
                           type: string
                         job_description:
@@ -2577,6 +3583,14 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+    oauth2ClientAuth:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: /oauth/token
+          scopes:
+            client:practice_list: "List practices for client"
+            client:practice_update_status: "Update practice status for client"
   parameters:
     AcceptHeader:
       in: header

@@ -17,7 +17,7 @@ Route::controller(UserController::class)->group(function () {
         Route::post('/login', 'login');
         Route::post('/register', 'register');
         Route::post('/update-password', 'updatePassword');
-        Route::post('/forgot-password','forgotPassword');
+        Route::post('/forgot-password', 'forgotPassword');
 
         Route::group(['middleware' => ['auth:api', 'language']], function () {
             Route::post('/change-password', 'changePassword');
@@ -54,7 +54,7 @@ Route::middleware(['auth:api', 'language'])
             Route::put('/{id}', 'update');
             Route::delete('/{id}/delete-document', 'deleteDocument');
         });
-});
+    });
 
 Route::middleware(['auth:api', 'language'])
     ->prefix('companies')
@@ -62,10 +62,9 @@ Route::middleware(['auth:api', 'language'])
         Route::middleware(['role:supervisor'])->group(function () {
             Route::post('/list', 'list');
             Route::get('/{id}', 'show');
-            Route::put('/{id}', 'update');
             Route::patch('/{id}', 'update');
         });
-});
+    });
 
 Route::middleware(['auth:api'])
     ->prefix('reports')
@@ -90,19 +89,16 @@ Route::controller(CompanyController::class)->prefix('company')->group(function (
 Route::middleware(['auth:api', 'language'])
     ->prefix('students')
     ->controller(StudentController::class)->group(function () {
-    Route::middleware(['role:supervisor,company'])->group(function () {
-        Route::get('/search', 'search');
-    });
+        Route::middleware(['role:supervisor,company'])->group(function () {
+            Route::get('/search', 'search');
+        });
         Route::middleware(['role:supervisor'])->group(function () {
             Route::post('/list', 'list');
         });
-});
+    });
 
 Route::controller(StudyProgramController::class)->prefix('study-programs')->group(function () {
     Route::get('/index', 'index');
-    Route::group(['middleware' => ['auth:api', 'language']], function () {
-
-    });
 });
 
 // php artisan passport:client --client --name="External Client" для создания внешнего клиента
