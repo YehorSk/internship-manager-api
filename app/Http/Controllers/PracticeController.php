@@ -681,24 +681,36 @@ class PracticeController extends Controller
     public function updateDocumentStatus($id, UpdateDocumentStatusRequest $request){
         $user = $request->user();
         $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
+        $isSupervisor = $user && $user->hasRoleId(RoleEnum::SUPERVISOR->value);
         $practice = Practice::where('id', $id)->first();
 
-        $allowedStatuses = [
+        $allowedStatusesCompany = [
             'agreement' => PracticeStatusEnum::AGREEMENT_CONFIRM_REQUESTED,
             'report' => PracticeStatusEnum::REPORT_CONFIRM_REQUESTED,
+        ];
+
+        $allowedStatusesSupervisor = [
+            'agreement' => PracticeStatusEnum::AGREEMENT_CONFIRMED_BY_COMPANY,
+            'report' => PracticeStatusEnum::REPORT_CONFIRMED_BY_COMPANY,
         ];
 
         $documentType = $request->input('document_type');
         $statusAction = $request->input('status');
 
-        if(! $practice->lastStatusIs($allowedStatuses[$documentType])){
+        $practiceIsMonthOld = $practice->created_at->lte(now()->subMonth());
+
+        if(
+            ($isCompany && !$practice->lastStatusIs($allowedStatusesCompany[$documentType])) ||
+            ($isSupervisor && !$practice->lastStatusIs($allowedStatusesSupervisor[$documentType]) &&
+                !($practiceIsMonthOld && $practice->lastStatusIs($allowedStatusesCompany[$documentType])))
+        ){
             return response()->json([
                 'success' => false,
                 'statusCode' => 403,
                 'message' => __('practice.cannot_upload_document_in_this_status'),
-            ]);
+            ], 403);
         }
-        $student = User::where('id', $practice->student->user_id)->first();
+
         if ($documentType === 'agreement') {
             if ($statusAction === 'agree') {
                 $status = $isCompany
@@ -751,7 +763,7 @@ class PracticeController extends Controller
                 'success' => false,
                 'statusCode' => 403,
                 'message' => __('practice.scope_missing'),
-            ]);
+            ], 403);
         }
         $practice = Practice::where('id', $id)->first();
         $statusAction = $request->input('status');
@@ -806,7 +818,7 @@ class PracticeController extends Controller
                 'success' => false,
                 'statusCode' => 404,
                 'message' => __('practice.not_found'),
-            ]);
+            ], 404);
         }
 
         $isStudent = $user->hasRoleId(RoleEnum::STUDENT->value);
@@ -860,7 +872,7 @@ class PracticeController extends Controller
                 'success' => false,
                 'statusCode' => 404,
                 'message' => __('practice.not_found'),
-            ]);
+            ], 404);
         }
 
         if (!$user->student || $practice->student_id !== $user->id) {
@@ -868,7 +880,7 @@ class PracticeController extends Controller
                 'success' => false,
                 'statusCode' => 403,
                 'message' => __('practice.not_your_practice'),
-            ]);
+            ], 403);
         }
 
         $document = Document::where('file_path', $filePath)->first();
@@ -877,7 +889,7 @@ class PracticeController extends Controller
                 'success' => false,
                 'statusCode' => 404,
                 'message' => __('practice.document_doesnt_exist'),
-            ]);
+            ], 404);
         }
 
         if (!$practice->hasDocument($filePath)) {
@@ -885,7 +897,7 @@ class PracticeController extends Controller
                 'success' => false,
                 'statusCode' => 404,
                 'message' => __('practice.document_does_not_belong_to_practice'),
-            ]);
+            ], 404);
         }
 
         Storage::disk('s3')->delete($filePath);
@@ -895,7 +907,7 @@ class PracticeController extends Controller
             'success' => true,
             'statusCode' => 200,
             'message' => __('practice.document_deleted_successfully'),
-        ]);
+        ], 200);
     }
 
     private function returnPracticeDocumentsAsDocx(Practice $practice, string $s3Path, array $values, string $filenamePrefix)
