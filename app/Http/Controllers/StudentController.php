@@ -10,22 +10,24 @@ use Illuminate\Http\Request;
 
 class StudentController extends Controller
 {
-    public function search(Request $request, $value){
+    public function search(Request $request){
         $user = $request->user();
 
         $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
+        $value = $request->query('value');
 
-        $students = Student::orderBy('id')
+        $students = Student::query()
             ->when($isCompany, function ($query) use ($user) {
                 $query->whereHas('practices', function ($practiceQuery) use ($user) {
                     $practiceQuery->where('company_id', $user->id);
                 });
             })
-            ->where(function ($query) use ($value) {
+            ->when($value, fn($query) => $query->where(function ($query) use ($value) {
                 $query->where('first_name', 'like', '%'.$value.'%')
                     ->orWhere('last_name', 'like', '%'.$value.'%');
-            })
+            }))
             ->distinct()
+            ->orderBy('id')
             ->get();
         return StudentResource::collection($students);
     }

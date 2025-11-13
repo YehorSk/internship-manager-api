@@ -83,7 +83,7 @@ Route::controller(CompanyController::class)->prefix('company')->group(function (
     Route::get('/activate/{token}', 'activate');
 
     Route::group(['middleware' => ['auth:api']], function () {
-        Route::get('/search/{value}', 'search');
+        Route::get('/search', 'search');
     });
 });
 
@@ -91,7 +91,7 @@ Route::middleware(['auth:api', 'language'])
     ->prefix('students')
     ->controller(StudentController::class)->group(function () {
     Route::middleware(['role:supervisor,company'])->group(function () {
-        Route::get('/search/{value}', 'search');
+        Route::get('/search', 'search');
     });
         Route::middleware(['role:supervisor'])->group(function () {
             Route::post('/list', 'list');

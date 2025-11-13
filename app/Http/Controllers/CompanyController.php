@@ -15,10 +15,12 @@ use Illuminate\Support\Facades\Mail;
 class CompanyController extends Controller
 {
 
-    public function search($value){
-        $companies = Company::orderBy('name')
-            ->where('name', 'like', '%'.$value.'%')
+    public function search(Request $request){
+        $value = $request->query('value');
+        $companies = Company::query()
+            ->when($value, fn($query) => $query->where('name', 'like', "%{$value}%"))
             ->where('status', 1)
+            ->orderBy('name')
             ->get();
         return CompanyResource::collection($companies);
     }
