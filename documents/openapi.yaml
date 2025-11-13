@@ -27,8 +27,8 @@ tags:
     description: Endpoints for managing practices
   - name: Reports
     description: Endpoints for generating and retrieving CSV reports
-  - name: Miscellaneous
-    description: Miscellaneous endpoints
+  - name: Study programs
+    description: Study programs endpoints
 paths:
   /api/auth/login:
     post:
@@ -712,10 +712,17 @@ paths:
               properties:
                 current_password:
                   type: string
-                new_password:
+                password:
                   type: string
-                new_password_confirmation:
+                password_confirmation:
                   type: string
+            examples:
+              change_password:
+                summary: Change password
+                value:
+                  current_password: oldpassword123
+                  password: newpassword456
+                  password_confirmation: newpassword456
       responses:
         '200':
           description: Password changed
@@ -733,6 +740,15 @@ paths:
                 success: false
                 statusCode: 400
                 message: 'Súčasné heslo, ktoré ste zadali, je nesprávne.'
+        '422':
+          description: Unprocessable Content
+          content:
+            application/json:
+              example:
+                message: 'Potvrdenie poľa heslo sa nezhoduje.'
+                errors:
+                  password:
+                    - 'Potvrdenie poľa heslo sa nezhoduje.'
         '401':
           description: Unauthorized
           content:
@@ -1337,6 +1353,152 @@ paths:
             application/json:
               example:
                 message: 'Unauthenticated.'
+  /api/practices:
+    post:
+      tags:
+        - Practices
+      summary: Create a new practice (internship)
+      description: |
+        Create a new practice. Only authenticated users with the student role are allowed to create a practice.
+        Student identity (student_id) is taken from the authentication token; it must not be supplied in the body.
+        You can either reference an existing partner company by `company_id` (companies.id) or provide free-form
+        company fields (company_name, company_address, company_email, contact_name, contact_email, contact_phone).
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - study_program_id
+                - semester
+                - academic_year
+              properties:
+                company_id:
+                  type: integer
+                  nullable: true
+                  description: Existing partner company id. If provided, company_* fields are ignored.
+                semester:
+                  type: string
+                  enum: [summer, winter]
+                academic_year:
+                  type: string
+                  description: 'Format YYYY/YYYY'
+                start_date:
+                  type: string
+                  format: date
+                  nullable: true
+                end_date:
+                  type: string
+                  format: date
+                  nullable: true
+                job_title:
+                  type: string
+                job_description:
+                  type: string
+                study_program_id:
+                  type: integer
+                company_name:
+                  type: string
+                company_address:
+                  type: string
+                company_email:
+                  type: string
+                  format: email
+                contact_name:
+                  type: string
+                contact_email:
+                  type: string
+                  format: email
+                contact_phone:
+                  type: string
+            examples:
+              with_company_id:
+                summary: Use existing company
+                value:
+                  company_id: 5
+                  semester: "summer"
+                  academic_year: "2025/2026"
+                  start_date: null
+                  end_date: null
+                  job_title: "Business Analyst Intern"
+                  job_description: "Analyze business processes and suggest improvements."
+                  study_program_id: 2
+              without_company_id:
+                summary: Provide company fields manually
+                value:
+                  company_id: null
+                  semester: "summer"
+                  academic_year: "2025/2026"
+                  start_date: null
+                  end_date: null
+                  job_title: "Business Analyst Intern"
+                  job_description: "Analyze business processes and suggest improvements."
+                  study_program_id: 2
+                  company_name: "Balog s.r.o."
+                  company_address: "Vícenová Plaza 2631\n 558 91\n Kristy"
+                  company_email: "gaspar.masaryk@cierna.sk"
+                  contact_phone: "+421962307558"
+                  contact_email: "samson.rudolf@example.com"
+                  contact_name: "Juliana Ferjenčíková"
+      responses:
+        '201':
+          description: Practice created
+          content:
+            application/json:
+              example:
+                success: true
+                statusCode: 201
+                message: Praktika bola úspešne vytvorená.
+        '403':
+          description: Forbidden - role check failed
+          content:
+            application/json:
+              example:
+                message: 'Forbidden. Role required: student'
+        '422':
+          description: Unprocessable Content
+          content:
+            application/json:
+              examples:
+                missing_field:
+                  summary: Missing required field
+                  value:
+                    message: "Pole študijný program je povinné. (and 8 more errors)"
+                    errors:
+                      study_program_id:
+                        - "Pole študijný program je povinné."
+                      semester:
+                        - "Pole semester je povinné."
+                      academic_year:
+                        - "Pole akademický rok je povinné."
+                      company_name:
+                        - "Pole názov firmy je povinné."
+                      company_address:
+                        - "Pole adresa firmy je povinné."
+                      company_email:
+                        - "Pole e-mail firmy je povinné."
+                      contact_name:
+                        - "Pole meno kontaktnej osoby je povinné."
+                      contact_email:
+                        - "Pole e-mail kontaktnej osoby je povinné."
+                      contact_phone:
+                        - "Pole telefón kontaktnej osoby je povinné."
+                malformed_field:
+                  summary: Malformed field
+                  value:
+                    message: "Vybraná hodnota pre študijný program je neplatná. (and 2 more errors)"
+                    errors:
+                      study_program_id:
+                        - "Vybraná hodnota pre študijný program je neplatná."
+                      company_email:
+                        - "Pole e-mail firmy musí byť platná emailová adresa."
+                      contact_email:
+                        - "Pole e-mail kontaktnej osoby musí byť platná emailová adresa."
   /api/practices/list:
     post:
       tags:
@@ -2538,152 +2700,7 @@ paths:
                 success: false
                 statusCode: 404
                 message: 'Praxa nebola nájdená.'
-  /api/practices:
-    post:
-      tags:
-        - Practices
-      summary: Create a new practice (internship)
-      description: |
-        Create a new practice. Only authenticated users with the student role are allowed to create a practice.
-        Student identity (student_id) is taken from the authentication token; it must not be supplied in the body.
-        You can either reference an existing partner company by `company_id` (companies.id) or provide free-form
-        company fields (company_name, company_address, company_email, contact_name, contact_email, contact_phone).
-      security:
-        - bearerAuth: []
-      parameters:
-        - $ref: '#/components/parameters/AcceptHeader'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - study_program_id
-                - semester
-                - academic_year
-              properties:
-                company_id:
-                  type: integer
-                  nullable: true
-                  description: Existing partner company id. If provided, company_* fields are ignored.
-                semester:
-                  type: string
-                  enum: [summer, winter]
-                academic_year:
-                  type: string
-                  description: 'Format YYYY/YYYY'
-                start_date:
-                  type: string
-                  format: date
-                  nullable: true
-                end_date:
-                  type: string
-                  format: date
-                  nullable: true
-                job_title:
-                  type: string
-                job_description:
-                  type: string
-                study_program_id:
-                  type: integer
-                company_name:
-                  type: string
-                company_address:
-                  type: string
-                company_email:
-                  type: string
-                  format: email
-                contact_name:
-                  type: string
-                contact_email:
-                  type: string
-                  format: email
-                contact_phone:
-                  type: string
-            examples:
-              with_company_id:
-                summary: Use existing company
-                value:
-                  company_id: 5
-                  semester: "summer"
-                  academic_year: "2025/2026"
-                  start_date: null
-                  end_date: null
-                  job_title: "Business Analyst Intern"
-                  job_description: "Analyze business processes and suggest improvements."
-                  study_program_id: 2
-              without_company_id:
-                summary: Provide company fields manually
-                value:
-                  company_id: null
-                  semester: "summer"
-                  academic_year: "2025/2026"
-                  start_date: null
-                  end_date: null
-                  job_title: "Business Analyst Intern"
-                  job_description: "Analyze business processes and suggest improvements."
-                  study_program_id: 2
-                  company_name: "Balog s.r.o."
-                  company_address: "Vícenová Plaza 2631\n 558 91\n Kristy"
-                  company_email: "gaspar.masaryk@cierna.sk"
-                  contact_phone: "+421962307558"
-                  contact_email: "samson.rudolf@example.com"
-                  contact_name: "Juliana Ferjenčíková"
-      responses:
-        '201':
-          description: Practice created
-          content:
-            application/json:
-              example:
-                success: true
-                statusCode: 201
-                message: Praktika bola úspešne vytvorená.
-        '403':
-          description: Forbidden - role check failed
-          content:
-            application/json:
-              example:
-                message: 'Forbidden. Role required: student'
-        '422':
-          description: Unprocessable Content
-          content:
-            application/json:
-              examples:
-                missing_field:
-                  summary: Missing required field
-                  value:
-                    message: "Pole študijný program je povinné. (and 8 more errors)"
-                    errors:
-                      study_program_id:
-                        - "Pole študijný program je povinné."
-                      semester:
-                        - "Pole semester je povinné."
-                      academic_year:
-                        - "Pole akademický rok je povinné."
-                      company_name:
-                        - "Pole názov firmy je povinné."
-                      company_address:
-                        - "Pole adresa firmy je povinné."
-                      company_email:
-                        - "Pole e-mail firmy je povinné."
-                      contact_name:
-                        - "Pole meno kontaktnej osoby je povinné."
-                      contact_email:
-                        - "Pole e-mail kontaktnej osoby je povinné."
-                      contact_phone:
-                        - "Pole telefón kontaktnej osoby je povinné."
-                malformed_field:
-                  summary: Malformed field
-                  value:
-                    message: "Vybraná hodnota pre študijný program je neplatná. (and 2 more errors)"
-                    errors:
-                      study_program_id:
-                        - "Vybraná hodnota pre študijný program je neplatná."
-                      company_email:
-                        - "Pole e-mail firmy musí byť platná emailová adresa."
-                      contact_email:
-                        - "Pole e-mail kontaktnej osoby musí byť platná emailová adresa."
+
   /api/practices/statistics:
     get:
       tags:
@@ -3545,7 +3562,7 @@ paths:
     get:
       summary: List of study programs
       tags:
-        - Miscellaneous
+        - Study programs
       parameters:
         - $ref: '#/components/parameters/AcceptHeader'
       responses:
