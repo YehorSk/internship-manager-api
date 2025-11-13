@@ -52,6 +52,7 @@ class UserController extends Controller
                 'name' => $name,
                 'email' => $email,
                 'password' => Hash::make($plainPassword),
+                'language' => $userData['language'] ?? 'sk',
             ]);
 
             switch ($type) {

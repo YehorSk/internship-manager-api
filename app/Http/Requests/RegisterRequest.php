@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\RoleEnum;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\App;
 use Illuminate\Validation\Rule;
 
 class RegisterRequest extends FormRequest
@@ -17,6 +18,7 @@ class RegisterRequest extends FormRequest
     {
         $rules = [
             'type' => ['required', 'integer', Rule::in([RoleEnum::STUDENT->value, RoleEnum::COMPANY->value])],
+            'language' => ['nullable', 'string', Rule::in(['sk','ua','be','ru','en'])],
         ];
 
         switch ($this->input('type')) {
