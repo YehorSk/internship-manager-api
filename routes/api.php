@@ -3,10 +3,14 @@
 use App\Http\Controllers\PracticeController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StudyProgramController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\ReportController;
+use Laravel\Passport\Http\Middleware\CheckToken;
+use Laravel\Passport\Http\Middleware\EnsureClientIsResourceOwner;
+use Laravel\Passport\Passport;
 
 Route::controller(UserController::class)->group(function () {
     Route::prefix('auth')->group(function () {
@@ -99,4 +103,22 @@ Route::controller(StudyProgramController::class)->prefix('study-programs')->grou
     Route::group(['middleware' => ['auth:api', 'language']], function () {
 
     });
+});
+
+// php artisan passport:client --client --name="External Client" для создания внешнего клиента
+// Внешний клиент должен вызывать http://localhost:8000/oauth/token с использованием айди и секрета для получения токена который он будет потом использовать
+// в своих запросах
+//{
+//    "grant_type": "client_credentials",
+//    "client_id": "",
+//    "client_secret": "",
+//    "scope": "client:practice_update_status ... ... ..." доступные скоупы client:practice_list и client:practice_update_status
+//}
+
+Route::prefix('practices')->controller(PracticeController::class)->group(function () {
+    Route::post('/list-for-client', 'clientList')
+        ->middleware('client:client:practice_list');
+
+    Route::patch('/{id}/update-defense-status', 'updateDefenseStatus')
+        ->middleware('client:client:practice_update_status');
 });

@@ -27,4 +27,8 @@ return [
     'document_generation_failed' => 'Не вдалося згенерувати документ.',
     'document_download_not_allowed' => 'Завантаження цього документа заборонено.',
     'document_processing_failed' => 'Обробка вхідного шаблону не вдалася.',
+    'scope_missing' => 'Ви не маєте права виконувати цю дію.',
+    'defended' => 'захищено',
+    'defense_rejected' => 'захист відхилено',
+    'status_error' => 'Не можна змінити статус практики',
 ];

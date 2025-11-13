@@ -27,4 +27,8 @@ return [
     'document_generation_failed' => 'Не ўдалося стварыць дакумент.',
     'document_download_not_allowed' => 'Спампоўванне гэтага дакумента не дазволена.',
     'document_processing_failed' => 'Апрацоўка ўводнага шаблона не ўдалася.',
+    'scope_missing' => 'Вы не ўпаўнаважаны выконваць гэтае дзеянне.',
+    'defended' => 'абаронена',
+    'defense_rejected' => 'абарону адхілена',
+    'status_error' => 'Немагчыма змяніць стан практыкі.',
 ];

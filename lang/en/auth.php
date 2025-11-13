@@ -32,4 +32,5 @@ return [
     'data_empty' => 'No data was provided for updating.',
     'forbidden_no_roles' => 'Forbidden. No roles assigned.',
     'forbidden_roles_required' => 'Forbidden. Roles required: :roles',
+    'forbidden' => 'You do not have permission to perform this action.',
 ];

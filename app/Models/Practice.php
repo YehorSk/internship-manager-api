@@ -84,4 +84,15 @@ class Practice extends Model
         return $lastStatus === $status->value;
     }
 
+    public function hasStatuses(array $statuses): bool
+    {
+        $allStatuses = $this->practiceStatusHistory->pluck('status')->toArray();
+        foreach ($statuses as $status) {
+            if (!in_array($status->value, $allStatuses)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 }

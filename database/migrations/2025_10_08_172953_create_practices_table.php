@@ -20,7 +20,8 @@ return new class extends Migration
             $table->string('academic_year', 9);
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
-            $table->enum('status', array_map(fn($case) => $case->value, PracticeStatusEnum::cases()))->default(PracticeStatusEnum::CREATED->value);            $table->string('job_title')->nullable();
+            $table->enum('status', array_map(fn($case) => $case->value, PracticeStatusEnum::cases()))->default(PracticeStatusEnum::CREATED->value);
+            $table->string('job_title')->nullable();
             $table->string('job_description')->nullable();
             $table->unsignedBigInteger('study_program_id');
             $table->foreign('student_id')->references('id')->on('users')->onDelete('cascade');

@@ -27,4 +27,8 @@ return [
     'document_generation_failed' => 'Document generation failed.',
     'document_download_not_allowed' => 'Downloading this document is not allowed.',
     'document_processing_failed' => 'Processing of the input template failed.',
+    'scope_missing' => 'You are not authorized to perform this action.',
+    'defended' => 'defended',
+    'defense_rejected' => 'defense rejected',
+    'status_error' => "Can't change the status of the practice",
 ];
