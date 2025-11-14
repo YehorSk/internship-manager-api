@@ -107,7 +107,7 @@ class PracticeController extends Controller
     public function statistics(Request $request){
         $user = $request->user();
         $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
-
+        $with = ['student', 'practiceCompany'];
         $pending = Practice::query()
             ->when($isCompany, function ($query) use ($user) {
                 $query->where('company_id', $user->id);
@@ -116,6 +116,7 @@ class PracticeController extends Controller
                 PracticeStatusEnum::AGREEMENT_CONFIRM_REQUESTED->value,
                 PracticeStatusEnum::REPORT_CONFIRM_REQUESTED->value,
             ])
+            ->with($with)
             ->get();
 
         $statistics = Practice::query()
@@ -125,6 +126,12 @@ class PracticeController extends Controller
             ->select('status', DB::raw('COUNT(*) as count'))
             ->groupBy('status')
             ->pluck('count', 'status');
+
+        $total = Practice::query()
+            ->when($isCompany, function ($query) use ($user) {
+                $query->where('company_id', $user->id);
+            })
+            ->count();
 
         $active = Practice::query()
             ->when($isCompany, function ($query) use ($user) {
@@ -163,6 +170,7 @@ class PracticeController extends Controller
             'active' => $active,
             'cancelled' => $cancelled,
             'finished' => $finished,
+            'total' => $total
         ]);
     }
 
