@@ -107,7 +107,6 @@ class CompanyController extends Controller
     public function update(Request $request, $id)
     {
         $user = auth()->user();
-//        $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
         $isSupervisor = $user && $user->hasRoleId(RoleEnum::SUPERVISOR->value);
 
         if ($request->isMethod('patch') && $isSupervisor) {
