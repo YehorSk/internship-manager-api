@@ -152,6 +152,7 @@
             'company_name' => 'názov firmy',
             'company_address' => 'adresa firmy',
             'company_email' => 'e-mail firmy',
+            'ico' => 'IČO'
         ],
 
     ];

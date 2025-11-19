@@ -41,6 +41,10 @@ class StorePracticeRequest extends FormRequest
                 'contact_name' => 'required|string|max:255',
                 'contact_email' => 'required|email',
                 'contact_phone' => 'required|string|max:50',
+                'ico' => ['required',
+                          'string',
+                          'regex:/^\d{8}$/'
+                ]
             ]);
         }
         return $rules;

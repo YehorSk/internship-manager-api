@@ -42,6 +42,7 @@ class PracticeCompanyFactory extends Factory
                 'Marketingový špecialista',
                 'Asistent'
             ]),
+            'ico' => $this->faker->numerify('########'),
         ];
     }
 }

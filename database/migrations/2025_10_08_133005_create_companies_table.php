@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('company_email')->unique();
             $table->string('contact_email');
             $table->string('contact_phone');
+            $table->string('ico', 8)->unique();
             $table->boolean('status')->default(false);
             $table->timestamps();
         });

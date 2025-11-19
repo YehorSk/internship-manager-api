@@ -21,6 +21,7 @@ class Company extends Model
         'company_email',
         'contact_email',
         'contact_phone',
+        'ico',
         'user_id',
         'status',
         'activation_token',

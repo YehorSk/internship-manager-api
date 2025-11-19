@@ -30,6 +30,7 @@ class CompanySeeder extends Seeder
                 'contact_name' => 'Michal Kráľ',
                 'contact_position' => 'Vedúci IT oddelenia',
                 'status' => 1,
+                'ico' => '12345678'
             ],
             [
                 'name' => 'Energo Slovensko a.s.',
@@ -44,6 +45,7 @@ class CompanySeeder extends Seeder
                 'contact_name' => 'Veronika Holubová',
                 'contact_position' => 'HR manažér',
                 'status' => 1,
+                'ico' => '13245768'
             ],
             [
                 'name' => 'Zdravie Plus s.r.o.',
@@ -58,6 +60,7 @@ class CompanySeeder extends Seeder
                 'contact_name' => 'Lucia Benešová',
                 'contact_position' => 'Riaditeľka',
                 'status' => 0,
+                'ico' => '51362784'
             ],
         ];
 
@@ -89,6 +92,7 @@ class CompanySeeder extends Seeder
                 'contact_name' => $company['contact_name'],
                 'contact_position' => $company['contact_position'],
                 'status' => $company['status'],
+                'ico' => $company['ico'],
             ]);
         }
 

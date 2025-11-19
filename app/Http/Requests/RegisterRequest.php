@@ -48,6 +48,11 @@ class RegisterRequest extends FormRequest
                     'company_email' => 'required|email|unique:companies,company_email',
                     'contact_email' => 'required|email',
                     'contact_phone' => 'required|string|max:20',
+                    'ico' => ['required',
+                              'string',
+                              'regex:/^\d{8}$/',
+                              'unique:companies,ico'
+                    ],
                     'password' => 'required|string|min:8|confirmed', // пароль обязателен для компании
                 ]);
                 break;

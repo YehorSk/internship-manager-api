@@ -223,6 +223,7 @@ return [
         'company_name' => 'company name',
         'company_address' => 'company address',
         'company_email' => 'company email',
+        'ico' => 'Company ID'
     ],
 
 ];

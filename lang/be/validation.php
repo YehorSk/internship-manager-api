@@ -152,6 +152,7 @@ return [
         'company_name' => 'назва кампаніі',
         'company_address' => 'адрас кампаніі',
         'company_email' => 'email кампаніі',
+        'ico' => 'Ідэнтыфікацыйны нумар арганізацыі'
     ],
 
 ];

@@ -48,6 +48,13 @@ class UpdateUserRequest extends FormRequest
                 'contact_position' => 'sometimes|required|string|max:255',
                 'contact_email' => 'sometimes|required|email',
                 'contact_phone' => 'sometimes|required|string|max:20',
+                'ico' => [
+                    'sometimes',
+                    'required',
+                    'string',
+                    'regex:/^\d{8}$/',
+                    Rule::unique('companies', 'ico')->ignore($user->company->id),
+                ]
             ]);
         }
         if($isSupervisor){

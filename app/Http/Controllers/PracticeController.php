@@ -63,11 +63,13 @@ class PracticeController extends Controller
                 $practiceCompany->contact_name = $company->contact_name;
                 $practiceCompany->contact_email = $company->contact_email;
                 $practiceCompany->contact_phone = $company->contact_phone;
+                $practiceCompany->contact_position = $company->contact_position;
                 $practiceCompany->company_email = $company->company_email;
+                $practiceCompany->ico = $company->ico;
             } else {
                 $practice->company_id = null;
 
-                foreach (['company_email', 'contact_name', 'contact_email', 'contact_phone'] as $field) {
+                foreach (['company_email', 'contact_name', 'contact_email', 'contact_phone', 'ico'] as $field) {
                     if (array_key_exists($field, $validated)) {
                         $practiceCompany->$field = $validated[$field];
                     }

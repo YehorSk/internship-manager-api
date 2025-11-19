@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('contact_phone', 50);
             $table->string('contact_email');
             $table->string('contact_name');
+            $table->string('ico', 8);
             $table->foreign('practice_id')->references('id')->on('practices')->
                 onDelete('cascade');
             $table->timestamps();

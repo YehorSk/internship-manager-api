@@ -98,6 +98,7 @@ class PracticeSeeder extends Seeder
                         'contact_email' => $company->contact_email,
                         'contact_name' => $company->contact_name,
                         'contact_position' => $company->contact_position,
+                        'ico' => $company->ico,
                     ]);
                 } else {
                     $practiceModel->update(['company_id' => null]);
