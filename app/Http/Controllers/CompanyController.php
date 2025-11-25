@@ -90,7 +90,7 @@ class CompanyController extends Controller
             ->orderBy($request->input('sortBy', 'id'), $request->input('sortOrder', 'asc'))
             ->paginate($request->input('itemsPerPage', 10), ['*'], 'page', $request->input('page', 1));
 
-        return response()->json($companies);
+        return CompanyResource::collection($companies);
     }
 
     public function show($id)
