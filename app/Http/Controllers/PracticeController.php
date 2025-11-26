@@ -70,7 +70,7 @@ class PracticeController extends Controller
             } else {
                 $practice->company_id = null;
 
-                foreach (['company_email', 'contact_name', 'contact_email', 'contact_phone', 'ico'] as $field) {
+                foreach (['company_email', 'contact_name', 'contact_email', 'contact_phone', 'contact_position', 'ico'] as $field) {
                     if (array_key_exists($field, $validated)) {
                         $practiceCompany->$field = $validated[$field];
                     }
