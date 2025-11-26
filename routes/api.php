@@ -54,6 +54,9 @@ Route::middleware(['auth:api', 'language'])
             Route::put('/{id}', 'update');
             Route::delete('/{id}/delete-document', 'deleteDocument');
         });
+        Route::middleware(['role:supervisor'])->group(function () {
+            Route::patch('/{id}/update-practice-status', 'updatePracticeStatus');
+        });
     });
 
 Route::middleware(['auth:api', 'language'])

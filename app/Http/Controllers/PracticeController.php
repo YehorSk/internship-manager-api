@@ -10,6 +10,7 @@ use App\Http\Requests\PracticeListRequest;
 use App\Http\Requests\StorePracticeRequest;
 use App\Http\Requests\UpdateDefenseStatusRequest;
 use App\Http\Requests\UpdateDocumentStatusRequest;
+use App\Http\Requests\UpdatePracticeStatusRequest;
 use App\Http\Requests\UploadDocumentRequest;
 use App\Http\Resources\PracticeResource;
 use App\Mail\AgreementConfirmationRequestedMail;
@@ -327,10 +328,11 @@ class PracticeController extends Controller
                 $practiceCompany->contact_name = $company->contact_name;
                 $practiceCompany->contact_email = $company->contact_email;
                 $practiceCompany->contact_phone = $company->contact_phone;
+                $practiceCompany->contact_position = $company->contact_position;
                 $practiceCompany->company_email = $company->company_email;
             } else {
                 $practice->company_id = null;
-                foreach (['company_email', 'contact_name', 'contact_email', 'contact_phone'] as $field) {
+                foreach (['company_email', 'contact_name', 'contact_email', 'contact_phone', 'contact_position'] as $field) {
                     if (array_key_exists($field, $validated)) {
                         $practiceCompany->$field = $validated[$field];
                     }
@@ -353,6 +355,18 @@ class PracticeController extends Controller
             $practiceCompany->save();
         });
 
+        $with = ['studyProgram', 'practiceStatusHistory', 'documents'];
+
+        if ($isStudent || $isSupervisor) {
+            $with[] = 'practiceCompany';
+        }
+
+        if ($isCompany || $isSupervisor) {
+            $with[] = 'student';
+        }
+
+        $practice->load($with);
+
         if($isSupervisor){
             Mail::to($practice->practiceCompany->contact_email)->send(new PracticeUpdatedBySupervisor(
                 practice: $practice,
@@ -366,15 +380,49 @@ class PracticeController extends Controller
             ));
         }
 
-        $with = ['studyProgram', 'practiceStatusHistory', 'documents'];
+        return response()->json([
+            'success' => true,
+            'data' => new PracticeResource($practice),
+            'statusCode' => 200,
+            'message' => __('practice.updated_successfully')
+        ]);
+    }
 
-        if ($isStudent || $isSupervisor) {
-            $with[] = 'practiceCompany';
+    public function updatePracticeStatus($id, UpdatePracticeStatusRequest $request){
+        $validated = $request->validated();
+
+        $user = $request->user();
+
+        $practice = Practice::query()
+            ->where('id', $id)
+            ->first();
+
+        if (!$practice) {
+            return response()->json(['success' => false, 'statusCode' => 404, 'message' => __('practice.not_found')], 404);
         }
 
-        if ($isCompany || $isSupervisor) {
-            $with[] = 'student';
-        }
+        $practice->status = PracticeStatusEnum::from($validated['status']);
+        $practice->save();
+        PracticeStatusHistory::create([
+            'practice_id' => $practice->id,
+            'user_id' => $user->id,
+            'status' =>  PracticeStatusEnum::from($validated['status']),
+        ]);
+
+        $with = ['studyProgram', 'practiceStatusHistory', 'documents', 'practiceCompany', 'student'];
+
+        $practice->load($with);
+
+        Mail::to($practice->practiceCompany->contact_email)->send(new PracticeUpdatedBySupervisor(
+            practice: $practice,
+            student: null,
+            company: $practice->practiceCompany
+        ));
+        Mail::to($practice->student->student_email)->send(new PracticeUpdatedBySupervisor(
+            practice: $practice,
+            student: $practice->student,
+            company: null
+        ));
 
         return response()->json([
             'success' => true,

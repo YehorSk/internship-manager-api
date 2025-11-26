@@ -2,9 +2,11 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\PracticeStatusEnum;
 use App\Enums\SemesterEnum;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Enum;
 
 class StorePracticeRequest extends FormRequest
 {
@@ -41,6 +43,7 @@ class StorePracticeRequest extends FormRequest
                 'contact_name' => 'required|string|max:255',
                 'contact_email' => 'required|email',
                 'contact_phone' => 'required|string|max:50',
+                'contact_position' => 'required|string|max:50',
                 'ico' => ['required',
                           'string',
                           'regex:/^\d{8}$/'
