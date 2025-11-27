@@ -791,6 +791,42 @@ paths:
                 errors:
                   language:
                     - 'Vybraná hodnota pre jazyk je neplatná.'
+  /oauth/token:
+    post:
+      tags:
+        - Authentication
+      summary: OAuth2 token generation for external system
+      parameters:
+        - $ref: '#/components/parameters/AcceptHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                grant_type:
+                  type: string
+                client_id:
+                  type: string
+                client_secret:
+                  type: string
+                scope:
+                  type: string
+            example:
+              grant_type: client_credentials
+              client_id: your_client_id
+              client_secret: your_client_secret
+              scope: 'client:practice_list'
+      responses:
+        '200':
+          description: OAuth2 token
+          content:
+            application/json:
+              example:
+                token_type: Bearer
+                expires_in: 31536000
+                access_token: <access_token>
   /api/companies/list:
     post:
       tags:
