@@ -30,8 +30,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
-use Dompdf\Dompdf;
-use Dompdf\Options;
 use Laravel\Passport\Passport;
 use PhpOffice\PhpWord\TemplateProcessor;
 
