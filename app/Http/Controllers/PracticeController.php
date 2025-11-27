@@ -177,7 +177,7 @@ class PracticeController extends Controller
         ]);
     }
 
-    function list(PracticeListRequest $request)
+    public function list(PracticeListRequest $request)
     {
         $user = $request->user();
 
@@ -815,8 +815,65 @@ class PracticeController extends Controller
 
     }
 
-    public function updateDefenseStatus($id, UpdateDefenseStatusRequest $request){
+    public function practiceListForExternalSystem(PracticeListRequest $request)
+    {
         if (!Passport::hasScope('client:practice_list')) {
+            return response()->json([
+                'success' => false,
+                'statusCode' => 403,
+                'message' => __('practice.scope_missing'),
+            ], 403);
+        }
+
+        $with = ['studyProgram', 'practiceCompany', 'student'];
+
+        $practices = Practice::query()
+            ->when($request->has('search.status'), function ($query) use ($request) {
+                $query->where('status', $request->input('search.status'));
+            })
+            ->when($request->has('search.semester'), function ($query) use ($request) {
+                $query->where('semester', trim($request->input('search.semester')));
+            })
+            ->when($request->has('search.academic_year'), function ($query) use ($request) {
+                $query->where('academic_year', trim($request->input('search.academic_year')));
+            })
+            ->when($request->has('search.start_date'), function ($query) use ($request) {
+                $query->where('start_date', '>=', $request->input('search.start_date'));
+            })
+            ->when($request->has('search.end_date'), function ($query) use ($request) {
+                $query->where('end_date', '<=', $request->input('search.end_date'));
+            })
+            ->when($request->filled('search.study_program_name'), function ($query) use ($request) {
+                $pname = trim($request->input('search.study_program_name'));
+                if ($pname === '') {
+                    return;
+                }
+                $query->whereRelation('studyProgram', 'name', 'like', '%' . $pname . '%');
+
+            })
+            ->when($request->filled('search.student_name'), function ($query) use ($request) {
+                $fullName = trim($request->input('search.student_name'));
+                if ($fullName === '') {
+                    return;
+                }
+                $query->whereRelation('student.user', 'name', 'like', '%' . $fullName . '%');
+            })
+            ->when($request->filled('search.company_name'), function ($query) use ($request) {
+                $cname = trim($request->input('search.company_name'));
+                if ($cname === '') {
+                    return;
+                }
+                $query->whereRelation('practiceCompany', 'name', 'like', '%' . $cname . '%');
+            })
+            ->with($with)
+            ->orderBy($request->input('sortBy', 'created_at'), $request->input('sortOrder', 'desc'))
+            ->paginate($request->input('itemsPerPage', 10), ['*'], 'page', $request->input('page', 1));
+
+        return PracticeResource::collection($practices);
+    }
+
+    public function updateDefenseStatus($id, UpdateDefenseStatusRequest $request){
+        if (!Passport::hasScope('client:practice_update_status')) {
             return response()->json([
                 'success' => false,
                 'statusCode' => 403,
