@@ -115,7 +115,7 @@ Route::controller(StudyProgramController::class)->prefix('study-programs')->grou
 //}
 
 Route::prefix('practices')->controller(PracticeController::class)->group(function () {
-    Route::post('/list', 'practiceListForExternalSystem')
+    Route::post('/index', 'practiceListForExternalSystem')
         ->middleware('client:client:practice_list');
 
     Route::patch('/{id}/update-defense-status', 'updateDefenseStatus')
