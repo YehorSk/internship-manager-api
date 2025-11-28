@@ -16,7 +16,6 @@ services:
   mariadb:
     image: mariadb:10.11
     container_name: mariadb
-    restart: unless-stopped
     environment:
       - MYSQL_ROOT_PASSWORD=root
     networks:
@@ -27,9 +26,27 @@ services:
     ports:
       - "3306:3306"
 
+  minio:
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+    container_name: minio
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+      - TZ=Europe/Bratislava
+    command: server /data --address ":9100" --console-address ":9101"
+    networks:
+      internship_network:
+        ipv4_address: 172.31.0.106
+    volumes:
+      - minio-data:/data
+    ports:
+      - "9100:9100"
+      - "9101:9101"
+
 volumes:
   mailpit-data:
   mariadb_data:
+  minio-data:
 
 networks:
   internship_network:
