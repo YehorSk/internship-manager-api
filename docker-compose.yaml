@@ -1,53 +1,83 @@
 services:
   mailpit:
     image: axllent/mailpit
-    container_name: mailpit
     environment:
       - TZ=Europe/Bratislava
     networks:
-      internship_network:
-        ipv4_address: 172.31.0.104
+      - internship_network
     volumes:
       - mailpit-data:/data
     ports:
       - "8025:8025"
       - "1025:1025"
 
-  mariadb:
-    image: mariadb:10.11
-    container_name: mariadb
-    environment:
-      - MYSQL_ROOT_PASSWORD=root
-    networks:
-      internship_network:
-        ipv4_address: 172.31.0.103
-    volumes:
-      - mariadb_data:/var/lib/mysql
-    ports:
-      - "3306:3306"
-
   minio:
     image: minio/minio:RELEASE.2025-04-22T22-12-26Z
-    container_name: minio
     environment:
       - MINIO_ROOT_USER=minioadmin
       - MINIO_ROOT_PASSWORD=minioadmin
       - TZ=Europe/Bratislava
     command: server /data --address ":9100" --console-address ":9101"
     networks:
-      internship_network:
-        ipv4_address: 172.31.0.106
+      - internship_network
     volumes:
       - minio-data:/data
     ports:
       - "9100:9100"
       - "9101:9101"
 
+  mariadb:
+    image: mariadb:10.11
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    networks:
+      - internship_network
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+  node:
+    build:
+      context: .
+      dockerfile: ./.docker/node/.Dockerfile
+    volumes:
+      - ../internship-manager-web:/var/www/internship-manager-web/
+    networks:
+      - internship_network
+
+  php-fpm:
+    build:
+      context: .
+      dockerfile: .docker/php-fpm/.Dockerfile
+    container_name: php-fpm
+    volumes:
+      - ./:/var/www/internship-manager-api/
+    networks:
+      - internship_network
+
+  nginx:
+    build:
+      context: .
+      dockerfile: .docker/nginx/.Dockerfile
+    ports:
+      - "8000:8000"
+      - "3000:3000"
+    volumes:
+      - ./:/var/www/internship-manager-api/
+      - ../internship-manager-web:/var/www/internship-manager-web/
+    depends_on:
+      - php-fpm
+      - node
+    networks:
+      - internship_network
+
 volumes:
   mailpit-data:
   mariadb_data:
   minio-data:
+  node_modules:
 
 networks:
   internship_network:
-    external: true
+    driver: bridge
