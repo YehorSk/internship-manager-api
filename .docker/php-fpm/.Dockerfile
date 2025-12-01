@@ -42,7 +42,4 @@ RUN curl -sS https://getcomposer.org/installer | php -- \
     && chmod +x /usr/local/bin/composer \
     && chmod +x /usr/local/bin/docker-entrypoint.sh
 
-RUN groupadd -g 1000 admin && \
-    useradd -u 1000 -g admin -m admin
-
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
