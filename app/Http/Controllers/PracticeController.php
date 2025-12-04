@@ -44,7 +44,7 @@ class PracticeController extends Controller
         DB::transaction(function () use ($request, $validated, $user) {
             $practice = new Practice();
 
-            foreach (['start_date', 'end_date', 'academic_year', 'semester', 'study_program_id', 'job_title', 'job_description'] as $field) {
+            foreach (['start_date', 'end_date', 'academic_year', 'semester', 'study_program_id', 'job_title', 'job_description', 'is_paid'] as $field) {
                 if (array_key_exists($field, $validated)) {
                     $practice->$field = $validated[$field];
                 }

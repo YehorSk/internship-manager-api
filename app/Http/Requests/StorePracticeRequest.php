@@ -34,6 +34,7 @@ class StorePracticeRequest extends FormRequest
             'end_date' => 'nullable|date',
             'job_title' => 'nullable|string|max:255',
             'job_description' => 'nullable|string',
+            'is_paid' => 'nullable|boolean',
         ];
         if(!$this->filled('company_id')){
             $rules = array_merge($rules, [

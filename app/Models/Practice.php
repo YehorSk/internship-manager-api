@@ -26,6 +26,7 @@ class Practice extends Model
         'study_program_id',
         'job_title',
         'job_description',
+        'is_paid',
     ];
 
     protected $hidden = [
