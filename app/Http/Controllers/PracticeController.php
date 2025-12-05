@@ -26,6 +26,7 @@ use App\Models\PracticeStatusHistory;
 use App\Models\Student;
 use App\Models\Supervisor;
 use App\Models\User;
+use App\Services\Contracts\CompanyServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -35,6 +36,12 @@ use PhpOffice\PhpWord\TemplateProcessor;
 
 class PracticeController extends Controller
 {
+    protected $companyService;
+
+    public function __construct(CompanyServiceInterface $companyService){
+        $this->companyService = $companyService;
+    }
+
     public function store(StorePracticeRequest $request)
     {
         $validated = $request->validated();
@@ -705,6 +712,14 @@ class PracticeController extends Controller
             ];
 
             Mail::to($practice->practiceCompany->contact_email)->send(new AgreementConfirmationRequestedMail($practice, $options));
+        }else if(!$practice->company_id && !$practice->is_paid){
+            try {
+                $company = $this->companyService->studentRegisterCompany($practice->practiceCompany, $user, $practice);
+                $practice['company_id'] = $company->user_id;
+                $practice->save();
+            }catch (\Exception $e){
+                return response()->json(['success' => false, 'statusCode' => 500, 'error' => $e->getMessage(), 'message' => __('practice.company_registration_failed')], 500);
+            }
         }
 
         return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('practice.agreement_approval_requested_successfully')]);
@@ -753,12 +768,10 @@ class PracticeController extends Controller
         $documentType = $request->input('document_type');
         $statusAction = $request->input('status');
 
-        $practiceIsMonthOld = $practice->created_at->lte(now()->subMonth());
-
         if(
             ($isCompany && !$practice->lastStatusIs($allowedStatusesCompany[$documentType])) ||
             ($isSupervisor && !$practice->lastStatusIs($allowedStatusesSupervisor[$documentType]) &&
-                !($practiceIsMonthOld && $practice->lastStatusIs($allowedStatusesCompany[$documentType])))
+                !$practice->lastStatusIs($allowedStatusesCompany[$documentType]))
         ){
             return response()->json([
                 'success' => false,

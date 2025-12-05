@@ -14,13 +14,15 @@ class CompanyConfirmationMail extends Mailable
     use Queueable, SerializesModels;
 
     protected $company;
+    protected $registeredByStudent;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($company)
+    public function __construct($company, $registeredByStudent=false)
     {
         $this->company = $company;
+        $this->registeredByStudent = $registeredByStudent;
     }
 
     /**
@@ -47,7 +49,11 @@ class CompanyConfirmationMail extends Mailable
     {
 //        $activationUrl = url('/api/company/activate/' . $this->company->activation_token);
         $frontendUrl = config('app.frontend_url', 'http://localhost:3000');
-        $activationUrl = $frontendUrl . '/company-activation?token=' . $this->company->activation_token;
+        if($this->registeredByStudent){
+            $activationUrl = $frontendUrl . '/company-activation-student?token=' . $this->company->activation_token;
+        }else{
+            $activationUrl = $frontendUrl . '/company-activation?token=' . $this->company->activation_token;
+        }
         return $this->view('emails.company_confirmation')
             ->with([
                 'company' => $this->company,

@@ -31,4 +31,6 @@ return [
     'defended' => 'defended',
     'defense_rejected' => 'defense rejected',
     'status_error' => "Can't change the status of the practice",
+    'company_ico_error' => 'A company with this Company ID already exists',
+    'company_registration_failed' => 'Something went wrong while registering the company.'
 ];

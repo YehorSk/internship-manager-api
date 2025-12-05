@@ -18,12 +18,12 @@ class PracticeCompany extends Model
         'practice_id',
         'name',
         'address',
-        'ico',
         'contact_phone',
         'contact_email',
         'contact_name',
         'company_email',
         'contact_position',
+        'ico',
     ];
 
     protected $hidden = [

@@ -92,7 +92,7 @@ class User extends Authenticatable implements MustVerifyEmail, HasLocalePreferen
         ])->save();
 
         if ($updated && $this->role_id === 3) {
-            $this->company->update(['status' => 'approved']);
+            $this->company->update(['status' => 1]);
         }
 
         return $updated;

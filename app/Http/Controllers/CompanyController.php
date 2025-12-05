@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\RoleEnum;
+use App\Http\Requests\CompanyActivationRequest;
 use App\Http\Requests\CompanyListRequest;
 use App\Http\Resources\CompanyResource;
 use App\Mail\CompanyActivatedMail;
@@ -10,11 +11,12 @@ use App\Mail\CompanyApprovedMail;
 use App\Mail\CompanyRejectedMail;
 use App\Models\Company;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 
 class CompanyController extends Controller
 {
-
+    
     public function search(Request $request){
         $value = $request->query('value');
         if (!$value) {
@@ -30,7 +32,7 @@ class CompanyController extends Controller
         return CompanyResource::collection($companies);
     }
 
-    public function activate($token)
+    public function activate($token, CompanyActivationRequest $request)
     {
         $company = Company::where('activation_token', $token)->first();
         if (!$company) {
@@ -54,6 +56,18 @@ class CompanyController extends Controller
                 'statusCode' => 400,
                 'message' => 'Účet už bol aktivovaný.'
             ], 400);
+        }
+        if($company->registered_by){
+            $validated = $request->validated();
+            if($user->email !== $validated['email']){
+                return response()->json([
+                    'success' => false,
+                    'statusCode' => 404,
+                    'message' => __('auth.email_not_registered'),
+                ], 404);
+            }
+            $user->password = Hash::make($validated['password']);
+            $user->save();
         }
         $company->activation_token = null;
         $company->save();

@@ -40,16 +40,42 @@ class StorePracticeRequest extends FormRequest
             $rules = array_merge($rules, [
                 'company_name' => 'required|string|max:255',
                 'company_address' => 'required|string|max:255',
-                'company_email' => 'required|email',
                 'contact_name' => 'required|string|max:255',
                 'contact_email' => 'required|email',
                 'contact_phone' => 'required|string|max:50',
                 'contact_position' => 'required|string|max:50',
-                'ico' => ['required',
-                          'string',
-                          'regex:/^\d{8}$/'
-                ]
             ]);
+            if($this->filled('id')){
+                $rules += [
+                    'company_email' => [
+                        'required',
+                        'email',
+                        'unique:companies,company_email'
+                    ],
+                    'ico' => [
+                        'required',
+                        'string',
+                        'regex:/^\d{8}$/',
+                        'unique:companies,ico'
+                    ],
+                ];
+            }else{
+                $rules += [
+                    'company_email' => [
+                        'required',
+                        'email',
+                        Rule::unique('companies', 'company_email')
+                            ->ignore($this->input('company_id')),
+                    ],
+                    'ico' => [
+                        'required',
+                        'string',
+                        'regex:/^\d{8}$/',
+                        Rule::unique('companies', 'ico')
+                            ->ignore($this->input('company_id')),
+                    ],
+                ];
+            }
         }
         return $rules;
     }
