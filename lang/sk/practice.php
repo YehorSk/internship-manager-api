@@ -31,6 +31,6 @@
         'defended' => 'obhájené',
         'defense_rejected' => 'obrana zamietnutá',
         'status_error' => 'Nie je možné zmeniť stav praxe',
-        'company_ico_error' => 'Spoločnosť s týmto IČO už existuje',
+        'company_ico_error' => 'Spoločnosť už existuje',
         'company_registration_failed' => 'Pri registrácii spoločnosti sa niečo pokazilo.'
     ];

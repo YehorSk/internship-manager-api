@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\DocumentTypeEnum;
 use App\Enums\RoleEnum;
 use App\Enums\PracticeStatusEnum;
+use App\Exceptions\CompanyAlreadyExistsException;
 use App\Http\Requests\DownloadDocumentRequest;
 use App\Http\Requests\PracticeListRequest;
 use App\Http\Requests\StorePracticeRequest;
@@ -687,16 +688,6 @@ class PracticeController extends Controller
 
         $currentStatus = $practice->status;
 
-        $practice->status = PracticeStatusEnum::AGREEMENT_CONFIRM_REQUESTED->value;
-        $practice->save();
-
-        PracticeStatusHistory::create([
-            'practice_id' => $practice->id,
-            'user_id' => $user->id,
-            'status' => PracticeStatusEnum::AGREEMENT_CONFIRM_REQUESTED->value,
-            'comment' => ($currentStatus === PracticeStatusEnum::CREATED->value) ? __('practice.agreement_confirmation_requested') : __('practice.agreement_reconfirmation_requested'),
-        ]);
-
         if ($practice->company_id) {
             $frontendUrl = config('app.frontend_url', 'http://localhost:3000');
 
@@ -716,11 +707,22 @@ class PracticeController extends Controller
             try {
                 $company = $this->companyService->studentRegisterCompany($practice->practiceCompany, $user, $practice);
                 $practice['company_id'] = $company->user_id;
-                $practice->save();
+            }catch (CompanyAlreadyExistsException $e){
+                return response()->json(['success' => false, 'statusCode' => 409, 'error' => $e->getMessage(), 'message' => __('practice.company_exists_error')], 409);
             }catch (\Exception $e){
                 return response()->json(['success' => false, 'statusCode' => 500, 'error' => $e->getMessage(), 'message' => __('practice.company_registration_failed')], 500);
             }
         }
+
+        $practice->status = PracticeStatusEnum::AGREEMENT_CONFIRM_REQUESTED->value;
+        $practice->save();
+
+        PracticeStatusHistory::create([
+            'practice_id' => $practice->id,
+            'user_id' => $user->id,
+            'status' => PracticeStatusEnum::AGREEMENT_CONFIRM_REQUESTED->value,
+            'comment' => ($currentStatus === PracticeStatusEnum::CREATED->value) ? __('practice.agreement_confirmation_requested') : __('practice.agreement_reconfirmation_requested'),
+        ]);
 
         return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('practice.agreement_approval_requested_successfully')]);
     }

@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Mail;
 
 class CompanyController extends Controller
 {
-    
+
     public function search(Request $request){
         $value = $request->query('value');
         if (!$value) {

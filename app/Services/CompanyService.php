@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\RoleEnum;
+use App\Exceptions\CompanyAlreadyExistsException;
 use App\Jobs\CheckIsCompanyActivated;
 use App\Mail\CompanyConfirmationMail;
 use App\Models\Company;
@@ -18,6 +19,11 @@ class CompanyService implements CompanyServiceInterface
 
     public function studentRegisterCompany($data, $student, $practice): Company
     {
+        $checkCompany = Company::where('ico', $data['ico'])
+            ->orWhere('company_email', $data['company_email'])->first();
+        if ($checkCompany) {
+            throw new CompanyAlreadyExistsException();
+        }
        return DB::transaction(function () use ($data, $student, $practice) {
             $user = User::create([
                 'name' => $data['name'],
