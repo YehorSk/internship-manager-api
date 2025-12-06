@@ -83,7 +83,7 @@ Route::middleware(['auth:api'])
 
 Route::controller(CompanyController::class)->prefix('company')->group(function () {
     Route::get('/activate/{token}', 'activate');
-    Route::post('/activate-data/{token}', 'activate');
+    Route::post('/activate-data/{token}', 'activateWithData');
 
     Route::group(['middleware' => ['auth:api']], function () {
         Route::get('/search', 'search');
