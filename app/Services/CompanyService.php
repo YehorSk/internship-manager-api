@@ -48,7 +48,7 @@ class CompanyService implements CompanyServiceInterface
            $user->roles()->attach(RoleEnum::COMPANY->value);
            Mail::to($company->company_email)->send(new CompanyConfirmationMail($company, true));
            CheckIsCompanyActivated::dispatch($company, $practice)
-               ->delay(now()->addDay());
+               ->delay(now()->addDay())->onQueue('emails');
            return $company;
         });
     }
