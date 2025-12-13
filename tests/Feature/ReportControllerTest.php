@@ -6,6 +6,7 @@ use App\Enums\ReportStatusEnum;
 use App\Enums\ReportTypeEnum;
 use App\Enums\SemesterEnum;
 use App\Models\Company;
+use App\Models\Practice;
 use App\Models\Report;
 use App\Models\Student;
 use App\Models\Supervisor;
@@ -156,6 +157,22 @@ class ReportControllerTest extends TestCase
         Passport::actingAs($this->company->user, ['*']);
         $response = $this->postJson('/api/reports/list');
         $response->assertStatus(403);
+    }
+
+    public function test_supervisor_can_get_academic_years(): void
+    {
+        Passport::actingAs($this->supervisor->user, ['*']);
+
+        $response = $this->getJson('/api/reports/academic-years');
+
+        $response->assertStatus(200)
+            ->assertJsonIsArray();
+
+        $years = Practice::distinct()->pluck('academic_year')->toArray();
+
+        if (count($years) > 0) {
+            $this->assertEquals($years, $response->json());
+        }
     }
 
     protected function tearDown(): void
