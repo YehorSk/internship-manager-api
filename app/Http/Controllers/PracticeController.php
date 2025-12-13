@@ -49,7 +49,10 @@ class PracticeController extends Controller
 
         $user = $request->user();
 
-        DB::transaction(function () use ($request, $validated, $user) {
+        $isStudent = $user && $user->hasRoleId(RoleEnum::STUDENT->value);
+        $isSupervisor = $user && $user->hasRoleId(RoleEnum::SUPERVISOR->value);
+
+        $practice = DB::transaction(function () use ($request, $validated, $user) {
             $practice = new Practice();
 
             foreach (['start_date', 'end_date', 'academic_year', 'semester', 'study_program_id', 'job_title', 'job_description', 'is_paid'] as $field) {
@@ -94,6 +97,7 @@ class PracticeController extends Controller
                     $practiceCompany->address = $validated['address'];
                 }
             }
+            $practice->status = PracticeStatusEnum::CREATED->value;
             $practice->save();
             $practiceCompany->practice_id = $practice->id;
             $practiceCompany->save();
@@ -104,10 +108,24 @@ class PracticeController extends Controller
                 'status' => PracticeStatusEnum::CREATED->value,
                 'comment' => null,
             ]);
+            return $practice;
         });
+
+        $with = ['studyProgram', 'practiceStatusHistory', 'documents'];
+
+        if ($isStudent || $isSupervisor) {
+            $with[] = 'practiceCompany';
+        }
+
+        if ($isSupervisor) {
+            $with[] = 'student';
+        }
+
+        $practice->load($with);
 
         return response()->json([
             'success' => true,
+            'data' => new PracticeResource($practice),
             'statusCode' => 201,
             'message' => __('practice.practice_created_successfully'),
         ], 201);
@@ -565,7 +583,23 @@ class PracticeController extends Controller
             ));
         }
 
-        return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('practice.deleted_successfully')]);
+        $with = ['studyProgram', 'practiceStatusHistory', 'documents'];
+
+        if ($isStudent || $isSupervisor) {
+            $with[] = 'practiceCompany';
+        }
+
+        if ($isSupervisor) {
+            $with[] = 'student';
+        }
+
+        $practice->load($with);
+
+        return response()->json([
+            'success' => true,
+            'data' => new PracticeResource($practice),
+            'statusCode' => 200,
+            'message' => __('practice.deleted_successfully')]);
     }
 
     public function downloadAgreement($id, Request $request)
