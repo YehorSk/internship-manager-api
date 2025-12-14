@@ -17,7 +17,6 @@ class StudentControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
         $this->supervisor = Supervisor::first();
         $this->company = Company::where('status', true)->first();
         $this->student = Student::first();

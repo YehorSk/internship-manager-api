@@ -53,5 +53,3 @@ class StudyProgramControllerTest extends TestCase
         $this->assertGreaterThanOrEqual(1, count($response->json()));
     }
 }
-
-
