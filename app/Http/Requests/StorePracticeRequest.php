@@ -31,7 +31,7 @@ class StorePracticeRequest extends FormRequest
             'semester' => ['required', 'string', Rule::in(array_map(fn($case) => $case->value, SemesterEnum::cases()))],
             'academic_year' => ['required', 'string', 'max:9'],
             'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
             'job_title' => 'nullable|string|max:255',
             'job_description' => 'nullable|string',
             'is_paid' => 'nullable|boolean',

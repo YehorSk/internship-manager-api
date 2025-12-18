@@ -25,7 +25,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'language' => Localization::class,
-            'client' => EnsureClientIsResourceOwner::class
+            'client' => EnsureClientIsResourceOwner::class,
+            'ensure.company.active' => \App\Http\Middleware\EnsureCompanyIsActive::class,
         ]);
     })
     ->withSchedule(function (Illuminate\Console\Scheduling\Schedule $schedule) {

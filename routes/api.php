@@ -42,11 +42,11 @@ Route::middleware(['auth:api', 'language'])
             Route::get('/{id}/download-document', 'downloadDocument');
         });
         Route::middleware(['role:student'])->group(function () {
-            Route::post('/', 'store');
-            Route::post('/upload-document', 'uploadDocument');
+            Route::post('/', 'store')->middleware('ensure.company.active');
+            Route::post('/upload-document', 'uploadDocument')->middleware('ensure.company.active');
             Route::get('/{id}/download-agreement', 'downloadAgreement');
-            Route::get('/{id}/agreement-confirmation-request', 'agreementConfirmationRequest');
-            Route::get('/{id}/report-confirmation-request', 'reportConfirmationRequest');
+            Route::get('/{id}/agreement-confirmation-request', 'agreementConfirmationRequest')->middleware('ensure.company.active');
+            Route::get('/{id}/report-confirmation-request', 'reportConfirmationRequest')->middleware('ensure.company.active');
             Route::get('/{id}/download-report', 'downloadReport');
         });
         Route::middleware(['role:supervisor,student'])->group(function () {

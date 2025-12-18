@@ -19,6 +19,7 @@ class CompanyController extends Controller
 
     public function search(Request $request){
         $value = $request->query('value');
+        $statuses = $request->query('statuses');
         if (!$value) {
             return response()->json([
                 'data' => []
@@ -26,7 +27,10 @@ class CompanyController extends Controller
         }
         $companies = Company::query()
             ->when($value, fn($query) => $query->where('name', 'like', "%{$value}%"))
-            ->where('status', 1)
+            ->when($statuses, function ($query) use ($statuses) {
+                $statusesArray = is_array($statuses) ? $statuses : explode(',', $statuses);
+                $query->whereIn('status', $statusesArray);
+            })
             ->orderBy('name')
             ->get();
         return CompanyResource::collection($companies);

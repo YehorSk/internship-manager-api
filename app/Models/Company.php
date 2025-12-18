@@ -49,4 +49,9 @@ class Company extends Model
     {
         return $this->hasMany(Practice::class, 'company_id', 'user_id');
     }
+
+    public function isActive(): bool
+    {
+        return $this->status == 1;
+    }
 }
