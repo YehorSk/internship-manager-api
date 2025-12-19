@@ -16,7 +16,7 @@ class EnsureCompanyIsActive
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if($request->has('company_id')){
+        if($request->has('company_id') && $request->input('company_id') !== null){
             $company = Company::where('user_id', $request->input('company_id'))->first();
             if(!$company){
                 return response()->json(['success' => false, 'statusCode' => 404, 'message' => __('company.not_found')], 404);
