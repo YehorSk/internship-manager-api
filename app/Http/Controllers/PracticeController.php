@@ -665,7 +665,6 @@ class PracticeController extends Controller
             'practice_id' => $practice->id,
             'user_id' => $user->id,
             'status' => PracticeStatusEnum::REPORT_CONFIRM_REQUESTED->value,
-            'comment' => __('practice.report_confirmation_requested'),
         ]);
         if ($practice->company_id) {
             $frontendUrl = config('app.frontend_url', 'http://localhost:3000');
@@ -755,7 +754,6 @@ class PracticeController extends Controller
             'practice_id' => $practice->id,
             'user_id' => $user->id,
             'status' => PracticeStatusEnum::AGREEMENT_CONFIRM_REQUESTED->value,
-            'comment' => ($currentStatus === PracticeStatusEnum::CREATED->value) ? __('practice.agreement_confirmation_requested') : __('practice.agreement_reconfirmation_requested'),
         ]);
 
         return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('practice.agreement_approval_requested_successfully')]);
