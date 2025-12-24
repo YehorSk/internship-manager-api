@@ -26,9 +26,14 @@ class UpdateUserRequest extends FormRequest
         $rules = [];
         $user = $this->user();
 
-        $isStudent = $user && $user->hasRoleId(RoleEnum::STUDENT->value);
-        $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
-        $isSupervisor = $user && $user->hasRoleId(RoleEnum::SUPERVISOR->value);
+//        $isStudent = $user && $user->hasRoleId(RoleEnum::STUDENT->value);
+//        $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
+//        $isSupervisor = $user && $user->hasRoleId(RoleEnum::SUPERVISOR->value);
+        $user->loadMissing('roles');
+        $roleIds = $user->roles->pluck('id')->all();
+        $isStudent = in_array(RoleEnum::STUDENT->value, $roleIds, true);
+        $isCompany = in_array(RoleEnum::COMPANY->value, $roleIds, true);
+        $isSupervisor = in_array(RoleEnum::SUPERVISOR->value, $roleIds, true);
 
         if($isStudent){
             $rules = array_merge($rules, [

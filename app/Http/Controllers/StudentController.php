@@ -13,13 +13,19 @@ class StudentController extends Controller
     public function search(Request $request){
         $user = $request->user();
 
-        $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
+//        $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
+        $user->loadMissing('roles');
+        $roleIds = $user->roles->pluck('id')->all();
+        $isCompany = in_array(RoleEnum::COMPANY->value, $roleIds, true);
+
         $value = $request->query('value');
+
         if (!$value) {
             return response()->json([
                 'data' => []
             ]);
         }
+
         $students = Student::query()
             ->when($isCompany, function ($query) use ($user) {
                 $query->whereHas('practices', function ($practiceQuery) use ($user) {
@@ -39,7 +45,10 @@ class StudentController extends Controller
     public function list(StudentListRequest $request){
         $user = $request->user();
 
-        $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
+//        $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
+        $user->loadMissing('roles');
+        $roleIds = $user->roles->pluck('id')->all();
+        $isCompany = in_array(RoleEnum::COMPANY->value, $roleIds, true);
 
         $students = Student::with('studyPrograms')
             ->when($isCompany, function ($query) use ($user) {
