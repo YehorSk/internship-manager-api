@@ -48,9 +48,6 @@ class PracticeController extends Controller
         $validated = $request->validated();
 
         $user = $request->user();
-
-//        $isStudent = $user && $user->hasRoleId(RoleEnum::STUDENT->value);
-//        $isSupervisor = $user && $user->hasRoleId(RoleEnum::SUPERVISOR->value);
         $user->loadMissing('roles');
         $roleIds = $user->roles->pluck('id')->all();
         $isStudent = in_array(RoleEnum::STUDENT->value, $roleIds, true);
@@ -137,8 +134,6 @@ class PracticeController extends Controller
 
     public function statistics(Request $request){
         $user = $request->user();
-
-//        $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
         $user->loadMissing('roles');
         $roleIds = $user->roles->pluck('id')->all();
         $isCompany = in_array(RoleEnum::COMPANY->value, $roleIds, true);
@@ -213,10 +208,6 @@ class PracticeController extends Controller
     public function list(PracticeListRequest $request)
     {
         $user = $request->user();
-
-//        $isStudent = $user && $user->hasRoleId(RoleEnum::STUDENT->value);
-//        $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
-//        $isSupervisor = $user && $user->hasRoleId(RoleEnum::SUPERVISOR->value);
         $user->loadMissing('roles');
         $roleIds = $user->roles->pluck('id')->all();
         $isStudent = in_array(RoleEnum::STUDENT->value, $roleIds, true);
@@ -287,10 +278,6 @@ class PracticeController extends Controller
     public function show($id, Request $request)
     {
         $user = $request->user();
-
-//        $isStudent = $user && $user->hasRoleId(RoleEnum::STUDENT->value);
-//        $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
-//        $isSupervisor = $user && $user->hasRoleId(RoleEnum::SUPERVISOR->value);
         $user->loadMissing('roles');
         $roleIds = $user->roles->pluck('id')->all();
         $isStudent = in_array(RoleEnum::STUDENT->value, $roleIds, true);
@@ -330,10 +317,6 @@ class PracticeController extends Controller
         $validated = $request->validated();
 
         $user = $request->user();
-
-//        $isStudent = $user && $user->hasRoleId(RoleEnum::STUDENT->value);
-//        $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
-//        $isSupervisor = $user && $user->hasRoleId(RoleEnum::SUPERVISOR->value);
         $user->loadMissing('roles');
         $roleIds = $user->roles->pluck('id')->all();
         $isStudent = in_array(RoleEnum::STUDENT->value, $roleIds, true);
@@ -564,9 +547,6 @@ class PracticeController extends Controller
     public function destroy($id, Request $request)
     {
         $user = $request->user();
-
-//        $isStudent = $user && $user->hasRoleId(RoleEnum::STUDENT->value);
-//        $isSupervisor = $user && $user->hasRoleId(RoleEnum::SUPERVISOR->value);
         $user->loadMissing('roles');
         $roleIds = $user->roles->pluck('id')->all();
         $isStudent = in_array(RoleEnum::STUDENT->value, $roleIds, true);
@@ -662,8 +642,6 @@ class PracticeController extends Controller
     public function reportConfirmationRequest($id, Request $request)
     {
         $user = $request->user();
-
-//        $isStudent = $user && $user->hasRoleId(RoleEnum::STUDENT->value);
         $user->loadMissing('roles');
         $roleIds = $user->roles->pluck('id')->all();
         $isStudent = in_array(RoleEnum::STUDENT->value, $roleIds, true);
@@ -718,8 +696,6 @@ class PracticeController extends Controller
     public function agreementConfirmationRequest($id, Request $request)
     {
         $user = $request->user();
-
-//        $isStudent = $user && $user->hasRoleId(RoleEnum::STUDENT->value);/
         $user->loadMissing('roles');
         $roleIds = $user->roles->pluck('id')->all();
         $isStudent = in_array(RoleEnum::STUDENT->value, $roleIds, true);
@@ -819,9 +795,6 @@ class PracticeController extends Controller
 
     public function updateDocumentStatus($id, UpdateDocumentStatusRequest $request){
         $user = $request->user();
-
-//        $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
-//        $isSupervisor = $user && $user->hasRoleId(RoleEnum::SUPERVISOR->value);
         $user->loadMissing('roles');
         $roleIds = $user->roles->pluck('id')->all();
         $isCompany = in_array(RoleEnum::COMPANY->value, $roleIds, true);
@@ -1021,9 +994,6 @@ class PracticeController extends Controller
             ], 404);
         }
 
-//        $isStudent = $user->hasRoleId(RoleEnum::STUDENT->value);
-//        $isSupervisor = $user->hasRoleId(RoleEnum::SUPERVISOR->value);
-//        $isCompany = $user->hasRoleId(RoleEnum::COMPANY->value);
         $user->loadMissing('roles');
         $roleIds = $user->roles->pluck('id')->all();
         $isStudent = in_array(RoleEnum::STUDENT->value, $roleIds, true);
@@ -1166,8 +1136,6 @@ class PracticeController extends Controller
     private function getPracticeForStudentDocument(Request $request, int $id)
     {
         $user = $request->user();
-
-//        $isStudent = $user && $user->hasRoleId(RoleEnum::STUDENT->value);
         $user->loadMissing('roles');
         $roleIds = $user->roles->pluck('id')->all();
         $isStudent = in_array(RoleEnum::STUDENT->value, $roleIds, true);

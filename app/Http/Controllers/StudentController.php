@@ -12,8 +12,6 @@ class StudentController extends Controller
 {
     public function search(Request $request){
         $user = $request->user();
-
-//        $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
         $user->loadMissing('roles');
         $roleIds = $user->roles->pluck('id')->all();
         $isCompany = in_array(RoleEnum::COMPANY->value, $roleIds, true);
@@ -44,8 +42,6 @@ class StudentController extends Controller
 
     public function list(StudentListRequest $request){
         $user = $request->user();
-
-//        $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
         $user->loadMissing('roles');
         $roleIds = $user->roles->pluck('id')->all();
         $isCompany = in_array(RoleEnum::COMPANY->value, $roleIds, true);

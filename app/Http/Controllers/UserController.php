@@ -190,9 +190,6 @@ class UserController extends Controller
             ], 422);
         }
 
-//        $isStudent = $user && $user->hasRoleId(RoleEnum::STUDENT->value);
-//        $isCompany = $user && $user->hasRoleId(RoleEnum::COMPANY->value);
-//        $isSupervisor = $user && $user->hasRoleId(RoleEnum::SUPERVISOR->value);
         $user->loadMissing('roles');
         $roleIds = $user->roles->pluck('id')->all();
         $isStudent = in_array(RoleEnum::STUDENT->value, $roleIds, true);

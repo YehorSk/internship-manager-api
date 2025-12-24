@@ -161,7 +161,6 @@ class CompanyController extends Controller
     public function update(Request $request, $id)
     {
         $user = auth()->user();
-//        $isSupervisor = $user && $user->hasRoleId(RoleEnum::SUPERVISOR->value);
         $user->loadMissing('roles');
         $roleIds = $user->roles->pluck('id')->all();
         $isSupervisor = in_array(RoleEnum::SUPERVISOR->value, $roleIds, true);
