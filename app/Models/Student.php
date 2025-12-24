@@ -7,8 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Student extends Model
 {
-    use HasFactory;
-
     protected $table = 'students';
 
     protected $fillable = [
@@ -28,7 +26,7 @@ class Student extends Model
 
     public function studyPrograms()
     {
-        return $this->belongsToMany(StudyProgram::class, 'student_study_program', 'student_id', 'study_program_id');
+        return $this->belongsToMany(StudyProgram::class, 'student_study_program', 'student_id', 'study_program_id')->withTimestamps();
     }
 
     public function currentStudyProgram($id): bool
