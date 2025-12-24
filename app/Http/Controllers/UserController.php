@@ -111,7 +111,19 @@ class UserController extends Controller
         }
 
         $token = $user->createToken('LoginToken')->accessToken;
-        $user = User::with(['roles', 'student.studyPrograms', 'supervisor', 'company'])->find($user->id);
+        $user->loadMissing('roles');
+        $with = ['roles'];
+        $roleIds = $user->roles->pluck('id')->all();
+        if (in_array(\App\Enums\RoleEnum::STUDENT->value, $roleIds, true)) {
+            $with[] = 'student.studyPrograms';
+        }
+        if (in_array(\App\Enums\RoleEnum::SUPERVISOR->value, $roleIds, true)) {
+            $with[] = 'supervisor';
+        }
+        if (in_array(\App\Enums\RoleEnum::COMPANY->value, $roleIds, true)) {
+            $with[] = 'company';
+        }
+        $user->load($with);
 
         return response()->json([
             'success' => true,
@@ -142,7 +154,21 @@ class UserController extends Controller
     public function user(Request $request){
         $user = $request->user();
         if($user){
-            $user = User::with(['roles', 'student.studyPrograms', 'supervisor', 'company'])->find($user->id);
+            // Load relationships dynamically based on roles to avoid redundant queries
+            $user->loadMissing('roles');
+            $with = ['roles'];
+            $roleIds = $user->roles->pluck('id')->all();
+            if (in_array(\App\Enums\RoleEnum::STUDENT->value, $roleIds, true)) {
+                $with[] = 'student.studyPrograms';
+            }
+            if (in_array(\App\Enums\RoleEnum::SUPERVISOR->value, $roleIds, true)) {
+                $with[] = 'supervisor';
+            }
+            if (in_array(\App\Enums\RoleEnum::COMPANY->value, $roleIds, true)) {
+                $with[] = 'company';
+            }
+            $user->load($with);
+
             return response()->json([
                 'success' => true,
                 'statusCode' => 200,
@@ -178,7 +204,7 @@ class UserController extends Controller
         }
     }
 
-    public function updateProfile(UpdateUserRequest $request){
+    public function updateProfile(UpdateUserRequest $request) {
         $user = $request->user();
         $data = $request->validated();
 
@@ -196,22 +222,40 @@ class UserController extends Controller
         $isCompany = in_array(RoleEnum::COMPANY->value, $roleIds, true);
         $isSupervisor = in_array(RoleEnum::SUPERVISOR->value, $roleIds, true);
 
-        if($isStudent){
-            $studentData = collect($data)->except(['study_program'])->toArray();
-            $user->student()->update($studentData);
-            if (!empty($data['study_program']) && !$user->student->currentStudyProgram($data['study_program'])) {
-                $studyProgram = StudyProgram::where('id', $data['study_program'])->first();
-                $user->student->studyPrograms()->attach($studyProgram->id);
+        DB::transaction(function () use ($user, $data, $isStudent, $isCompany, $isSupervisor) {
+            if($isStudent) {
+                $studentData = collect($data)->except(['study_program'])->toArray();
+                $user->student()->update($studentData);
+
+                if (!empty($data['study_program']) && !$user->student->currentStudyProgram((int) $data['study_program'])) {
+                    $user->student->studyPrograms()->attach((int) $data['study_program']);
+                }
             }
-        }
-        if($isCompany){
-            $user->company()->update($data);
-        }
-        if($isSupervisor){
-            $user->supervisor()->update($data);
+
+            if($isCompany) {
+                $user->company()->update($data);
+            }
+
+            if($isSupervisor) {
+                $user->supervisor()->update($data);
+            }
+        });
+
+        $with = ['roles'];
+
+        if ($isStudent) {
+            $with[] = 'student.studyPrograms';
         }
 
-        $user = User::with(['roles', 'student.studyPrograms', 'supervisor', 'company'])->find($user->id);
+        if ($isSupervisor) {
+            $with[] = 'supervisor';
+        }
+
+        if ($isCompany) {
+            $with[] = 'company';
+        }
+
+        $user->with($with);
 
         return response()->json([
             'success' => true,
