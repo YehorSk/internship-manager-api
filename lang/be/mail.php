@@ -1,9 +1,9 @@
 <?php
 return [
-    'greeting' => 'Добры дзень :name,',
+    'greeting' => 'Добры дзень, :name,',
     'practice_status' => 'Статус студэнта :student_first :student_last для практыкі :job_title быў зменены на :status.',
     'regards' => 'З павагай, Каманда Internship Manager',
-    'greeting_student' => 'Добры дзень :name,',
+    'greeting_student' => 'Добры дзень, :name,',
     'practice_status_student' => 'Статус Вашай практыкі :job_title быў зменены на :status.',
     'regards_sender' => 'З павагай, :name',
     'practice_status_updated_student' => 'Статус вашай практыкі абноўлены',

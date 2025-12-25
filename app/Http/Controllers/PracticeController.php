@@ -39,7 +39,8 @@ class PracticeController extends Controller
 {
     protected $companyService;
 
-    public function __construct(CompanyServiceInterface $companyService){
+    public function __construct(CompanyServiceInterface $companyService)
+    {
         $this->companyService = $companyService;
     }
 
@@ -132,7 +133,8 @@ class PracticeController extends Controller
         ], 201);
     }
 
-    public function statistics(Request $request){
+    public function statistics(Request $request)
+    {
         $user = $request->user();
         $user->loadMissing('roles');
         $roleIds = $user->roles->pluck('id')->all();
@@ -398,7 +400,7 @@ class PracticeController extends Controller
 
         $practice->load($with);
 
-        if($isSupervisor){
+        if ($isSupervisor) {
             Mail::to($practice->practiceCompany->contact_email)->send(new PracticeUpdatedBySupervisor(
                 practice: $practice,
                 student: null,
@@ -419,7 +421,8 @@ class PracticeController extends Controller
         ]);
     }
 
-    public function updatePracticeStatus($id, UpdatePracticeStatusRequest $request){
+    public function updatePracticeStatus($id, UpdatePracticeStatusRequest $request)
+    {
         $validated = $request->validated();
 
         $user = $request->user();
@@ -437,7 +440,7 @@ class PracticeController extends Controller
         PracticeStatusHistory::create([
             'practice_id' => $practice->id,
             'user_id' => $user->id,
-            'status' =>  PracticeStatusEnum::from($validated['status']),
+            'status' => PracticeStatusEnum::from($validated['status']),
         ]);
 
         $with = ['studyProgram', 'practiceStatusHistory', 'documents', 'practiceCompany', 'student'];
@@ -578,7 +581,7 @@ class PracticeController extends Controller
             'comment' => null,
         ]);
 
-        if($isSupervisor){
+        if ($isSupervisor) {
             Mail::to($practice->practiceCompany->contact_email)->send(new PracticeDeletedBySupervisor(
                 practice: $practice,
                 student: null,
@@ -612,7 +615,7 @@ class PracticeController extends Controller
 
     public function downloadAgreement($id, Request $request)
     {
-        $practice = $this->getPracticeForStudentDocument($request, (int) $id);
+        $practice = $this->getPracticeForStudentDocument($request, (int)$id);
 
         $practice_hours = '150';
 
@@ -679,7 +682,7 @@ class PracticeController extends Controller
             $frontendUrl = config('app.frontend_url', 'http://localhost:3000');
 
             $firstInit = mb_substr($practice->student->first_name, 0, 1);
-            $lastInit  = mb_substr($practice->student->last_name, 0, 1);
+            $lastInit = mb_substr($practice->student->last_name, 0, 1);
             $printName = trim($firstInit . '. ' . $lastInit . '.');
 
             $options = [
@@ -725,7 +728,7 @@ class PracticeController extends Controller
             return response()->json(['success' => false, 'statusCode' => 404, 'message' => __('practice.agreement_not_found')], 404);
         }
 
-        if(!$practice->start_date && !$practice->end_date){
+        if (!$practice->start_date && !$practice->end_date) {
             return response()->json(['success' => false, 'statusCode' => 422, 'message' => __('practice.please_fill_date_fields')], 422);
         }
 
@@ -735,7 +738,7 @@ class PracticeController extends Controller
             $frontendUrl = config('app.frontend_url', 'http://localhost:3000');
 
             $firstInit = mb_substr($practice->student->first_name, 0, 1);
-            $lastInit  = mb_substr($practice->student->last_name, 0, 1);
+            $lastInit = mb_substr($practice->student->last_name, 0, 1);
             $printName = trim($firstInit . '. ' . $lastInit . '.');
 
             $options = [
@@ -746,13 +749,13 @@ class PracticeController extends Controller
             ];
 
             Mail::to($practice->practiceCompany->contact_email)->send(new AgreementConfirmationRequestedMail($practice, $options));
-        }else if(!$practice->company_id && !$practice->is_paid){
+        } elseif (!$practice->company_id && !$practice->is_paid) {
             try {
                 $company = $this->companyService->studentRegisterCompany($practice->practiceCompany, $user, $practice);
                 $practice['company_id'] = $company->user_id;
-            }catch (CompanyAlreadyExistsException $e){
+            } catch (CompanyAlreadyExistsException $e) {
                 return response()->json(['success' => false, 'statusCode' => 409, 'error' => $e->getMessage(), 'message' => __('practice.company_exists_error')], 409);
-            }catch (\Exception $e){
+            } catch (\Exception $e) {
                 return response()->json(['success' => false, 'statusCode' => 500, 'error' => $e->getMessage(), 'message' => __('practice.company_registration_failed')], 500);
             }
         }
@@ -771,7 +774,7 @@ class PracticeController extends Controller
 
     public function downloadReport($id, Request $request)
     {
-        $practice = $this->getPracticeForStudentDocument($request, (int) $id);
+        $practice = $this->getPracticeForStudentDocument($request, (int)$id);
 
         $values = [
             'student_full_name' => $practice->student->user->name ?? trim(($practice->student->first_name ?? '') . ' ' . ($practice->student->last_name ?? '')),
@@ -793,7 +796,8 @@ class PracticeController extends Controller
         );
     }
 
-    public function updateDocumentStatus($id, UpdateDocumentStatusRequest $request){
+    public function updateDocumentStatus($id, UpdateDocumentStatusRequest $request)
+    {
         $user = $request->user();
         $user->loadMissing('roles');
         $roleIds = $user->roles->pluck('id')->all();
@@ -815,11 +819,11 @@ class PracticeController extends Controller
         $documentType = $request->input('document_type');
         $statusAction = $request->input('status');
 
-        if(
+        if (
             ($isCompany && !$practice->lastStatusIs($allowedStatusesCompany[$documentType])) ||
             ($isSupervisor && !$practice->lastStatusIs($allowedStatusesSupervisor[$documentType]) &&
                 !$practice->lastStatusIs($allowedStatusesCompany[$documentType]))
-        ){
+        ) {
             return response()->json([
                 'success' => false,
                 'statusCode' => 403,
@@ -862,12 +866,14 @@ class PracticeController extends Controller
         $mailStatus = ($statusAction === 'agree') ? __('practice.document_confirmed', locale: $student->language) : __('practice.document_rejected', locale: $student->language);
         Mail::to($student)->send(new NotifyStudentAgreementStatusMail($practice, $mailStatus, $user));
 
-        $supervisors = Supervisor::all();
-        foreach ($supervisors as $supervisor) {
-            $to = User::where('id', $supervisor->user_id)->first();
-            $mailStatus = ($statusAction === 'agree') ? __('practice.document_confirmed', locale: $to->language) : __('practice.document_rejected', locale: $to->language);
-            Mail::to($to)->send(new NotifySupervisorAgreementStatusMail($practice, $mailStatus, $user));
-        }
+        Supervisor::query()
+            ->join('users', 'users.id', '=', 'supervisors.user_id')
+            ->select('users.name', 'users.email', 'users.language')
+            ->lazyById(100, 'users.id')
+            ->each(function ($row) use ($practice, $statusAction) {
+                $mailStatus = ($statusAction === 'agree') ? __('practice.document_confirmed', locale: $row?->language) : __('practice.document_rejected', locale: $row?->language);
+                Mail::to($row?->email)->locale($row?->language)->send(new NotifySupervisorAgreementStatusMail($practice, $mailStatus, $row));
+            });
 
         return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('practice.updated_successfully')]);
 
@@ -930,7 +936,8 @@ class PracticeController extends Controller
         return PracticeResource::collection($practices);
     }
 
-    public function updateDefenseStatus($id, UpdateDefenseStatusRequest $request){
+    public function updateDefenseStatus($id, UpdateDefenseStatusRequest $request)
+    {
         if (!Passport::hasScope('client:practice_update_status')) {
             return response()->json([
                 'success' => false,
@@ -944,7 +951,7 @@ class PracticeController extends Controller
             return response()->json(['success' => false, 'statusCode' => 404, 'message' => __('practice.not_found')], 404);
         }
 
-        if(!$practice->lastStatusIs(PracticeStatusEnum::DEFENSE)){
+        if (!$practice->lastStatusIs(PracticeStatusEnum::DEFENSE)) {
             return response()->json([
                 'success' => false,
                 'statusCode' => 403,
@@ -982,7 +989,8 @@ class PracticeController extends Controller
         return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('practice.updated_successfully')]);
     }
 
-    public function downloadDocument($practice_id, DownloadDocumentRequest $request){
+    public function downloadDocument($practice_id, DownloadDocumentRequest $request)
+    {
         $user = $request->user();
         $practice = Practice::where('id', $practice_id)->first();
 

@@ -1,9 +1,9 @@
 <?php
 return [
-    'greeting' => 'Dobrý deň :name,',
+    'greeting' => 'Dobrý deň, :name,',
     'practice_status' => 'Stav práce študenta :student_first :student_last pre prax :job_title bol zmenený na :status.',
     'regards' => 'S pozdravom, Tím Internship Manager',
-    'greeting_student' => 'Dobrý deň :name,',
+    'greeting_student' => 'Dobrý deň, :name,',
     'practice_status_student' => 'Stav Vašej praxe :job_title bol zmenený na :status.',
     'regards_sender' => 'S pozdravom, :name',
     'practice_status_updated_student' => 'Stav Vašej praxe bol aktualizovaný',

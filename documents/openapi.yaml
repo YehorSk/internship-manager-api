@@ -2777,7 +2777,7 @@ paths:
             schema:
               type: object
               properties:
-                file_path:
+                comment:
                   type: string
                 document_type:
                   type: string

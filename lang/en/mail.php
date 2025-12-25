@@ -1,9 +1,9 @@
 <?php
 return [
-    'greeting' => 'Hello :name,',
+    'greeting' => 'Hello, :name,',
     'practice_status' => 'The status of student :student_first :student_last for the practice :job_title has been changed to :status.',
     'regards' => 'Regards, Internship Manager Team',
-    'greeting_student' => 'Hello :name,',
+    'greeting_student' => 'Hello, :name,',
     'practice_status_student' => 'The status of your practice :job_title has been changed to :status.',
     'regards_sender' => 'Regards, :name',
     'practice_status_updated_student' => 'The status of your practice has been updated',
