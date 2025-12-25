@@ -28,7 +28,8 @@ use Illuminate\Support\Str;
 class UserController extends Controller
 {
 
-    public function register(RegisterRequest $request){
+    public function register(RegisterRequest $request)
+    {
         $userData = $request->validated();
         $type = $userData['type'];
         $plainPassword = $type === RoleEnum::STUDENT->value
@@ -90,7 +91,8 @@ class UserController extends Controller
         ], 201);
     }
 
-    public function login(LoginRequest $request){
+    public function login(LoginRequest $request)
+    {
         if (!Auth::attempt($request->only('email', 'password'))) {
             return response()->json([
                 'success' => false,
@@ -112,17 +114,21 @@ class UserController extends Controller
 
         $token = $user->createToken('LoginToken')->accessToken;
         $user->loadMissing('roles');
-        $with = ['roles'];
         $roleIds = $user->roles->pluck('id')->all();
-        if (in_array(\App\Enums\RoleEnum::STUDENT->value, $roleIds, true)) {
+        $with = array();
+
+        if (in_array(RoleEnum::STUDENT->value, $roleIds, true)) {
             $with[] = 'student.studyPrograms';
         }
-        if (in_array(\App\Enums\RoleEnum::SUPERVISOR->value, $roleIds, true)) {
+
+        if (in_array(RoleEnum::SUPERVISOR->value, $roleIds, true)) {
             $with[] = 'supervisor';
         }
-        if (in_array(\App\Enums\RoleEnum::COMPANY->value, $roleIds, true)) {
+
+        if (in_array(RoleEnum::COMPANY->value, $roleIds, true)) {
             $with[] = 'company';
         }
+
         $user->load($with);
 
         return response()->json([
@@ -134,15 +140,16 @@ class UserController extends Controller
         ]);
     }
 
-    public function logout(){
-        if(Auth::check()){
+    public function logout()
+    {
+        if (Auth::check()) {
             Auth::user()->token()->revoke();
             return response()->json([
                 'success' => true,
                 'statusCode' => 200,
                 'message' => __('auth.logout_success')
             ]);
-        }else{
+        } else {
             return response()->json([
                 'success' => false,
                 'statusCode' => 401,
@@ -151,22 +158,27 @@ class UserController extends Controller
         }
     }
 
-    public function user(Request $request){
+    public function user(Request $request)
+    {
         $user = $request->user();
-        if($user){
-            // Load relationships dynamically based on roles to avoid redundant queries
+
+        if ($user) {
             $user->loadMissing('roles');
-            $with = ['roles'];
             $roleIds = $user->roles->pluck('id')->all();
-            if (in_array(\App\Enums\RoleEnum::STUDENT->value, $roleIds, true)) {
+            $with = array();
+
+            if (in_array(RoleEnum::STUDENT->value, $roleIds, true)) {
                 $with[] = 'student.studyPrograms';
             }
-            if (in_array(\App\Enums\RoleEnum::SUPERVISOR->value, $roleIds, true)) {
+
+            if (in_array(RoleEnum::SUPERVISOR->value, $roleIds, true)) {
                 $with[] = 'supervisor';
             }
-            if (in_array(\App\Enums\RoleEnum::COMPANY->value, $roleIds, true)) {
+
+            if (in_array(RoleEnum::COMPANY->value, $roleIds, true)) {
                 $with[] = 'company';
             }
+
             $user->load($with);
 
             return response()->json([
@@ -175,7 +187,7 @@ class UserController extends Controller
                 'message' => __('auth.authenticated'),
                 'data' => new UserResource($user),
             ]);
-        }else{
+        } else {
             return response()->json([
                 'success' => false,
                 'statusCode' => 401,
@@ -184,9 +196,10 @@ class UserController extends Controller
         }
     }
 
-    public function updateLanguage(UpdateLanguageRequest $request){
+    public function updateLanguage(UpdateLanguageRequest $request)
+    {
         $user = $request->user();
-        if($user){
+        if ($user) {
             $user->language = $request->get('language');
             app()->setLocale($user->language);
             $user->save();
@@ -195,7 +208,7 @@ class UserController extends Controller
                 'statusCode' => 200,
                 'message' => __('auth.data_updated'),
             ]);
-        }else{
+        } else {
             return response()->json([
                 'success' => false,
                 'statusCode' => 401,
@@ -204,7 +217,8 @@ class UserController extends Controller
         }
     }
 
-    public function updateProfile(UpdateUserRequest $request) {
+    public function updateProfile(UpdateUserRequest $request)
+    {
         $user = $request->user();
         $data = $request->validated();
 
@@ -223,20 +237,20 @@ class UserController extends Controller
         $isSupervisor = in_array(RoleEnum::SUPERVISOR->value, $roleIds, true);
 
         DB::transaction(function () use ($user, $data, $isStudent, $isCompany, $isSupervisor) {
-            if($isStudent) {
+            if ($isStudent) {
                 $studentData = collect($data)->except(['study_program'])->toArray();
                 $user->student()->update($studentData);
 
-                if (!empty($data['study_program']) && !$user->student->currentStudyProgram((int) $data['study_program'])) {
-                    $user->student->studyPrograms()->attach((int) $data['study_program']);
+                if (!empty($data['study_program']) && !$user->student->currentStudyProgram((int)$data['study_program'])) {
+                    $user->student->studyPrograms()->attach((int)$data['study_program']);
                 }
             }
 
-            if($isCompany) {
+            if ($isCompany) {
                 $user->company()->update($data);
             }
 
-            if($isSupervisor) {
+            if ($isSupervisor) {
                 $user->supervisor()->update($data);
             }
         });
@@ -268,8 +282,8 @@ class UserController extends Controller
     public function changePassword(ChangePasswordRequest $request)
     {
         $user = $request->user();
-        if($user){
-            if(!Hash::check($request->get('current_password'), $user->password)){
+        if ($user) {
+            if (!Hash::check($request->get('current_password'), $user->password)) {
                 return response()->json([
                     'success' => false,
                     'statusCode' => 400,
@@ -283,7 +297,7 @@ class UserController extends Controller
                 'statusCode' => 200,
                 'message' => __('auth.password_changed')
             ]);
-        }else{
+        } else {
             return response()->json([
                 'success' => false,
                 'statusCode' => 401,
@@ -315,7 +329,7 @@ class UserController extends Controller
             ]);
         }
 
-        if($status === Password::INVALID_USER){
+        if ($status === Password::INVALID_USER) {
             return response()->json([
                 'success' => false,
                 'statusCode' => 404,
@@ -338,7 +352,7 @@ class UserController extends Controller
             $request->only('email')
         );
 
-        if($status === Password::RESET_LINK_SENT) {
+        if ($status === Password::RESET_LINK_SENT) {
             return response()->json([
                 'success' => true,
                 'statusCode' => 200,
@@ -346,7 +360,7 @@ class UserController extends Controller
             ]);
         }
 
-        if($status === Password::INVALID_USER){
+        if ($status === Password::INVALID_USER) {
             return response()->json([
                 'success' => false,
                 'statusCode' => 404,
