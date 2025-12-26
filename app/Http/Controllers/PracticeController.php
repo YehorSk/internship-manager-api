@@ -665,26 +665,29 @@ class PracticeController extends Controller
             ->where('id', $id)
             ->with($with)
             ->first();
+
         if (!$practice) {
             return response()->json(['success' => false, 'statusCode' => 404, 'message' => __('practice.not_found')], 404);
         }
+
         if (!$practice->hasDocumentType(DocumentTypeEnum::REPORT->value)) {
             return response()->json(['success' => false, 'statusCode' => 404, 'message' => __('practice.report_not_found')], 404);
         }
+
         $practice->status = PracticeStatusEnum::REPORT_CONFIRM_REQUESTED->value;
         $practice->save();
+
         PracticeStatusHistory::create([
             'practice_id' => $practice->id,
             'user_id' => $user->id,
             'status' => PracticeStatusEnum::REPORT_CONFIRM_REQUESTED->value,
         ]);
+
         if ($practice->company_id) {
             $frontendUrl = config('app.frontend_url', 'http://localhost:3000');
-
             $firstInit = mb_substr($practice->student->first_name, 0, 1);
             $lastInit = mb_substr($practice->student->last_name, 0, 1);
             $printName = trim($firstInit . '. ' . $lastInit . '.');
-
             $options = [
                 'isReconfirm' => false,
                 'updateLink' => $frontendUrl . '/login',
@@ -693,6 +696,7 @@ class PracticeController extends Controller
             ];
             Mail::to($practice->practiceCompany->contact_email)->send(new AgreementConfirmationRequestedMail($practice, $options));
         }
+
         return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('practice.report_approval_requested_successfully')]);
     }
 

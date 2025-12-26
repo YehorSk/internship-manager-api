@@ -13,6 +13,7 @@ use App\Models\StudyProgram;
 use App\Models\Practice;
 use App\Models\Document;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 
@@ -134,7 +135,7 @@ class ReportController extends Controller
 
     public function academicYears(Request $request)
     {
-        $years = Practice::query()->distinct()->orderBy('academic_year', 'desc')->pluck('academic_year');
+        $years =  Practice::query()->select('academic_year')->distinct()->orderBy('academic_year', 'desc')->pluck('academic_year');
         return response()->json($years);
     }
 }
