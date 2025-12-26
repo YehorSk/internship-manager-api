@@ -53,30 +53,72 @@ class GenerateReportJob implements ShouldQueue
                 case ReportTypeEnum::PRACTICES_LIST->value:
                     fputcsv($stream, ['practice_id', 'student_name', 'student_email', 'company_name', 'academic_year', 'semester', 'study_program', 'start_date', 'end_date', 'status']);
                     $rowsCount++;
+                    $query = Practice::query()
+                        ->from('practices')
+                        ->leftJoin('students', 'students.user_id', '=', 'practices.student_id')
+                        ->leftJoin('users', 'users.id', '=', 'students.user_id')
+                        ->leftJoin('practice_companies', 'practice_companies.practice_id', '=', 'practices.id')
+                        ->leftJoin('study_programs', 'study_programs.id', '=', 'practices.study_program_id')
+                        ->select(['practices.id as id', 'practices.id as practice_id', 'users.name as student_name', 'students.student_email as student_email', 'practice_companies.name as company_name', 'practices.academic_year', 'practices.semester', 'study_programs.name as study_program', 'practices.start_date', 'practices.end_date', 'practices.status',])
+                        ->when(!empty($filter['company_name']), function ($q) use ($filter) {
+                            $cname = trim($filter['company_name']);
 
-                    $practicesQuery = $this->buildPracticesQuery($filter, true);
-                    $practicesQuery->orderBy('id');
+                            if ($cname !== '') {
+                                $q->where('practice_companies.name', 'like', "%{$cname}%");
+                            }
+                        })
+                        ->when(!empty($filter['study_program_name']), function ($q) use ($filter) {
+                            $pname = trim($filter['study_program_name']);
 
-                    foreach ($practicesQuery->cursor() as $practice) {
-                        $studentName = trim($practice->student?->user?->name);
-                        $studentEmail = $practice->student?->student_email;
-                        $companyName = $practice->practiceCompany?->name ?? '';
-                        $studyProgram = $practice->studyProgram?->name ?? '';
-                        $start_date = $practice->start_date?->format('Y-m-d') ?? '';
-                        $end_date = $practice->end_date?->format('Y-m-d') ?? '';
-                        fputcsv($stream, [$practice->id, $studentName, $studentEmail, $companyName, $practice->academic_year, $practice->semester, $studyProgram, $start_date, $end_date, $practice->status]);
-                        $rowsCount++;
-                    }
-
+                            if ($pname !== '') {
+                                $q->where('study_programs.name', 'like', "%{$pname}%");
+                            }
+                        })
+                        ->when(!empty($filter['academic_year']), fn($q) => $q->where('practices.academic_year', $filter['academic_year']))
+                        ->when(!empty($filter['semester']), fn($q) => $q->where('practices.semester', $filter['semester']))
+                        ->when(!empty($filter['status']), fn($q) => $q->where('practices.status', $filter['status']))
+                        ->orderBy('practices.id');
+                    $query
+                        ->lazyById(100, column: 'practices.id', alias: 'id')
+                        ->each(function ($row) use ($stream, &$rowsCount) {
+                            fputcsv($stream, [$row->practice_id, trim($row->student_name ?? ''), $row->student_email ?? '', $row->company_name ?? '', $row->academic_year, $row->semester, $row->study_program ?? '', $row->start_date ?? '', $row->end_date ?? '', $row->status,]);
+                            $rowsCount++;
+                        });
                     break;
                 case ReportTypeEnum::PRACTICES_STATUS_SUMMARY->value:
                     fputcsv($stream, ['status', 'count']);
                     $rowsCount++;
 
-                    $practicesQuery = $this->buildPracticesQuery($filter, false)
-                        ->select('status', DB::raw('count(*) as cnt'))
-                        ->groupBy('status')
-                        ->orderBy('cnt', 'desc');
+                    $practicesQuery = Practice::query()
+                        ->from('practices')
+                        ->when(!empty($filter['company_name']), function ($q) {
+                            $q->leftJoin('practice_companies', 'practice_companies.practice_id', '=', 'practices.id');
+                        })
+                        ->when(!empty($filter['study_program_name']), function ($q) {
+                            $q->leftJoin('study_programs', 'study_programs.id', '=', 'practices.study_program_id');
+                        })
+                        ->when(!empty($filter['company_name']), function ($q) use ($filter) {
+                            $cname = trim($filter['company_name']);
+
+                            if ($cname !== '') {
+                                $q->where('practice_companies.name', 'like', "%{$cname}%");
+                            }
+                        })
+                        ->when(!empty($filter['study_program_name']), function ($q) use ($filter) {
+                            $pname = trim($filter['study_program_name']);
+
+                            if ($pname !== '') {
+                                $q->where('study_programs.name', 'like', "%{$pname}%");
+                            }
+                        })
+                        ->when(!empty($filter['academic_year']), fn($q) => $q->where('practices.academic_year', $filter['academic_year']))
+                        ->when(!empty($filter['semester']), fn($q) => $q->where('practices.semester', $filter['semester']))
+                        ->when(!empty($filter['start_date']), fn($q) => $q->where('practices.start_date', '>=', $filter['start_date']))
+                        ->when(!empty($filter['end_date']), fn($q) => $q->where('practices.end_date', '<=', $filter['end_date']))
+                        ->when(!empty($filter['status']), fn($q) => $q->where('practices.status', $filter['status']))
+                        ->selectRaw('practices.status, count(*) as cnt')
+                        ->groupBy('practices.status')
+                        ->orderByDesc('cnt');
 
                     foreach ($practicesQuery->get() as $practice) {
                         fputcsv($stream, [$practice->status, $practice->cnt]);
@@ -86,7 +128,7 @@ class GenerateReportJob implements ShouldQueue
                     break;
                 case ReportTypeEnum::COMPANIES_WITHOUT_ACTIVATION->value:
                     $rowsCount += $this->writeCompaniesCsv($stream, $filter, function ($q) {
-                        $q->where('status', false);
+                        $q->where('status', 0);
                     });
                     break;
                 case ReportTypeEnum::COMPANIES_WITHOUT_PRACTICES->value:
@@ -129,48 +171,12 @@ class GenerateReportJob implements ShouldQueue
         }
     }
 
-    private function buildPracticesQuery(array $filters, bool $withRelations = false)
-    {
-        $practicesQuery = $withRelations ? Practice::with(['student.user', 'practiceCompany', 'studyProgram']) : Practice::query();
-        $practicesQuery
-            ->when(!empty($filters['company_name']), function ($q) use ($filters) {
-                $cname = trim($filters['company_name']);
-
-                if ($cname !== '') {
-                    $q->whereRelation('practiceCompany', 'name', 'like', '%' . $cname . '%');
-                }
-            })
-            ->when(!empty($filters['academic_year']), function ($q) use ($filters) {
-                $q->where('academic_year', $filters['academic_year']);
-            })
-            ->when(!empty($filters['semester']), function ($q) use ($filters) {
-                $q->where('semester', $filters['semester']);
-            })
-            ->when(!empty($filters['study_program_name']), function ($q) use ($filters) {
-                $pname = trim($filters['study_program_name']);
-
-                if ($pname !== '') {
-                    $q->whereRelation('studyProgram', 'name', 'like', '%' . $pname . '%');
-                }
-            })
-            ->when(!empty($filters['start_date']), function ($q) use ($filters) {
-                $q->whereDate('start_date', '>=', $filters['start_date']);
-            })
-            ->when(!empty($filters['end_date']), function ($q) use ($filters) {
-                $q->whereDate('end_date', '<=', $filters['end_date']);
-            })
-            ->when(!empty($filters['status']), function ($q) use ($filters) {
-                $q->where('status', $filters['status']);
-            });
-        return $practicesQuery;
-    }
-
     private function writeCompaniesCsv($stream, array $filter, ?callable $modifier = null): int
     {
         $rows = 0;
         fputcsv($stream, ['user_id', 'name', 'address', 'contact_name', 'contact_position', 'company_email', 'contact_email', 'contact_phone', 'created_at']);
         $rows++;
-        $query = Company::query()->select(['user_id','name','address','contact_name','contact_position','company_email','contact_email','contact_phone','created_at']);
+        $query = Company::query()->select(['user_id', 'name', 'address', 'contact_name', 'contact_position', 'company_email', 'contact_email', 'contact_phone', 'created_at']);
 
         if ($modifier) {
             $modifier($query);

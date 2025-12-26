@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('practice_companies', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('practice_id');
+            $table->foreignId('practice_id')->unique()->constrained('practices')->cascadeOnDelete();
             $table->string('name');
             $table->string('address');
             $table->string('company_email');
@@ -21,8 +21,6 @@ return new class extends Migration
             $table->string('contact_email');
             $table->string('contact_name');
             $table->string('ico', 8);
-            $table->foreign('practice_id')->references('id')->on('practices')->
-                onDelete('cascade');
             $table->timestamps();
         });
     }
