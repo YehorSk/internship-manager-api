@@ -81,11 +81,8 @@ class ReportController extends Controller
             'report_type' => $validated['report_type'],
             'params' => $params,
             'status' => ReportStatusEnum::PENDING->value,
+            'task_id' => (string)Str::uuid(),
         ]);
-
-        $taskId = (string)Str::uuid();
-        $report->task_id = $taskId;
-        $report->save();
 
         GenerateReportJob::dispatch($report)->onQueue('reports');
 

@@ -39,16 +39,14 @@ class GenerateReportJob implements ShouldQueue
         try {
             $params = $report->params ?? [];
             $filter = $params['filter'] ?? [];
-
             $s3Filename = 'reports/' . $report->id . '_' . now()->timestamp . '.csv';
-
             $stream = fopen('php://temp', 'r+');
+
             if ($stream === false) {
                 throw new \RuntimeException('Failed to open temporary stream for CSV generation');
             }
 
             $rowsCount = 0;
-
             $type = $report->report_type;
 
             switch ($type) {
@@ -69,8 +67,8 @@ class GenerateReportJob implements ShouldQueue
                         fputcsv($stream, [$practice->id, $studentName, $studentEmail, $companyName, $practice->academic_year, $practice->semester, $studyProgram, $start_date, $end_date, $practice->status]);
                         $rowsCount++;
                     }
-                    break;
 
+                    break;
                 case ReportTypeEnum::PRACTICES_STATUS_SUMMARY->value:
                     fputcsv($stream, ['status', 'count']);
                     $rowsCount++;
@@ -84,31 +82,25 @@ class GenerateReportJob implements ShouldQueue
                         fputcsv($stream, [$practice->status, $practice->cnt]);
                         $rowsCount++;
                     }
-                    break;
 
+                    break;
                 case ReportTypeEnum::COMPANIES_WITHOUT_ACTIVATION->value:
                     $rowsCount += $this->writeCompaniesCsv($stream, $filter, function ($q) {
                         $q->where('status', false);
                     });
-
                     break;
-
                 case ReportTypeEnum::COMPANIES_WITHOUT_PRACTICES->value:
                     $rowsCount += $this->writeCompaniesCsv($stream, $filter, function ($q) {
                         $q->whereDoesntHave('practices');
                     });
-
                     break;
-
                 default:
                     throw new \RuntimeException('Unknown report type: ' . $type);
             }
 
             rewind($stream);
-
             $s3Disk = Storage::disk('s3');
             $operator = $s3Disk->getDriver();
-
             $uploaded = false;
 
             try {
@@ -140,10 +132,10 @@ class GenerateReportJob implements ShouldQueue
     private function buildPracticesQuery(array $filters, bool $withRelations = false)
     {
         $practicesQuery = $withRelations ? Practice::with(['student.user', 'practiceCompany', 'studyProgram']) : Practice::query();
-
         $practicesQuery
             ->when(!empty($filters['company_name']), function ($q) use ($filters) {
                 $cname = trim($filters['company_name']);
+
                 if ($cname !== '') {
                     $q->whereRelation('practiceCompany', 'name', 'like', '%' . $cname . '%');
                 }
@@ -156,6 +148,7 @@ class GenerateReportJob implements ShouldQueue
             })
             ->when(!empty($filters['study_program_name']), function ($q) use ($filters) {
                 $pname = trim($filters['study_program_name']);
+
                 if ($pname !== '') {
                     $q->whereRelation('studyProgram', 'name', 'like', '%' . $pname . '%');
                 }
@@ -169,7 +162,6 @@ class GenerateReportJob implements ShouldQueue
             ->when(!empty($filters['status']), function ($q) use ($filters) {
                 $q->where('status', $filters['status']);
             });
-
         return $practicesQuery;
     }
 
@@ -178,23 +170,26 @@ class GenerateReportJob implements ShouldQueue
         $rows = 0;
         fputcsv($stream, ['user_id', 'name', 'address', 'contact_name', 'contact_position', 'company_email', 'contact_email', 'contact_phone', 'created_at']);
         $rows++;
+        $query = Company::query()->select(['user_id','name','address','contact_name','contact_position','company_email','contact_email','contact_phone','created_at']);
 
-        $query = Company::query();
         if ($modifier) {
             $modifier($query);
         }
 
         $query->when(!empty($filter['company_name']), function ($q) use ($filter) {
             $cname = trim($filter['company_name']);
+
             if ($cname !== '') {
                 $q->where('name', 'like', '%' . $cname . '%');
             }
         });
 
-        foreach ($query->cursor() as $company) {
-            fputcsv($stream, [$company->user_id, $company->name, $company->address, $company->contact_name, $company->contact_position, $company->company_email, $company->contact_email, $company->contact_phone, $company->created_at->format('Y-m-d H:i:s')]);
-            $rows++;
-        }
+        $query->orderBy('id')
+            ->lazyById(100, 'id')
+            ->each(function ($company) use ($stream, &$rows) {
+                fputcsv($stream, [$company->user_id, $company->name, $company->address, $company->contact_name, $company->contact_position, $company->company_email, $company->contact_email, $company->contact_phone, $company->created_at->format('Y-m-d H:i:s')]);
+                $rows++;
+            });
 
         return $rows;
     }
