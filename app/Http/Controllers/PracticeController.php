@@ -233,42 +233,41 @@ class PracticeController extends Controller
             ->when($isCompany, function ($query) use ($user) {
                 $query->where('company_id', $user->id);
             })
-            ->when($request->has('search.status'), function ($query) use ($request) {
+            ->when($request->filled('search.status'), function ($query) use ($request) {
                 $query->where('status', $request->input('search.status'));
             })
-            ->when($request->has('search.semester'), function ($query) use ($request) {
+            ->when($request->filled('search.semester'), function ($query) use ($request) {
                 $query->where('semester', trim($request->input('search.semester')));
             })
-            ->when($request->has('search.academic_year'), function ($query) use ($request) {
+            ->when($request->filled('search.academic_year'), function ($query) use ($request) {
                 $query->where('academic_year', trim($request->input('search.academic_year')));
             })
-            ->when($request->has('search.start_date'), function ($query) use ($request) {
+            ->when($request->filled('search.start_date'), function ($query) use ($request) {
                 $query->where('start_date', '>=', $request->input('search.start_date'));
             })
-            ->when($request->has('search.end_date'), function ($query) use ($request) {
+            ->when($request->filled('search.end_date'), function ($query) use ($request) {
                 $query->where('end_date', '<=', $request->input('search.end_date'));
             })
             ->when($request->filled('search.study_program_name'), function ($query) use ($request) {
                 $pname = trim($request->input('search.study_program_name'));
-                if ($pname === '') {
-                    return;
-                }
-                $query->whereRelation('studyProgram', 'name', 'like', '%' . $pname . '%');
 
+                if ($pname !== '') {
+                    $query->whereRelation('studyProgram', 'name', 'like', '%' . $pname . '%');
+                }
             })
             ->when($request->filled('search.student_name') && ($isCompany || $isSupervisor), function ($query) use ($request) {
                 $fullName = trim($request->input('search.student_name'));
-                if ($fullName === '') {
-                    return;
+
+                if ($fullName !== '') {
+                    $query->whereRelation('student.user', 'name', 'like', '%' . $fullName . '%');
                 }
-                $query->whereRelation('student.user', 'name', 'like', '%' . $fullName . '%');
             })
             ->when($request->filled('search.company_name') && ($isStudent || $isSupervisor), function ($query) use ($request) {
                 $cname = trim($request->input('search.company_name'));
-                if ($cname === '') {
-                    return;
+
+                if ($cname !== '') {
+                    $query->whereRelation('practiceCompany', 'name', 'like', '%' . $cname . '%');
                 }
-                $query->whereRelation('practiceCompany', 'name', 'like', '%' . $cname . '%');
             })
             ->with($with)
             ->orderBy($request->input('sortBy', 'created_at'), $request->input('sortOrder', 'desc'))
@@ -896,42 +895,42 @@ class PracticeController extends Controller
         $with = ['studyProgram', 'practiceCompany', 'student'];
 
         $practices = Practice::query()
-            ->when($request->has('search.status'), function ($query) use ($request) {
+            ->when($request->filled('search.status'), function ($query) use ($request) {
                 $query->where('status', $request->input('search.status'));
             })
-            ->when($request->has('search.semester'), function ($query) use ($request) {
+            ->when($request->filled('search.semester'), function ($query) use ($request) {
                 $query->where('semester', trim($request->input('search.semester')));
             })
-            ->when($request->has('search.academic_year'), function ($query) use ($request) {
+            ->when($request->filled('search.academic_year'), function ($query) use ($request) {
                 $query->where('academic_year', trim($request->input('search.academic_year')));
             })
-            ->when($request->has('search.start_date'), function ($query) use ($request) {
+            ->when($request->filled('search.start_date'), function ($query) use ($request) {
                 $query->where('start_date', '>=', $request->input('search.start_date'));
             })
-            ->when($request->has('search.end_date'), function ($query) use ($request) {
+            ->when($request->filled('search.end_date'), function ($query) use ($request) {
                 $query->where('end_date', '<=', $request->input('search.end_date'));
             })
             ->when($request->filled('search.study_program_name'), function ($query) use ($request) {
                 $pname = trim($request->input('search.study_program_name'));
-                if ($pname === '') {
-                    return;
+
+                if ($pname !== '') {
+                    $query->whereRelation('studyProgram', 'name', 'like', '%' . $pname . '%');
                 }
-                $query->whereRelation('studyProgram', 'name', 'like', '%' . $pname . '%');
 
             })
             ->when($request->filled('search.student_name'), function ($query) use ($request) {
                 $fullName = trim($request->input('search.student_name'));
-                if ($fullName === '') {
-                    return;
+
+                if ($fullName !== '') {
+                    $query->whereRelation('student.user', 'name', 'like', '%' . $fullName . '%');
                 }
-                $query->whereRelation('student.user', 'name', 'like', '%' . $fullName . '%');
             })
             ->when($request->filled('search.company_name'), function ($query) use ($request) {
                 $cname = trim($request->input('search.company_name'));
-                if ($cname === '') {
-                    return;
+
+                if ($cname !== '') {
+                    $query->whereRelation('practiceCompany', 'name', 'like', '%' . $cname . '%');
                 }
-                $query->whereRelation('practiceCompany', 'name', 'like', '%' . $cname . '%');
             })
             ->with($with)
             ->orderBy($request->input('sortBy', 'created_at'), $request->input('sortOrder', 'desc'))
@@ -955,13 +954,13 @@ class PracticeController extends Controller
             return response()->json(['success' => false, 'statusCode' => 404, 'message' => __('practice.not_found')], 404);
         }
 
-        if (!$practice->lastStatusIs(PracticeStatusEnum::DEFENSE)) {
-            return response()->json([
-                'success' => false,
-                'statusCode' => 403,
-                'message' => __('practice.status_error'),
-            ], 403);
-        }
+//        if (!$practice->lastStatusIs(PracticeStatusEnum::DEFENSE)) {
+//            return response()->json([
+//                'success' => false,
+//                'statusCode' => 403,
+//                'message' => __('practice.status_error'),
+//            ], 403);
+//        }
 
         $student = User::where('id', $practice->student->user_id)->first();
         if ($statusAction === 'agree') {
@@ -984,11 +983,14 @@ class PracticeController extends Controller
 
         Mail::to($practice->student->student_email)->locale($student->language)->send(new NotifyStudentAgreementStatusMail($practice, $mailStatus, $student));
 
-        $supervisors = Supervisor::all();
-        foreach ($supervisors as $supervisor) {
-            $user = User::where('id', $supervisor->user_id)->first();
-            Mail::to($supervisor->email)->locale($user->language)->send(new NotifySupervisorAgreementStatusMail($practice, $mailStatus, $student));
-        }
+        Supervisor::query()
+            ->join('users', 'users.id', '=', 'supervisors.user_id')
+            ->select('users.name', 'users.email', 'users.language')
+            ->lazyById(100, 'users.id')
+            ->each(function ($row) use ($practice, $statusAction) {
+                $mailStatus = ($statusAction === 'agree') ? __('practice.defended', locale: $row?->language) : __('practice.defense_rejected', locale: $row?->language);
+                Mail::to($row?->email)->locale($row?->language)->send(new NotifySupervisorAgreementStatusMail($practice, $mailStatus, $row));
+            });
 
         return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('practice.updated_successfully')]);
     }

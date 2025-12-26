@@ -13,6 +13,7 @@ return new class extends Migration {
             $table->index('academic_year', 'idx_practices_academic_year');
             $table->index(['academic_year', 'semester', 'status'], 'idx_practices_academic_year_semester_status');
             $table->index(['academic_year', 'semester', 'id'], 'idx_practices_academic_year_semester_id');
+            $table->index(['company_id', 'student_id'], 'idx_practices_company_id_student_id');
         });
     }
 
