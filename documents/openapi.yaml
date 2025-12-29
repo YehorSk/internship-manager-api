@@ -67,14 +67,13 @@ paths:
                       roles:
                         - id: 2
                           name: supervisor
-                      student: null
                       supervisor:
                         id: 1
                         title: Ing.
                         first_name: Ján
                         last_name: Novák
                         email: jan.novak@ukf.sk
-                      company: null
+                      language: sk
                     token: <jwt_token>
                 student:
                   summary: Student login success
@@ -91,14 +90,18 @@ paths:
                           name: student
                       student:
                         id: 1
+                        user_id: 1
                         first_name: John
                         last_name: Doe
                         student_email: john.student@example.com
                         primary_email: john.alt@example.com
                         phone: '123456789'
                         address: 123 Main St, Cityville
-                      supervisor: null
-                      company: null
+                        study_program:
+                          - id: 1
+                            code: "INF-B"
+                            name: "Bachelor in Informatics"
+                      language: sk
                     token: <jwt_token>
                 company:
                   summary: Company login success
@@ -113,15 +116,20 @@ paths:
                       roles:
                         - id: 3
                           name: company
-                      student: null
-                      supervisor: null
                       company:
                         id: 1
+                        user_id: 5
                         name: Slovenské IT s.r.o.
                         address: Mlynské nivy 16, 821 09 Bratislava
+                        contact_position: Vedúci IT oddelenia
                         contact_name: Michal Kráľ
+                        company_email: slovenske@gmail.com
                         contact_email: michal.kral@slovenskeit.sk
                         contact_phone: '+421-2-5555-1234'
+                        registered_by: null
+                        status: true
+                        ico: "12345678"
+                      language: sk
                     token: <jwt_token>
         '401':
           description: Unauthorized
@@ -220,18 +228,29 @@ paths:
                       description: Role type (3 = company)
                     name:
                       type: string
+                    ico:
+                      type: string
+                      description: Company identification number 8 digits
+                    company_email:
+                      type: string
+                      format: email
                     address:
                       type: string
+                    password:
+                      type: string
+                      format: password
+                    password_confirmation:
+                      type: string
+                      format: password
                     contact_name:
                       type: string
                     contact_email:
                       type: string
                       format: email
+                    contact_position:
+                      type: string
                     contact_phone:
                       type: string
-                    password:
-                      type: string
-                      format: password
             examples:
               student:
                 summary: Student registration
@@ -248,11 +267,14 @@ paths:
                 summary: Company registration
                 value:
                   type: 3
-                  name: Slovenské IT
-                  address: Mlynské nivy 16, 821 09 Bratislava
-                  contact_name: Michal Kráľ
-                  contact_email: company@example.com
-                  contact_phone: '+421-2-5555-1234'
+                  name: Schiller LLC
+                  ico: '34611149'
+                  company_email: Maurine.Hodkiewicz@example.com
+                  address: 4545 Rahsaan Station
+                  contact_name: MissLois McLaughlin
+                  contact_email: Maurine.Hodkiewicz@example.com
+                  contact_position: Executive
+                  contact_phone: '283-993-4011'
                   password: password123
       responses:
         '201':
@@ -466,6 +488,7 @@ paths:
                           name: student
                       student:
                         id: 1
+                        user_id: 1
                         first_name: John
                         last_name: Doe
                         student_email: john.student@example.com
@@ -476,8 +499,6 @@ paths:
                           - id: 1
                             code: "INF-B"
                             name: "Bachelor in Informatics"
-                      supervisor: null
-                      company: null
                       language: sk
                 company:
                   summary: Company info
@@ -492,16 +513,19 @@ paths:
                       roles:
                         - id: 3
                           name: company
-                    student: null
-                    supervisor: null
                     company:
                       id: 1
+                      user_id: 5
                       name: Slovenské IT s.r.o.
                       address: Mlynské nivy 16, 821 09 Bratislava
+                      contact_position: Vedúci IT oddelenia
                       contact_name: Michal Kráľ
-                      company_email: null
+                      company_email: slovenske@gmail.com
                       contact_email: michal.kral@slovenskeit.sk
                       contact_phone: '+421-2-5555-1234'
+                      registered_by: null
+                      status: true
+                      ico: "12345678"
                     language: sk
         '401':
           description: Unauthorized
@@ -892,32 +916,35 @@ paths:
                       user_id: 5
                       name: Slovenské IT s.r.o.
                       address: Mlynské nivy 16, 821 09 Bratislava
+                      contact_position: Vedúci IT oddelenia
                       contact_name: Michal Kráľ
+                      company_email: slovenske@gmail.com
                       contact_email: michal.kral@slovenskeit.sk
                       contact_phone: '+421-2-5555-1234'
+                      registered_by: null
                       status: 1
-                      created_at: '2025-10-09T20:22:24.000000Z'
-                      updated_at: '2025-10-11T13:16:38.000000Z'
-                    - id: 2
-                      user_id: 6
-                      name: Energo Slovensko a.s.
-                      address: Štefánikova 24, 811 05 Bratislava
-                      contact_name: Veronika Holubová
-                      contact_email: veronika.holubova@energosk.sk
-                      contact_phone: '+421-2-4444-5678'
-                      status: 1
-                      created_at: '2025-10-09T20:22:24.000000Z'
-                      updated_at: '2025-10-09T20:22:24.000000Z'
+                    - id": 4
+                      user_id: 8
+                      name: Langworth LLC
+                      address: 4945 Lubowitz Burg
+                      contact_position: Executive
+                      contact_name: Dr.Gary Bins
+                      company_email: Joana4@example.net
+                      contact_email: Johnpaul71@example.org
+                      contact_phone: '454-985-7057'
+                      registered_by: 1
+                      status: false
+                      ico: "94934861"
                     - id: 3
                       user_id: 7
                       name: Zdravie Plus s.r.o.
                       address: Kukučínova 7, 040 01 Košice
+                      contact_position: Manažér pre vzťahy s verejnosťou
                       contact_name: Lucia Benešová
                       contact_email: lucia.benesova@zdravieplus.sk
                       contact_phone: '+421-55-123-4567'
+                      registered_by: null
                       status: 0
-                      created_at: '2025-10-09T20:22:24.000000Z'
-                      updated_at: '2025-10-09T20:22:24.000000Z'
                   first_page_url: 'http://127.0.0.1:8000/api/companies?page=1'
                   from: 1
                   last_page: 1
@@ -987,11 +1014,14 @@ paths:
                 name: Slovenské IT s.r.o.
                 address: Mlynské nivy 16, 821 09 Bratislava
                 contact_name: Michal Kráľ
+                contact_position: Vedúci IT oddelenia
+                company_email: "slovenske@gmail.com"
                 contact_email: michal.kral@slovenskeit.sk
                 contact_phone: '+421-2-5555-1234'
+                ico: "12345678"
                 status: 1
-                created_at: '2025-10-09T20:22:24.000000Z'
-                updated_at: '2025-10-09T20:22:24.000000Z'
+                registered_by: null
+                activation_token: null
         '404':
           description: Company not found
           content:
@@ -1105,6 +1135,12 @@ paths:
                           type: string
                         contact_phone:
                           type: string
+                        registered_by:
+                          type: integer
+                        status:
+                          type: boolean
+                        ico:
+                          type: string
               examples:
                 default:
                   value:
@@ -1118,6 +1154,9 @@ paths:
                         company_email: "energo@gmail.com"
                         contact_email: "veronika.holubova@energosk.sk"
                         contact_phone: "+421-2-4444-5678"
+                        registered_by: null
+                        status: true
+                        ico: "13245768"
                       - id: 1
                         user_id: 5
                         name: "Slovenské IT s.r.o."
@@ -1127,6 +1166,9 @@ paths:
                         company_email: "slovenske@gmail.com"
                         contact_email: "michal.kral@slovenskeit.sk"
                         contact_phone: "+421-2-5555-1234"
+                        registered_by: null
+                        status: true
+                        ico: "12345678"
         '401':
           description: Unauthorized
           content:
@@ -1271,16 +1313,28 @@ paths:
                     data:
                       - id: 1
                         user_id: 1
-                        first_name: "John"
-                        last_name: "Doe"
-                        student_email: "john.student@example.com"
-                        primary_email: "john.alt@example.com"
+                        first_name: John
+                        last_name: Doe
+                        student_email: john.student@example.com
+                        primary_email: john.alt@example.com
                         phone: "123456789"
-                        address: "123 Main St, Cityville"
+                        address: 123 Main St, Cityville
                         study_program:
                           - id: 1
-                            code: "INF-B"
-                            name: "Bachelor in Informatics"
+                            code: INF-B
+                            name: Bachelor in Informatics
+                      - id: 2
+                        user_id: 12
+                        first_name: Abe
+                        last_name: Wintheiser
+                        student_email: Josephine_Russel70@student.ukf.sk
+                        primary_email: Kenneth.Harber@example.net
+                        phone: "898-346-3028"
+                        address: 34454 Frami Mission
+                        study_program:
+                          - id: 8
+                            code: BIO-B
+                            name: Bachelor in Biology
                     links:
                       first_page_url: 'http://127.0.0.1:8000/api/students/list?page=1'
                       from: 1
@@ -1305,8 +1359,8 @@ paths:
                           active: false
                     path: 'http://127.0.0.1:8000/api/students/list'
                     per_page: 10
-                    to: 1
-                    total: 1
+                    to: 2
+                    total: 2
         '401':
           description: Unauthorized
           content:
@@ -1356,17 +1410,6 @@ paths:
                           type: string
                         address:
                           type: string
-                        study_program:
-                          type: array
-                          items:
-                            type: object
-                            properties:
-                              id:
-                                type: integer
-                              code:
-                                type: string
-                              name:
-                                type: string
               examples:
                 default:
                   value:
@@ -1379,10 +1422,6 @@ paths:
                         primary_email: "john.alt@example.com"
                         phone: "123456789"
                         address: "123 Main St, Cityville"
-                        study_program:
-                          - id: 1
-                            code: "INF-B"
-                            name: "Bachelor in Informatics"
         '401':
           description: Unauthorized
           content:
@@ -1636,39 +1675,61 @@ paths:
                           type: string
                         job_description:
                           type: string
+                        is_paid:
+                          type: integer
+                          description: '0 = free, 1 = paid'
                         study_program:
-                          type: array
-                          items:
-                            type: object
-                            properties:
-                              id:
-                                type: integer
-                              code:
-                                type: string
-                              name:
-                                type: string
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            code:
+                              type: string
+                            name:
+                              type: string
                         practice_company:
-                          type: array
-                          items:
-                            type: object
-                            properties:
-                              id:
-                                type: integer
-                              practice_id:
-                                type: integer
-                              name:
-                                type: string
-                              address:
-                                type: string
-                              company_email:
-                                type: string
-                                nullable: true
-                              contact_name:
-                                type: string
-                              contact_email:
-                                type: string
-                              contact_phone:
-                                type: string
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            practice_id:
+                              type: integer
+                            name:
+                              type: string
+                            address:
+                              type: string
+                            company_email:
+                              type: string
+                              nullable: true
+                            contact_phone:
+                              type: string
+                            contact_email:
+                              type: string
+                            contact_name:
+                              type: string
+                            contact_position:
+                              type: string
+                            ico:
+                              type: string
+                        student:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            user_id:
+                              type: integer
+                            first_name:
+                              type: string
+                            last_name:
+                              type: string
+                            student_email:
+                              type: string
+                            primary_email:
+                              type: string
+                            phone:
+                              type: string
+                            address:
+                              type: string
                         created_at:
                           type: string
                           format: date-time
@@ -1739,19 +1800,31 @@ paths:
                         status: "created"
                         job_title: "Software Developer Intern"
                         job_description: "Assist in developing web applications."
+                        is_paid: 0
                         study_program:
-                          - id: 1
-                            code: "INF-B"
-                            name: "Bachelor in Informatics"
+                          id: 1
+                          code: "INF-B"
+                          name: "Bachelor in Informatics"
                         practice_company:
-                          - id: 1
-                            practice_id: 1
-                            name: "Slovenské IT s.r.o."
-                            address: "Mlynské nivy 16, 821 09 Bratislava"
-                            company_email: "slovenske@gmail.com"
-                            contact_phone: "+421-2-5555-1234"
-                            contact_email: "michal.kral@slovenskeit.sk"
-                            contact_name: "Michal Kráľ"
+                          id: 1
+                          practice_id: 1
+                          name: "Slovenské IT s.r.o."
+                          address: "Mlynské nivy 16, 821 09 Bratislava"
+                          company_email: "slovenske@gmail.com"
+                          contact_phone: "+421-2-5555-1234"
+                          contact_email: "michal.kral@slovenskeit.sk"
+                          contact_name: "Michal Kráľ"
+                          contact_position: "Vedúci IT oddelenia"
+                          ico: "12345678"
+                        student:
+                          id: 1
+                          user_id: 1
+                          first_name: "John"
+                          last_name: "Doe"
+                          student_email: "john.student@student.ukf.sk"
+                          primary_email: "john.alt@example.com"
+                          phone: "123456789"
+                          address: "123 Main St, Cityville"
                         created_at: "2025-10-23 22:53:50"
                         updated_at: "2025-10-23 22:53:50"
                       - id: 2
@@ -1764,19 +1837,29 @@ paths:
                         status: "created"
                         job_title: "Data Analyst Intern"
                         job_description: "Support data analysis and reporting tasks."
+                        is_paid: 1
                         study_program:
-                          - id: 2
-                            code: "INF-M"
-                            name: "Master in Informatics"
+                          id: 2
+                          code: "INF-M"
+                          name: "Master in Informatics"
                         practice_company:
-                          - id: 2
-                            practice_id: 2
-                            name: "Energo Slovensko a.s."
-                            address: "Štefánikova 24, 811 05 Bratislava"
-                            company_email: "energo@gmail.com"
-                            contact_phone: "+421-2-4444-5678"
-                            contact_email: "veronika.holubova@energosk.sk"
-                            contact_name: "Veronika Holubová"
+                          id: 2
+                          practice_id: 2
+                          name: "Energo Slovensko a.s."
+                          address: "Štefánikova 24, 811 05 Bratislava"
+                          company_email: "energo@gmail.com"
+                          contact_phone: "+421-2-4444-5678"
+                          contact_email: "veronika.holubova@energosk.sk"
+                          contact_name: "Veronika Holubová"
+                        student:
+                          id: 1
+                          user_id: 1
+                          first_name: "John"
+                          last_name: "Doe"
+                          student_email: "john.student@student.ukf.sk"
+                          primary_email: "john.alt@example.com"
+                          phone: "123456789"
+                          address: "123 Main St, Cityville"
                         created_at: "2025-10-23 22:53:50"
                         updated_at: "2025-10-23 22:53:50"
                     links:
@@ -1952,39 +2035,42 @@ paths:
                           type: string
                         job_description:
                           type: string
+                        is_paid:
+                          type: integer
+                          description: '0 = free, 1 = paid'
                         study_program:
-                          type: array
-                          items:
-                            type: object
-                            properties:
-                              id:
-                                type: integer
-                              code:
-                                type: string
-                              name:
-                                type: string
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            code:
+                              type: string
+                            name:
+                              type: string
                         practice_company:
-                          type: array
-                          items:
-                            type: object
-                            properties:
-                              id:
-                                type: integer
-                              practice_id:
-                                type: integer
-                              name:
-                                type: string
-                              address:
-                                type: string
-                              company_email:
-                                type: string
-                                nullable: true
-                              contact_name:
-                                type: string
-                              contact_email:
-                                type: string
-                              contact_phone:
-                                type: string
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            practice_id:
+                              type: integer
+                            name:
+                              type: string
+                            address:
+                              type: string
+                            company_email:
+                              type: string
+                              nullable: true
+                            contact_phone:
+                              type: string
+                            contact_email:
+                              type: string
+                            contact_name:
+                              type: string
+                            contact_position:
+                              type: string
+                            ico:
+                              type: string
                         created_at:
                           type: string
                           format: date-time
@@ -2055,19 +2141,31 @@ paths:
                         status: "created"
                         job_title: "Software Developer Intern"
                         job_description: "Assist in developing web applications."
+                        is_paid: 0
                         study_program:
-                          - id: 1
-                            code: "INF-B"
-                            name: "Bachelor in Informatics"
+                          id: 1
+                          code: "INF-B"
+                          name: "Bachelor in Informatics"
                         practice_company:
-                          - id: 1
-                            practice_id: 1
-                            name: "Slovenské IT s.r.o."
-                            address: "Mlynské nivy 16, 821 09 Bratislava"
-                            company_email: "slovenske@gmail.com"
-                            contact_phone: "+421-2-5555-1234"
-                            contact_email: "michal.kral@slovenskeit.sk"
-                            contact_name: "Michal Kráľ"
+                          id: 1
+                          practice_id: 1
+                          name: "Slovenské IT s.r.o."
+                          address: "Mlynské nivy 16, 821 09 Bratislava"
+                          company_email: "slovenske@gmail.com"
+                          contact_phone: "+421-2-5555-1234"
+                          contact_email: "michal.kral@slovenskeit.sk"
+                          contact_name: "Michal Kráľ"
+                          contact_position: "Vedúci IT oddelenia"
+                          ico: "12345678"
+                        student:
+                          id: 1
+                          user_id: 1
+                          first_name: "John"
+                          last_name: "Doe"
+                          student_email: "john.student@example.com"
+                          primary_email: "john.alt@example.com"
+                          phone: "123456789"
+                          address: "123 Main St, Cityville"
                         created_at: "2025-10-23 22:53:50"
                         updated_at: "2025-10-23 22:53:50"
                       - id: 2
@@ -2081,18 +2179,29 @@ paths:
                         job_title: "Data Analyst Intern"
                         job_description: "Support data analysis and reporting tasks."
                         study_program:
-                          - id: 2
-                            code: "INF-M"
-                            name: "Master in Informatics"
+                          id: 2
+                          code: "INF-M"
+                          name: "Master in Informatics"
                         practice_company:
-                          - id: 2
-                            practice_id: 2
-                            name: "Energo Slovensko a.s."
-                            address: "Štefánikova 24, 811 05 Bratislava"
-                            company_email: "energo@gmail.com"
-                            contact_phone: "+421-2-4444-5678"
-                            contact_email: "veronika.holubova@energosk.sk"
-                            contact_name: "Veronika Holubová"
+                          id: 2
+                          practice_id: 2
+                          name: "Energo Slovensko a.s."
+                          address: "Štefánikova 24, 811 05 Bratislava"
+                          company_email: "energo@gmail.com"
+                          contact_phone: "+421-2-4444-5678"
+                          contact_email: "veronika.holubova@energosk.sk"
+                          contact_name: "Veronika Holubová"
+                          company_position: "HR manažér"
+                          ico: "13245768"
+                        student:
+                          id: 1
+                          user_id: 1
+                          first_name: "John"
+                          last_name: "Doe"
+                          student_email: "john.student@example.com"
+                          primary_email: "john.alt@example.com"
+                          phone: "123456789"
+                          address: "123 Main St, Cityville"
                         created_at: "2025-10-23 22:53:50"
                         updated_at: "2025-10-23 22:53:50"
                     links:
@@ -2222,6 +2331,9 @@ paths:
                     type: string
                   job_description:
                     type: string
+                  is_paid:
+                    type: integer
+                    description: '0 = free, 1 = paid'
                   study_program:
                     type: object
                     properties:
@@ -2267,15 +2379,38 @@ paths:
                       company_email:
                         type: string
                         nullable: true
-                      contact_name:
+                      contact_phone:
                         type: string
                       contact_email:
                         type: string
-                      contact_phone:
+                      contact_name:
+                        type: string
+                      contact_position:
+                        type: string
+                      ico:
+                        type: string
+                  student:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      user_id:
+                        type: integer
+                      first_name:
+                        type: string
+                      last_name:
+                        type: string
+                      student_email:
+                        type: string
+                      primary_email:
+                        type: string
+                      phone:
+                        type: string
+                      address:
                         type: string
               examples:
                 default:
-                  description: Json response example for student
+                  description: Json response example
                   value:
                     data:
                       id: 2
@@ -2288,6 +2423,7 @@ paths:
                       status: "created"
                       job_title: "Data Analyst Intern"
                       job_description: "Support data analysis and reporting tasks."
+                      is_paid: 0
                       study_program:
                         id: 2
                         code: "INF-M"
@@ -2309,105 +2445,19 @@ paths:
                         contact_phone: "+421-2-4444-5678"
                         contact_email: "veronika.holubova@energosk.sk"
                         contact_name: "Veronika Holubová"
+                        contact_position: "HR manažér"
+                        ico: "13245768"
+                      student:
+                        id: 1
+                        user_id: 1
+                        first_name: "John"
+                        last_name: "Doe"
+                        student_email: "john.student@example.com"
+                        primary_email: "john.alt@example.com"
+                        phone: "123456789"
+                        address: "123 Main St, Cityville"
                       created_at: "2025-10-26 18:30:02"
                       updated_at: "2025-10-26 18:30:02"
-                supervisor_role_example:
-                  description: Json response example for supervisor
-                  value:
-                    data:
-                      id: 1
-                      student_id: 1
-                      company_id: 5
-                      semester: "winter"
-                      academic_year: "2025/2026"
-                      start_date: "2025-10-22"
-                      end_date: "2025-12-23"
-                      status: "canceled"
-                      job_title: "Software Developer Intern"
-                      job_description: "Assist in developing web applications."
-                      study_program:
-                        id: 1
-                        code: "INF-B"
-                        name: "Bachelor in Informatics"
-                      practice_status_history:
-                        - id: 1
-                          practice_id: 1
-                          user_id: 1
-                          status: "created"
-                          comment: null
-                          created_at: "2025-10-26 18:30:02"
-                          updated_at: "2025-10-26 18:30:02"
-                        - id: 5
-                          practice_id: 1
-                          user_id: 1
-                          status: "canceled"
-                          comment: null
-                          created_at: "2025-10-26 20:49:00"
-                          updated_at: "2025-10-26 20:49:00"
-                      practice_company:
-                        id: 1
-                        practice_id: 1
-                        name: "Slovenské IT s.r.o."
-                        address: "Mlynské nivy 16, 821 09 Bratislava"
-                        company_email: "slovenske@gmail.com"
-                        contact_phone: "+421-2-5555-1234"
-                        contact_email: "michal.kral@slovenskeit.sk"
-                        contact_name: "Michal Kráľ"
-                      student:
-                        id: 1
-                        user_id: 1
-                        first_name: "John"
-                        last_name: "Doe"
-                        student_email: "john.student@example.com"
-                        primary_email: "john.alt@example.com"
-                        phone: "123456789"
-                        address: "123 Main St, Cityville"
-                      created_at: "2025-10-26 18:30:02"
-                      updated_at: "2025-10-26 20:49:00"
-                company_role_example:
-                  description: Json response example for company
-                  value:
-                    data:
-                      id: 1
-                      student_id: 1
-                      company_id: 5
-                      semester: "winter"
-                      academic_year: "2025/2026"
-                      start_date: "2025-10-22"
-                      end_date: "2025-12-23"
-                      status: "canceled"
-                      job_title: "Software Developer Intern"
-                      job_description: "Assist in developing web applications."
-                      study_program:
-                        id: 1
-                        code: "INF-B"
-                        name: "Bachelor in Informatics"
-                      practice_status_history:
-                        - id: 1
-                          practice_id: 1
-                          user_id: 1
-                          status: "created"
-                          comment: null
-                          created_at: "2025-10-26 18:30:02"
-                          updated_at: "2025-10-26 18:30:02"
-                        - id: 5
-                          practice_id: 1
-                          user_id: 1
-                          status: "canceled"
-                          comment: null
-                          created_at: "2025-10-26 20:49:00"
-                          updated_at: "2025-10-26 20:49:00"
-                      student:
-                        id: 1
-                        user_id: 1
-                        first_name: "John"
-                        last_name: "Doe"
-                        student_email: "john.student@example.com"
-                        primary_email: "john.alt@example.com"
-                        phone: "123456789"
-                        address: "123 Main St, Cityville"
-                      created_at: "2025-10-26 18:30:02"
-                      updated_at: "2025-10-26 20:49:00"
         '404':
           description: Practice not found
           content:
@@ -3052,7 +3102,6 @@ paths:
                 success: false
                 statusCode: 404
                 message: 'Praxa nebola nájdená.'
-
   /api/practices/statistics:
     get:
       tags:
@@ -3110,6 +3159,9 @@ paths:
                         updated_at:
                           type: string
                           format: date-time
+                        is_paid:
+                          type: integer
+                          description: '0 = free, 1 = paid'
                   statistics:
                     type: object
                     properties:
@@ -3151,6 +3203,8 @@ paths:
                     type: integer
                   finished:
                     type: integer
+                  total:
+                    type: integer
               example:
                 pending:
                   - id: 1
@@ -3165,18 +3219,60 @@ paths:
                     job_description: "Assist in developing web applications."
                     created_at: "2025-11-13 13:51:32"
                     updated_at: "2025-11-13 17:50:05"
-                  - id: 5
-                    student_id: 8
-                    company_id: 5
+                    is_paid: 0
+                    practice_company:
+                      id: 6
+                      practice_id: 6
+                      name: "Tech Solutions Ltd."
+                      address: "123 Tech Avenue, Innovation City"
+                      company_email: "Joana4@example.net"
+                      contact_phone: "454-985-7057"
+                      contact_email: "Johnpaul71@example.org"
+                      contact_name: "Dr.Gary Bins"
+                      contact_position: "Executive"
+                      ico: "94934861"
+                    student:
+                      id: 1
+                      user_id: 1
+                      first_name: "John"
+                      last_name: "Doe"
+                      student_email: "john.student@example.com"
+                      primary_email: "john.alt@example.com"
+                      phone: "123456789"
+                      address: "123 Main St, Cityville"
+                  - id: 7
+                    student_id: 1
+                    company_id: 9
                     semester: "summer"
                     academic_year: "2025/2026"
-                    start_date: "2025-11-10"
-                    end_date: "2025-12-22"
+                    start_date: "2025-12-29"
+                    end_date: "2026-12-31"
                     status: "agreement_confirm_requested"
-                    job_title: "Business Analyst Intern"
-                    job_description: "Analyze business processes and suggest improvements."
-                    created_at: "2025-11-13 17:53:25"
-                    updated_at: "2025-11-13 17:56:46"
+                    job_title: "Consultant"
+                    job_description: "Customer Configuration Facilitator"
+                    is_paid: 0
+                    practice_company:
+                      id: 7
+                      practice_id: 7
+                      name: "Block Group"
+                      address: "66809 Bayer Course"
+                      company_email: "Isai_Miller62@example.com"
+                      contact_phone: "326-374-6140"
+                      contact_email: "Ole_Carroll@example.net"
+                      contact_name: "Ms.Marian Bartoletti"
+                      contact_position: "Strategist"
+                      ico: "66954395"
+                    student:
+                      id: 1
+                      user_id: 1
+                      first_name: "John"
+                      last_name: "Doe"
+                      student_email: "john.student@example.com"
+                      primary_email: "john.alt@example.com"
+                      phone: "123456789"
+                      address: "123 Main St, Cityville"
+                    created_at: "2025-12-29 11:07:54"
+                    updated_at: "2025-12-29 11:09:17"
                 statistics:
                   created: 3
                   agreement_confirm_requested: 2
@@ -3184,6 +3280,7 @@ paths:
                 active: 5
                 cancelled: 0
                 finished: 0
+                total: 7
         '403':
           description: Forbidden
           content:
@@ -3196,83 +3293,6 @@ paths:
             application/json:
               example:
                 message: 'Unauthenticated.'
-  /api/practices/list-for-client:
-    post:
-      summary: List of practices for external server (oAuth2 client)
-      tags:
-        - Practices
-      security:
-        - oauth2ClientAuth: ["client:practice_list"]
-      parameters:
-        - $ref: '#/components/parameters/AcceptHeader'
-      responses:
-        '200':
-          description: List of practices
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: integer
-                        student_id:
-                          type: integer
-                        company_id:
-                          type: integer
-                          nullable: true
-                        semester:
-                          type: string
-                        academic_year:
-                          type: string
-                        start_date:
-                          type: string
-                          format: date
-                          nullable: true
-                        end_date:
-                          type: string
-                          format: date
-                          nullable: true
-                        status:
-                          type: string
-                          enum: [created, agreement_confirm_requested, agreement_confirmed_by_company, agreement_confirmed_by_supervisor, agreement_rejected_by_company, agreement_rejected_by_supervisor, report_confirm_requested, report_confirmed_by_company, report_confirmed_by_supervisor, report_rejected_by_company, report_rejected_by_supervisor, defense, defense_rejected, defended, canceled]
-                        job_title:
-                          type: string
-                        job_description:
-                          type: string
-                        created_at:
-                          type: string
-                          format: date-time
-                        updated_at:
-                          type: string
-                          format: date-time
-              examples:
-                default:
-                  summary: Example response
-                  value:
-                    data:
-                      - id: 1
-                        student_id: 1
-                        company_id: 5
-                        semester: "winter"
-                        academic_year: "2025/2026"
-                        start_date: "2025-10-22"
-                        end_date: "2025-12-23"
-                        status: "agreement_confirm_requested"
-                        job_title: "Software Developer Intern"
-                        job_description: "Assist in developing web applications."
-                        created_at: "2025-11-13 13:51:32"
-                        updated_at: "2025-11-13 17:50:05"
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              example:
-                message: 'Forbidden. Insufficient permissions.'
   /api/practices/{id}/update-defense-status:
     patch:
       tags:
