@@ -39,6 +39,7 @@ class CompanyController extends Controller
     public function activate($token)
     {
         $company = Company::where('activation_token', $token)->first();
+
         if (!$company) {
             return response()->json([
                 'success' => false,
@@ -46,7 +47,9 @@ class CompanyController extends Controller
                 'message' => 'Neplatný alebo expirovaný aktivačný token.'
             ], 404);
         }
+
         $user = $company->user;
+
         if (!$user || !$user->hasRole('company')) {
             return response()->json([
                 'success' => false,
@@ -54,6 +57,7 @@ class CompanyController extends Controller
                 'message' => 'Používateľ nie je spoločnosť.'
             ], 404);
         }
+
         if ($user->hasVerifiedEmail()) {
             return response()->json([
                 'success' => false,
@@ -61,9 +65,10 @@ class CompanyController extends Controller
                 'message' => 'Účet už bol aktivovaný.'
             ], 400);
         }
+
+        $user->markEmailAsVerified();
         $company->activation_token = null;
         $company->save();
-        $user->markEmailAsVerified();
         Mail::to($user->email)->send(new CompanyActivatedMail());
         return response()->json([
             'success' => true,
@@ -75,6 +80,7 @@ class CompanyController extends Controller
     public function activateWithData($token, CompanyActivationRequest $request)
     {
         $company = Company::where('activation_token', $token)->first();
+
         if (!$company) {
             return response()->json([
                 'success' => false,
@@ -82,7 +88,9 @@ class CompanyController extends Controller
                 'message' => 'Neplatný alebo expirovaný aktivačný token.'
             ], 404);
         }
+
         $user = $company->user;
+
         if (!$user || !$user->hasRole('company')) {
             return response()->json([
                 'success' => false,
@@ -90,6 +98,7 @@ class CompanyController extends Controller
                 'message' => 'Používateľ nie je spoločnosť.'
             ], 404);
         }
+
         if ($user->hasVerifiedEmail()) {
             return response()->json([
                 'success' => false,
@@ -99,19 +108,19 @@ class CompanyController extends Controller
         }
 
         $validated = $request->validated();
-        if($user->email !== $validated['email']){
+
+        if ($user->email !== $validated['email']) {
             return response()->json([
                 'success' => false,
                 'statusCode' => 404,
                 'message' => __('auth.email_not_registered'),
             ], 404);
         }
-        $user->password = Hash::make($validated['password']);
-        $user->save();
 
+        $user->password = Hash::make($validated['password']);
+        $user->markEmailAsVerified();
         $company->activation_token = null;
         $company->save();
-        $user->markEmailAsVerified();
         Mail::to($user->email)->send(new CompanyActivatedMail());
         return response()->json([
             'success' => true,
