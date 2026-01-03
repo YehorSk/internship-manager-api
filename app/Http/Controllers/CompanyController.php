@@ -44,7 +44,7 @@ class CompanyController extends Controller
             return response()->json([
                 'success' => false,
                 'statusCode' => 404,
-                'message' => 'Neplatný alebo expirovaný aktivačný token.'
+                'message' => __('company.invalid_or_expired_activation_token')
             ], 404);
         }
 
@@ -54,7 +54,7 @@ class CompanyController extends Controller
             return response()->json([
                 'success' => false,
                 'statusCode' => 404,
-                'message' => 'Používateľ nie je spoločnosť.'
+                'message' => __('company.user_is_not_company')
             ], 404);
         }
 
@@ -62,7 +62,7 @@ class CompanyController extends Controller
             return response()->json([
                 'success' => false,
                 'statusCode' => 400,
-                'message' => 'Účet už bol aktivovaný.'
+                'message' => __('company.account_already_activated')
             ], 400);
         }
 
@@ -73,7 +73,7 @@ class CompanyController extends Controller
         return response()->json([
             'success' => true,
             'statusCode' => 200,
-            'message' => 'Účet spoločnosti bol úspešne aktivovaný. Môžete sa prihlásiť.'
+            'message' => __('company.account_successfully_activated')
         ]);
     }
 
@@ -85,7 +85,7 @@ class CompanyController extends Controller
             return response()->json([
                 'success' => false,
                 'statusCode' => 404,
-                'message' => 'Neplatný alebo expirovaný aktivačný token.'
+                'message' => __('company.invalid_or_expired_activation_token')
             ], 404);
         }
 
@@ -95,7 +95,7 @@ class CompanyController extends Controller
             return response()->json([
                 'success' => false,
                 'statusCode' => 404,
-                'message' => 'Používateľ nie je spoločnosť.'
+                'message' => __('company.user_is_not_company')
             ], 404);
         }
 
@@ -103,7 +103,7 @@ class CompanyController extends Controller
             return response()->json([
                 'success' => false,
                 'statusCode' => 400,
-                'message' => 'Účet už bol aktivovaný.'
+                'message' => __('company.account_already_activated')
             ], 400);
         }
 
@@ -125,7 +125,7 @@ class CompanyController extends Controller
         return response()->json([
             'success' => true,
             'statusCode' => 200,
-            'message' => 'Účet spoločnosti bol úspešne aktivovaný. Môžete sa prihlásiť.'
+            'message' => __('company.account_successfully_activated')
         ]);
     }
 
