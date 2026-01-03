@@ -59,28 +59,34 @@ The related frontend application: [internship-manager-web](https://github.com/Ye
 
 When using Docker Desktop on Windows 10/11 with WSL2, always keep the project on the WSL filesystem (for example: `/home/<your-user>/`) to avoid performance issues.
 
-1. Clone repositories (execute inside WSL console):
+1. Go to your project folder (execute inside WSL or Linux/Mac console).
    ```sh
+   # in WSL console
    cd /home/$(whoami)
+   # or in Linux/Mac console
+   cd ~
+   ```
+2. Clone repositories:
+   ```sh
    git clone https://github.com/YehorSk/internship-manager-api.git
    git clone https://github.com/YehorSk/internship-manager-web.git
    ```
-2. In each cloned repository copy the environment file:
+3. In each cloned repository copy the environment file:
    ```sh
    cp .env.example .env
    ```
-3. Build images and start containers:
+4. Build images and start containers:
    ```sh
    docker compose up -d --build
    ```
-4. Initial project setup inside the PHP container (run once after first start):
+5. Initial project setup inside the PHP container (run once after first start):
    ```sh
    # open a shell in the PHP container
    docker exec -it php-fpm-internship bash
    # from inside the container run the first-time setup script
    first_init.sh
    ```
-5. Common commands:
+6. Common commands:
    ```sh
    # start containers
    docker compose up -d
@@ -96,7 +102,7 @@ When using Docker Desktop on Windows 10/11 with WSL2, always keep the project on
 
 ## Access services:
 
-- Backend API: http://localhost:8000/api
 - Frontend Application: http://localhost:3000
+- Backend API: http://localhost:8000/api
 - MinIO Console: http://localhost:9101
 - Mailpit Web Interface: http://localhost:8025
