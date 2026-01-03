@@ -5,8 +5,9 @@ services:
       - TZ=Europe/Bratislava
     networks:
       - internship_network
+    container_name: mailpit-internship
     volumes:
-      - mailpit-data:/data
+      - mailpit-internship-data:/data
     ports:
       - "8025:8025"
       - "1025:1025"
@@ -20,8 +21,9 @@ services:
     command: server /data --address ":9100" --console-address ":9101"
     networks:
       - internship_network
+    container_name: minio-internship
     volumes:
-      - minio-data:/data
+      - minio-internship-data:/data
     ports:
       - "9100:9100"
       - "9101:9101"
@@ -30,10 +32,12 @@ services:
     image: mariadb:10.11
     environment:
       - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=internship_db
     networks:
       - internship_network
+    container_name: mariadb-internship
     volumes:
-      - mariadb_data:/var/lib/mysql
+      - mariadb-internship-data:/var/lib/mysql
     ports:
       - "3306:3306"
 
@@ -41,6 +45,14 @@ services:
     build:
       context: .
       dockerfile: ./.docker/node/.Dockerfile
+      args:
+        UID: ${UID}
+        GID: ${GID}
+    container_name: node-internship
+    environment:
+      - UID=${UID}
+      - GID=${GID}
+      - APP_PATH=/var/www/internship-manager-web
     volumes:
       - ../internship-manager-web:/var/www/internship-manager-web/
     networks:
@@ -50,7 +62,14 @@ services:
     build:
       context: .
       dockerfile: .docker/php-fpm/.Dockerfile
-    container_name: php-fpm
+      args:
+        UID: ${UID}
+        GID: ${GID}
+    container_name: php-fpm-internship
+    environment:
+      - UID=${UID}
+      - GID=${GID}
+      - APP_PATH=/var/www/internship-manager-api
     volumes:
       - ./:/var/www/internship-manager-api/
     networks:
@@ -63,6 +82,7 @@ services:
     ports:
       - "8000:8000"
       - "3000:3000"
+    container_name: nginx-internship
     volumes:
       - ./:/var/www/internship-manager-api/
       - ../internship-manager-web:/var/www/internship-manager-web/
@@ -73,10 +93,9 @@ services:
       - internship_network
 
 volumes:
-  mailpit-data:
-  mariadb_data:
-  minio-data:
-  node_modules:
+  mailpit-internship-data:
+  minio-internship-data:
+  mariadb-internship-data:
 
 networks:
   internship_network:
