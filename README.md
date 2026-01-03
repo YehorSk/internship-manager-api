@@ -10,63 +10,93 @@ The related frontend application: [internship-manager-web](https://github.com/Ye
 ## Requirements
 - PHP 8.2
 - MariaDB 10.4+
-- Composer 2.8.12+
+- MinIO (RELEASE.2025-04-22T22-12-26Z)
+- Mailpit (latest)
+- Composer (latest)
 
 ---
 
-## Environment Configuration
-1. Copy the example environment file:
-   ```sh
-   cp .env.example .env
-   ```
-2. Edit `.env` to match your environment, including domains and database connection.
+## Local development on the host OS
 
-   Example configuration (for local development):
-   ```env
-   APP_URL=http://localhost
-   DB_CONNECTION=mysql
-   DB_HOST=127.0.0.1
-   DB_PORT=3306
-   DB_DATABASE=internship_db
-   DB_USERNAME=root
-   DB_PASSWORD=root
-   ```
-
----
-
-## Installation & Setup
-1. Clone the repository:
+1. Clone repository:
    ```sh
    git clone https://github.com/YehorSk/internship-manager-api.git
    cd internship-manager-api
    ```
-2. Install dependencies:
+2. In cloned repository copy the environment file:
+   ```sh
+   cp .env.example .env
+   ```
+3. Change variables in `internship-manager-api/.env` file:
+   ```
+   DB_HOST=127.0.0.1
+   MAIL_HOST=127.0.0.1
+   AWS_ENDPOINT=http://127.0.0.1:9100
+   ```
+4. Install and run local MariaDB service and create `internship_db` database.
+5. Install and run local MinIO service on port 9100/9101 and create `internship-bucket` bucket`.
+6. Install and run local Mailpit service on port 8025/1025.
+7. Install PHP dependencies:
    ```sh
    composer install
    ```
-3. Create a database in MariaDB and update `.env` accordingly.
-4. **Generate application key (required!):**
+8. Run custom command:
    ```sh
-   php artisan key:generate
+   php artisan reset:database
    ```
-   This will set the APP_KEY value in your .env file. The application will not work without this key.
-5. Run migrations and seeders:
+9. Start the development server:
    ```sh
-   php artisan migrate --seed
+   php artisan serve
    ```
-6. Clear and cache configuration:
+10. Run queue worker (in a separate terminal, keep it running):
+    ```sh
+    php artisan queue:work --queue=reports,check-company-email,default --once
+    ```
+11. Frontend installation:
+    The frontend installation and run instructions are located in the `README.md` of the frontend repository: https://github.com/YehorSk/internship-manager-web.
+
+## Local development with Docker
+
+When using Docker Desktop on Windows 10/11 with WSL2, always keep the project on the WSL filesystem (for example: `/home/<your-user>/`) to avoid performance issues.
+
+1. Clone repositories (execute inside WSL console):
    ```sh
-   php artisan config:clear
-   php artisan cache:clear
-   php artisan config:cache
+   cd /home/$(whoami)
+   git clone https://github.com/YehorSk/internship-manager-api.git
+   git clone https://github.com/YehorSk/internship-manager-web.git
    ```
-7. Start the development server:
+2. In each cloned repository copy the environment file:
    ```sh
-   php artisan serve --port=80
+   cp .env.example .env
+   ```
+3. Build images and start containers:
+   ```sh
+   docker compose up -d --build
+   ```
+4. Initial project setup inside the PHP container (run once after first start):
+   ```sh
+   # open a shell in the PHP container
+   docker exec -it php-fpm-internship bash
+   # from inside the container run the first-time setup script
+   first_init.sh
+   ```
+5. Common commands:
+   ```sh
+   # start containers
+   docker compose up -d
+   # stop containers
+   docker compose stop
+   # restart containers
+   docker compose restart
+   # stop and remove containers, networks and volumes
+   docker compose down
+   # rebuild images and start containers
+   docker compose up -d --build
    ```
 
----
+## Access services:
 
-## Deployment Notes
-- The `public` folder must be the web root (for Apache/Nginx).
-- For local development (e.g., XAMPP), you can run the frontend on one port and the API on another.
+- Backend API: http://localhost:8000/api
+- Frontend Application: http://localhost:3000
+- MinIO Console: http://localhost:9101
+- Mailpit Web Interface: http://localhost:8025
