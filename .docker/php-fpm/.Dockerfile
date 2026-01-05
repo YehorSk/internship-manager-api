@@ -18,6 +18,8 @@ RUN apt-get update \
     && docker-php-ext-enable redis igbinary msgpack imagick \
     && rm -rf /var/lib/apt/lists/* /tmp/pear
 
+COPY .docker/php-fpm/laravel-worker.conf /etc/supervisor/conf.d/laravel-worker.conf
+COPY .docker/php-fpm/php-fpm-supervisor.conf /etc/supervisor/conf.d/php-fpm-supervisor.conf
 COPY .docker/php-fpm/php.ini-development /usr/local/etc/php/php.ini
 COPY .docker/php-fpm/php-fpm.conf /usr/local/etc/php-fpm.conf
 COPY .docker/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
