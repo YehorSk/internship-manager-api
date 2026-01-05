@@ -11,7 +11,7 @@ RUN if ! getent group ${GID} > /dev/null 2>&1; then \
     fi
 
 RUN apt-get update \
-    && apt-get install -y gosu libjpeg-dev libpng-dev libfreetype6-dev libzip-dev libicu-dev libxml2-dev libonig-dev libmagickwand-dev zlib1g-dev \
+    && apt-get install -y gosu libjpeg-dev libpng-dev libfreetype6-dev libzip-dev libicu-dev libxml2-dev libonig-dev libmagickwand-dev zlib1g-dev supervisor \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j"$(nproc)" gd intl zip pdo_mysql mbstring exif opcache \
     && pecl install redis igbinary msgpack imagick \
