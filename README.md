@@ -44,6 +44,8 @@ The related frontend application: [internship-manager-web](https://github.com/Ye
    ```sh
    php artisan reset:database
    ```
+   **Important:** After running `php artisan reset:database`, copy the Client ID and Client Secret values from the command output. These credentials are required to authenticate the external server.
+
 9. Start the development server:
    ```sh
    php artisan serve
@@ -86,6 +88,8 @@ When using Docker Desktop on Windows 10/11 with WSL2, always keep the project on
    # from inside the container run the first-time setup script
    first_init.sh
    ```
+   **Important:** After running `first_init.sh`, copy the Client ID and Client Secret values from the command output. These credentials are required to authenticate the external server.
+
 6. Common commands:
    ```sh
    # start containers
