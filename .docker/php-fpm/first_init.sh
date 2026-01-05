@@ -20,7 +20,7 @@ gosu ${UID}:${GID} php "$APP_PATH/artisan" tinker --execute='
 try {
     $bucketName = getenv("AWS_BUCKET");
     $endpoint = getenv("AWS_ENDPOINT");
-    
+
     $s3Client = new Aws\S3\S3Client([
         "version" => "latest",
         "region"  => getenv("AWS_DEFAULT_REGION"),
@@ -31,7 +31,7 @@ try {
             "secret" => getenv("AWS_SECRET_ACCESS_KEY"),
         ]
     ]);
-    
+
     if (!$s3Client->doesBucketExist($bucketName)) {
         $s3Client->createBucket(["Bucket" => $bucketName]);
     }
@@ -47,3 +47,10 @@ fi
 if [ -f "$APP_PATH/storage/oauth-public.key" ]; then
     chmod 600 "$APP_PATH/storage/oauth-public.key"
 fi
+
+sed -i 's/autostart=false/autostart=true/g' /etc/supervisor/conf.d/laravel-worker.conf
+
+supervisorctl reread
+supervisorctl update
+
+supervisorctl start laravel-worker:*
