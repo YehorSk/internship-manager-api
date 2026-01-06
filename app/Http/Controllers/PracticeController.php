@@ -696,7 +696,12 @@ class PracticeController extends Controller
             Mail::to($practice->practiceCompany->contact_email)->send(new AgreementConfirmationRequestedMail($practice, $options));
         }
 
-        return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('practice.report_approval_requested_successfully')]);
+        return response()->json([
+            'success' => true,
+            'data' => new PracticeResource($practice),
+            'statusCode' => 200,
+            'message' => __('practice.report_approval_requested_successfully')
+        ]);
     }
 
     public function agreementConfirmationRequest($id, Request $request)
@@ -772,7 +777,12 @@ class PracticeController extends Controller
             'status' => PracticeStatusEnum::AGREEMENT_CONFIRM_REQUESTED->value,
         ]);
 
-        return response()->json(['success' => true, 'statusCode' => 200, 'message' => __('practice.agreement_approval_requested_successfully')]);
+        return response()->json([
+            'success' => true,
+            'data' => new PracticeResource($practice),
+            'statusCode' => 200,
+            'message' => __('practice.agreement_approval_requested_successfully')]
+        );
     }
 
     public function downloadReport($id, Request $request)
@@ -884,13 +894,6 @@ class PracticeController extends Controller
 
     public function practiceListForExternalSystem(PracticeListRequest $request)
     {
-        if (!Passport::hasScope('client:practice_list')) {
-            return response()->json([
-                'success' => false,
-                'statusCode' => 403,
-                'message' => __('practice.scope_missing'),
-            ], 403);
-        }
 
         $with = ['studyProgram', 'practiceCompany', 'student'];
 
@@ -941,26 +944,11 @@ class PracticeController extends Controller
 
     public function updateDefenseStatus($id, UpdateDefenseStatusRequest $request)
     {
-        if (!Passport::hasScope('client:practice_update_status')) {
-            return response()->json([
-                'success' => false,
-                'statusCode' => 403,
-                'message' => __('practice.scope_missing'),
-            ], 403);
-        }
         $practice = Practice::where('id', $id)->first();
         $statusAction = $request->input('status');
         if (!$practice) {
             return response()->json(['success' => false, 'statusCode' => 404, 'message' => __('practice.not_found')], 404);
         }
-
-//        if (!$practice->lastStatusIs(PracticeStatusEnum::DEFENSE)) {
-//            return response()->json([
-//                'success' => false,
-//                'statusCode' => 403,
-//                'message' => __('practice.status_error'),
-//            ], 403);
-//        }
 
         $student = User::where('id', $practice->student->user_id)->first();
         if ($statusAction === 'agree') {
