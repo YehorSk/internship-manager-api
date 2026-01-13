@@ -2,5 +2,7 @@
     "All rights reserved.": "Všetky práva vyhradené.",
     "No valid status provided.": "Nebol poskytnutý žiadny platný stav.",
     "Method not allowed.": "Metóda nie je povolená.",
-    "Failed to open stream": "Nepodarilo sa otvoriť prúd"
+    "Failed to open stream": "Nepodarilo sa otvoriť prúd",
+    "(and :count more error)": "(a ešte :count chyba)",
+    "(and :count more errors)": "(a ešte :count chýb)"
 }
