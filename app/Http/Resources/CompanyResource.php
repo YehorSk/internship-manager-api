@@ -25,6 +25,7 @@ class CompanyResource extends JsonResource
             'contact_email' => $this->contact_email,
             'contact_phone' => $this->contact_phone,
             'registered_by' => $this->registered_by,
+            'student' => new StudentResource($this->whenLoaded('student')),
             'status' => $this->status,
             'ico' => $this->ico
         ];

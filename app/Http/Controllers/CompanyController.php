@@ -158,13 +158,17 @@ class CompanyController extends Controller
 
     public function show($id)
     {
-        $company = Company::where('user_id', $id)->first();
+        $with = ['student'];
+        $company = Company::query()
+            ->where('user_id', $id)
+            ->with($with)
+            ->first();
 
         if (!$company) {
             return response()->json(['success' => false, 'statusCode' => 404,  'message' => __('company.not_found')], 404);
         }
 
-        return response()->json($company);
+        return new CompanyResource($company);
     }
 
     public function update(Request $request, $id)

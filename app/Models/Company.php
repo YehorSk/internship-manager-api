@@ -45,6 +45,11 @@ class Company extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    public function student()
+    {
+        return $this->belongsTo(Student::class, 'registered_by', 'user_id');
+    }
+
     public function practices()
     {
         return $this->hasMany(Practice::class, 'company_id', 'user_id');

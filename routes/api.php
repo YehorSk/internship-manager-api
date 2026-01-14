@@ -103,16 +103,6 @@ Route::controller(StudyProgramController::class)->prefix('study-programs')->grou
     Route::get('/index', 'index');
 });
 
-// php artisan passport:client --client --name="External Client" для создания внешнего клиента
-// Внешний клиент должен вызывать http://localhost:8000/oauth/token с использованием айди и секрета для получения токена который он будет потом использовать
-// в своих запросах
-//{
-//    "grant_type": "client_credentials",
-//    "client_id": "",
-//    "client_secret": "",
-//    "scope": "client:practice_update_status ... ... ..." доступные скоупы client:practice_list и client:practice_update_status
-//}
-
 Route::prefix('practices')->controller(PracticeController::class)->group(function () {
     Route::post('/index', 'practiceListForExternalSystem')
         ->middleware('client:client:practice_list');
