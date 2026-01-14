@@ -90,7 +90,13 @@ When using Docker Desktop on Windows 10/11 with WSL2, always keep the project on
    ```
    **Important:** After running `first_init.sh`, copy the Client ID and Client Secret values from the command output. These credentials are required to authenticate the external server.
 
-6. Common commands:
+6. Upload document templates to MinIO:
+   - Open the MinIO Console in your browser: http://localhost:9101
+   - In the console select the `internship-bucket` bucket (create the bucket if it does not exist).
+   - Create a folder named `templates` inside the `internship-bucket`.
+   - Extract the document templates archive from the `documents/document_templates.zip` file and upload extracted documents into the `templates` folder.
+
+7. Common commands:
    ```sh
    # start containers
    docker compose up -d
