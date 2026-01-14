@@ -1026,16 +1026,19 @@ class PracticeController extends Controller
             ], 404);
         }
 
-        $url = Storage::disk('s3')->temporaryUrl(
-            $filePath,
-            now()->addMinutes(5),
-            [
-                'ResponseContentType' => 'application/octet-stream',
-                'ResponseContentDisposition' => 'attachment; filename="' . basename($filePath) . '"',
-            ]
-        );
+        $filename = basename($filePath);
 
-        return response()->json(['url' => $url]);
+        $fileContent = Storage::disk('s3')->get($filePath);
+
+        return response()->streamDownload(function () use ($fileContent) {
+            echo $fileContent;
+        },
+            $filename,
+                [
+                    'Content-Type' => 'application/octet-stream',
+                    'Content-Disposition' => 'attachment; filename="' . $filename . '"'
+                ]
+            );
     }
 
     public function deleteDocument($practice_id, DownloadDocumentRequest $request)
