@@ -10,6 +10,20 @@ use Illuminate\Http\Request;
 
 class StudentController extends Controller
 {
+
+    public function show($id){
+        $with = ['studyPrograms'];
+        $student = Student::query()
+            ->where('user_id', $id)
+            ->with($with)
+            ->first();
+
+        if(!$student){
+            return response()->json(['success' => false, 'statusCode' => 404,  'message' => __('student.not_found')], 404);
+        }
+        return new StudentResource($student);
+    }
+
     public function search(Request $request){
         $user = $request->user();
         $user->loadMissing('roles');

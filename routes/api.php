@@ -96,6 +96,7 @@ Route::middleware(['auth:api', 'language'])
         Route::middleware(['role:supervisor,company'])->group(function () {
             Route::get('/search', 'search');
             Route::post('/list', 'list');
+            Route::get('/{id}', 'show');
         });
     });
 
